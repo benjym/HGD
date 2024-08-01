@@ -10,7 +10,7 @@
     H : 1, // physical height of the system (m)
     theta : 0, // angle of gravity (0 is vertical, degrees)
     g : 9.81, // gravitational acceleration (m/s^2)
-    add_voids : "None", // "central_outlet", "multiple_outlets", "slope", "mara" or "pour"
+    boundaries : [], // "central_outlet", "multiple_outlets", "slope", "mara" or "pour"
     internal_geometry : false, // true if internal geometry is present, currently defined only for a single case
     cyclic_BC : false, // true if cyclic BCs are used horizontally
     refill : false, // should the particles come back in the top if they leave the bottom
@@ -53,7 +53,7 @@
     // parallel code
     max_workers : 4, // max number of workers to run simultaneously. Default value is actually set void_migration.py
     
-    motion_model : 'd2q5_array', // 'd2q5_slow', 'd2q5_array' or 'd2q9_slow'
+    motion_model : 'd2q4_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
 
     // diagnostics
     show_optimal_resolution : false, // should the optimal resolution be shown on the screen at runtime
