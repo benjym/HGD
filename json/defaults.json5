@@ -58,5 +58,5 @@
     // diagnostics
     show_optimal_resolution : false, // should the optimal resolution be shown on the screen at runtime
 
-    gui : false
+    gui : null, // this is None in Python, but null in JavaScript
 }

@@ -10,7 +10,8 @@
     H : 1, // m
     // theta : 0.0,  // angle of gravity - keep set to zero
     refill : true,  // should particles go back to top or not
-    add_voids : "central_outlet",
+    // add_voids : "central_outlet",
+    boundaries : ["central_outlet"],
     
     // material properties
     // alpha : [1.0,10.0,100.0],

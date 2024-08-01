@@ -7,7 +7,7 @@
     // geometry
     H : 0.1, // (m)
     theta : 0,
-    add_voids : "None",
+    // boundaries : "None",
 
     // material properties
     repose_angle : 30, // (degrees)

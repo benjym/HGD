@@ -44,5 +44,4 @@
 
     // parallel
     max_workers : 5, // leave some cores on my poor little laptop
-    vectorized : true
 }
