@@ -1,10 +1,11 @@
 [project]
 name = "void_migration"
-version = "0.4"
+version = "0.5"
 requires-python = ">=3.11"
 authors = [
   {name = "Benjy Marks", email = "benjy.marks@sydney.edu.au"},
-  {name = "Shivakumar Athani", email = "shivakumar.athani@sydney.edu.au"}
+  {name = "Shivakumar Athani", email = "shivakumar.athani@sydney.edu.au"},
+  {name = "Jiahuan Li", email = "jiahuan.li@sydney.edu.au"}
 ]
 description = "A heterarchical stochastic solver for the motion, segregation, mixing and crushing of granular media"
 readme = "README.md"

@@ -14,8 +14,9 @@ A python package for simulating the motion of a granular material as a result of
 6.  To use to the GUI version, try `python void_migration/gui.py`. This will open a window where you can set the parameters and run the simulation.
 
 # Documentation
-You can [read the docs here](https://benjym.github.io/void-migration/).
+You can [read the docs here](https://pages.github.sydney.edu.au/bmar5496/void-migration/).
 
 # Authors
 - [Benjy Marks](mailto:benjy.marks@sydney.edu.au)
 - [Shivakumar Athani](mailto:shivakumar.athani@sydney.edu.au)
+- [Jiahuan Li](mailto:jiahuan.li@sydney.edu.au)
