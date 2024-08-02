@@ -72,12 +72,28 @@ def init(p, queue=None):
         sigma = None
 
     outlet = []
+    surface_profile = []
 
     N_swap = None
     p.indices = np.arange(p.nx * (p.ny - 1) * p.nm)
     np.random.shuffle(p.indices)
 
-    state = s, u, v, c, T, p_count, p_count_s, p_count_l, non_zero_nu_time, N_swap, last_swap, sigma, outlet
+    state = (
+        s,
+        u,
+        v,
+        c,
+        T,
+        p_count,
+        p_count_s,
+        p_count_l,
+        non_zero_nu_time,
+        N_swap,
+        last_swap,
+        sigma,
+        outlet,
+        surface_profile,
+    )
 
     if len(p.save) > 0:
         plotter.save_coordinate_system(p)
@@ -93,7 +109,22 @@ def time_step(
     queue=None,
     stop_event=None,
 ):
-    s, u, v, c, T, p_count, p_count_s, p_count_l, non_zero_nu_time, N_swap, last_swap, sigma, outlet = state
+    (
+        s,
+        u,
+        v,
+        c,
+        T,
+        p_count,
+        p_count_s,
+        p_count_l,
+        non_zero_nu_time,
+        N_swap,
+        last_swap,
+        sigma,
+        outlet,
+        surface_profile,
+    ) = state
     if stop_event is not None and stop_event.is_set():
         raise KeyboardInterrupt
 
@@ -144,7 +175,22 @@ def time_step(
                     # s[start_sim-2:start_sim-1,:,:] = np.nan
                     s[end_sim + 2 : end_sim + 3, :, :] = np.nan
 
-    return s, u, v, c, T, p_count, p_count_s, p_count_l, non_zero_nu_time, N_swap, last_swap, sigma, outlet
+    return (
+        s,
+        u,
+        v,
+        c,
+        T,
+        p_count,
+        p_count_s,
+        p_count_l,
+        non_zero_nu_time,
+        N_swap,
+        last_swap,
+        sigma,
+        outlet,
+        surface_profile,
+    )
 
 
 def time_march(p, queue=None, stop_event=None):
@@ -165,12 +211,12 @@ def time_march(p, queue=None, stop_event=None):
 
     plotter.update(p, state, t, queue)
 
-    if p.charge_discharge:
-        plotter.c_d_saves(p, non_zero_nu_time, p_count, p_count_s, p_count_l)
-    plotter.update(x, y, s, u, v, c, T, outlet, p, t)
-    col_ht = plotter.get_col_depth(s, p)
-    np.save(p.folderName + "ht_" + str(p.repose_angle) + ".npy", col_ht)
-    np.save(p.folderName + "surface_profiles.npy", surface_profile)
+    # if p.charge_discharge:
+    #     plotter.c_d_saves(p, state[8], state[5], state[6], state[7])
+    # plotter.update(x, y, s, u, v, c, T, outlet, p, t)
+    # col_ht = plotter.get_col_depth(s, p)
+    # np.save(p.folderName + "ht_" + str(p.repose_angle) + ".npy", col_ht)
+    # np.save(p.folderName + "surface_profiles.npy", state[13])
 
 
 def run_simulation(sim_with_index):

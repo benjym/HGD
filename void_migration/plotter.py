@@ -121,7 +121,22 @@ def check_folders_exist(p):
 
 
 def update(p, state, t, queue, *args):
-    s, u, v, c, T, p_count, p_count_s, p_count_l, non_zero_nu_time, N_swap, last_swap, sigma, outlet = state
+    (
+        s,
+        u,
+        v,
+        c,
+        T,
+        p_count,
+        p_count_s,
+        p_count_l,
+        non_zero_nu_time,
+        N_swap,
+        last_swap,
+        sigma,
+        outlet,
+        surface_profile,
+    ) = state
 
     check_folders_exist(p)
 
@@ -182,6 +197,10 @@ def update(p, state, t, queue, *args):
         np.savetxt(p.folderName + "data/u.csv", u / np.sum(np.isnan(s), axis=2), delimiter=",")
     if "charge_discharge" in p.save:
         c_d_saves(p, non_zero_nu_time, p_count, p_count_s, p_count_l)
+    if "col_depth" in p.save:
+        get_col_depth(p, s)
+    if "surface_profiles" in p.save:
+        np.save(p.folderName + "data/surface_profiles.npy", surface_profile)
 
 
 def plot_u_time(y, U, nu_time, p):
@@ -406,16 +425,16 @@ def save_coordinate_system(p):
     np.savetxt(p.folderName + "data/y.csv", p.y, delimiter=",")
 
 
-def c_d_saves(p, non_zero_nu_time, *args):
+def c_d_saves(p, non_zero_nu_time, p_count, p_count_s, p_count_l):
     np.save(p.folderName + "data/nu_non_zero_avg.npy", non_zero_nu_time)
     if p.gsd_mode == "mono":
-        np.save(p.folderName + "data/cell_count.npy", args[0])
+        np.save(p.folderName + "data/cell_count.npy", p_count)
     elif p.gsd_mode == "bi":
-        np.save(p.folderName + "data/cell_count_s.npy", args[0])
-        np.save(p.folderName + "data/cell_count_l.npy", args[1])
+        np.save(p.folderName + "data/cell_count_s.npy", p_count_s)
+        np.save(p.folderName + "data/cell_count_l.npy", p_count_l)
 
 
-def get_col_depth(s, p):
+def get_col_depth(p, s):
     den = 1 - np.mean(np.isnan(s), axis=2)
     ht = []
     for w in range(p.nx):
@@ -423,7 +442,7 @@ def get_col_depth(s, p):
             ht.append(np.max(np.nonzero(den[w])))
         else:
             ht.append(0)
-    return ht
+    np.save(p.folderName + "data/each_col_ht.npy", ht)
 
 
 def get_profile(s, c, p, t):
