@@ -1,4 +1,7 @@
 import numpy as np
+import params
+import operators
+import random
 
 
 def add_voids(u, v, s, p, c, outlet):
