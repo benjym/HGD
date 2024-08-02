@@ -426,7 +426,7 @@ def get_col_depth(s, p):
     return ht
 
 
-def get_profile(x, y, s, c, p, t):
+def get_profile(s, c, p, t):
     # if p.get_ht == True:
 
     nm = s.shape[2]

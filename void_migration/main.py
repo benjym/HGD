@@ -112,7 +112,7 @@ def time_step(
         p = cycles.charge_discharge(p, t, Mass_inside)
         p_count[t], p_count_s[t], p_count_l[t], non_zero_nu_time[t] = cycles.save_quantities(p, s)
         if p.get_ht == True:
-            ht = plotter.get_profile(x, y, s, c, p, t)
+            ht = plotter.get_profile(s, c, p, t)
             surface_profile.append(ht)
 
     u, v, s, c, T, N_swap, last_swap = p.move_voids(u, v, s, sigma, last_swap, p, c=c, T=T, N_swap=N_swap)
