@@ -186,35 +186,99 @@ def pour(u, v, s, p, c, outlet):
     return u, v, s, c, outlet
 
 
-def pour_top(u, v, s, p, c, outlet):
+def place_on_top(u, v, s, p, c, outlet):  # place cells on top, centre starting at base
     if p.gsd_mode == "bi":  # bidisperse
-        x_points = np.arange(p.nx // 2 - p.half_width, p.nx // 2 + p.half_width + 1)
+        if p.silo_width == "half":
+            x_points = np.arange(0, p.half_width)
+            req = np.random.choice([p.s_m, p.s_M], size=[p.half_width, p.nm])  # create an array of grainsizes
 
-        req = np.random.choice(
-            [p.s_m, p.s_M], size=[(p.nx // 2 + p.half_width + 1) - (p.nx // 2 - p.half_width), p.nm]
-        )  # create an array of grainsizes
-        mask = (
-            np.random.rand((p.nx // 2 + p.half_width + 1) - (p.nx // 2 - p.half_width), p.nm) > p.fill_ratio
-        )  # create how much to fill
-        req[mask] = np.nan  # convert some cells to np.nan
+            mask = np.random.rand(p.half_width, p.nm) > p.fill_ratio
+            req[mask] = np.nan
+
+        elif p.silo_width == "full":
+            x_points = np.arange(p.nx // 2 - p.half_width, p.nx // 2 + p.half_width)
+
+            req = np.random.choice(
+                [p.s_m, p.s_M], size=[(p.nx // 2 + p.half_width) - (p.nx // 2 - p.half_width), p.nm]
+            )  # create an array of grainsizes
+            mask = (
+                np.random.rand((p.nx // 2 + p.half_width) - (p.nx // 2 - p.half_width), p.nm) > p.fill_ratio
+            )  # create how much to fill
+            req[mask] = np.nan  # convert some cells to np.nan
+
+    if p.gsd_mode == "fbi":  # bidisperse
+        if p.silo_width == "half":
+            x_points = np.arange(0, p.half_width)
+            #     req = np.random.choice(
+            #     [p.s_m, p.Fr*p.s_m, p.s_M, p.Fr*p.s_M], size=[p.half_width, p.nm]
+            # )  # create an array of grainsizes
+            f_1 = p.half_width - int(p.half_width / 2)
+            f_2 = p.half_width - f_1
+            req1 = np.random.uniform(p.s_m, p.Fr * p.s_m, size=[p.nm, f_1])
+            req2 = np.random.uniform(p.s_M, p.Fr * p.s_M, size=[p.nm, f_2])
+            req3 = np.concatenate((req1, req2), axis=1)
+            req = req3.reshape(p.half_width, p.nm)
+            mask = np.random.rand(p.half_width, p.nm) > p.fill_ratio
+            req[mask] = np.nan
+
+        elif p.silo_width == "full":
+            x_points = np.arange(p.nx // 2 - p.half_width, p.nx // 2 + p.half_width)
+
+            f_1 = int(len(x_points) - int(len(x_points) / 2))
+            f_2 = int(len(x_points) - f_1)
+
+            req1 = np.random.uniform(p.s_m, p.Fr * p.s_m, size=[p.nm, f_1])
+            req2 = np.random.uniform(p.s_M, p.Fr * p.s_M, size=[p.nm, f_2])
+
+            req3 = np.concatenate((req1, req2), axis=1)
+
+            req = req3.reshape(int(len(x_points)), p.nm)
+
+            mask = (
+                np.random.rand((p.nx // 2 + p.half_width) - (p.nx // 2 - p.half_width), p.nm) > p.fill_ratio
+            )  # create how much to fill
+            req[mask] = np.nan  # convert some cells to np.nan
+
     if p.gsd_mode == "mono":
-        x_points = np.arange(p.nx // 2 - p.half_width, p.nx // 2 + p.half_width + 1)
-        req = p.s_m * np.ones(
-            [(p.nx // 2 + p.half_width + 1) - (p.nx // 2 - p.half_width), p.nm]
-        )  # monodisperse
+        if p.silo_width == "half":
+            x_points = np.arange(0, p.half_width)
+            req = p.s_m * np.ones([p.half_width, p.nm])  # monodisperse
 
-        p.s_M = p.s_m
-        mask = (
-            np.random.rand((p.nx // 2 + p.half_width + 1) - (p.nx // 2 - p.half_width), p.nm) > p.fill_ratio
-        )
-        req[mask] = np.nan
+            p.s_M = p.s_m
+            mask = np.random.rand(p.half_width, p.nm) > p.fill_ratio
+            req[mask] = np.nan
+
+        # elif p.silo_width == "full":
+        #     x_points = np.arange(p.nx // 2 - p.half_width, p.nx // 2 + p.half_width + 1)
+        #     req = p.s_m * np.ones(
+        #         [(p.nx // 2 + p.half_width + 1) - (p.nx // 2 - p.half_width), p.nm]
+        #     )  # monodisperse
+
+        #     p.s_M = p.s_m
+        #     mask = (
+        #         np.random.rand((p.nx // 2 + p.half_width + 1) - (p.nx // 2 - p.half_width), p.nm)
+        #         > p.fill_ratio
+        #     )
+        #     req[mask] = np.nan
+
+        elif p.silo_width == "full":
+            x_points = np.arange(p.nx // 2 - p.half_width, p.nx // 2 + p.half_width)
+            req = p.s_m * np.ones(
+                [(p.nx // 2 + p.half_width) - (p.nx // 2 - p.half_width), p.nm]
+            )  # monodisperse
+
+            p.s_M = p.s_m
+            mask = (
+                np.random.rand((p.nx // 2 + p.half_width) - (p.nx // 2 - p.half_width), p.nm) > p.fill_ratio
+            )
+            req[mask] = np.nan
 
     den = 1 - np.mean(np.isnan(s), axis=2)
     if np.mean(den) == 0.0:
         for i in range(len(x_points)):
             for k in range(p.nm):
                 s[x_points[i], 0, k] = req[i, k]
-                if ~np.isnan(req[i, k]):
+                if ~np.isnan(s[x_points[i], 0, k]):
                     c[x_points[i], 0, k] = p.current_cycle
     else:
         for i in range(len(x_points)):
@@ -224,7 +288,7 @@ def pour_top(u, v, s, p, c, outlet):
                     and np.count_nonzero(np.isnan(s[x_points[i], :, k])) == p.ny
                 ):
                     s[x_points[i], 0, k] = req[i, k]
-                    if ~np.isnan(req[i, k]):
+                    if ~np.isnan(s[x_points[i], 0, k]):
                         c[x_points[i], 0, k] = p.current_cycle
                 else:
                     a = np.max(np.argwhere(~np.isnan(s[x_points[i], :, k])))  # choose the max ht
@@ -232,7 +296,7 @@ def pour_top(u, v, s, p, c, outlet):
                         pass
                     else:
                         s[x_points[i], a + 1, k] = req[i, k]  # place a cell on the topmost cell "a+1"
-                        if ~np.isnan(req[i, k]):
+                        if ~np.isnan(s[x_points[i], a + 1, k]):
                             c[x_points[i], a + 1, k] = p.current_cycle
 
     return u, v, s, c, outlet
