@@ -6,7 +6,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.cm as cm
 import warnings
 from void_migration import operators
-from void_migration.motion import d2q5_array
+from void_migration.motion import d2q4_SA_array
 from void_migration import stress
 
 # _video_encoding = ["-c:v", "libx265", "-preset", "fast", "-crf", "28", "-tag:v", "hvc1"] # nice small file sizes
@@ -454,8 +454,8 @@ def plot_s(s, p, t, *args):
         s_plot = np.nanmean(s, axis=2).T
     s_plot = np.ma.masked_where(np.isnan(s_plot), s_plot)
 
-    if hasattr(p, "charge_discharge") and p.gsd_mode == "mono":
-        plt.pcolormesh(p.x, p.y, s_plot, cmap=cmap, vmin=args[0][0], vmax=args[0][1])
+    if p.charge_discharge and p.gsd_mode == "mono":
+        plt.pcolormesh(p.x, p.y, s_plot, cmap=cmap, vmin=p.s_m, vmax=p.s_M)
     else:
         plt.pcolormesh(p.x, p.y, s_plot, cmap=orange_blue_cmap, vmin=p.s_m, vmax=p.s_M)
         # plt.colorbar()
