@@ -312,12 +312,19 @@ def place_on_top(u, v, s, p, c, outlet):  # place cells on top, centre starting 
                         c[x_points[i], 0, k] = p.current_cycle
                 else:
                     a = np.max(np.argwhere(~np.isnan(s[x_points[i], :, k])))  # choose the max ht
-                    if a >= p.ny - 2:
+                    if a >= p.ny - 3:
                         pass
                     else:
-                        s[x_points[i], a + 1, k] = req[i, k]  # place a cell on the topmost cell "a+1"
-                        if ~np.isnan(s[x_points[i], a + 1, k]):
-                            c[x_points[i], a + 1, k] = p.current_cycle
+                        if den[x_points[i], a + 1] < p.nu_cs:
+                            # print("TTTTTTTTTTTTTTTTTTTTTTTTT",den[x_points[i], a + 1])
+                            s[x_points[i], a + 1, k] = req[i, k]  # place a cell on the topmost cell "a+1"
+                            if ~np.isnan(s[x_points[i], a + 1, k]):
+                                c[x_points[i], a + 1, k] = p.current_cycle
+                        else:
+                            a = np.min(np.argwhere(den[x_points[i], :] < p.nu_cs))
+                            s[x_points[i], a + 1, k] = req[i, k]  # place a cell on the topmost cell "a+1"
+                            if ~np.isnan(s[x_points[i], a + 1, k]):
+                                c[x_points[i], a + 1, k] = p.current_cycle
 
     return u, v, s, c, outlet
 
