@@ -1,6 +1,7 @@
 import initial
 import params
 import numpy as np
+import boundary
 
 op_arr = []
 
@@ -30,31 +31,31 @@ def charge_discharge(p, t, Mass_inside):
         p.half_width = p.half_width_top
         if p.gsd_mode == "mono":
             p.s_M = p.s_m
-            p.add_voids = "place_on_top"  # 'pour_base'
+            p.boundaries = ["place_on_top"]  # 'pour_base'
         else:
-            p.add_voids = "place_on_top"
+            p.boundaries = ["place_on_top"]
 
     elif int(np.ceil(yj[0].get("t_fill") / p.dt)) < t <= int(np.ceil(yj[0].get("t_settle1") / p.dt)):
         if t == int(np.ceil(yj[0].get("t_settle1") / p.dt)):
             p.get_ht = True
-        p.add_voids = "None"
+        p.boundaries = ["None"]
 
     elif int(np.ceil(yj[0].get("t_settle1") / p.dt)) < t <= int(np.ceil(yj[0].get("t_empty") / p.dt)):
         p.half_width = p.half_width_bottom
 
         if Mass_inside > p.Mass_remain_cumsum[len(op_arr) - len(yj)]:
             if p.silo_width == "half":
-                p.add_voids = "wall"
+                p.boundaries = ["wall"]
             elif p.silo_width == "full":
-                p.add_voids = "central_outlet"
+                p.boundaries = ["central_outlet"]
             p.save_outlet = True
         else:
-            p.add_voids = "None"
+            p.boundaries = ["None"]
 
     elif int(np.ceil(yj[0].get("t_empty") / p.dt)) < t < int(np.ceil(yj[0].get("t_settle2") / p.dt)):
         if t == int(np.ceil(yj[0].get("t_settle2") / p.dt)) - 1:
             p.get_ht = True
-        p.add_voids = "None"
+        p.boundaries = ["None"]
 
     p.current_cycle = len(op_arr) - len(yj) + 1
     p.num_cycles = len(op_arr)
@@ -184,5 +185,5 @@ def set_nt(p):
 
     else:
         op_arr = p.T_cycles
-    # print("OOOOOOOOOOOOOOOOO",op_arr,int(np.ceil(op_arr[-1].get("t_settle2"))))
+    print("OOOOOOOOOOOOOOOOO", op_arr, int(np.ceil(op_arr[-1].get("t_settle2"))))
     return int(np.ceil(op_arr[-1].get("t_settle2") / p.dt))  # cal the number of steps based on final t_empty

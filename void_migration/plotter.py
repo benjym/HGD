@@ -26,7 +26,7 @@ _video_encoding = [
 ]  # powerpoint compatible
 
 _dpi = 10
-plt.rcParams["figure.dpi"] = _dpi
+# plt.rcParams["figure.dpi"] = _dpi
 
 
 def is_ffmpeg_installed():
@@ -415,6 +415,45 @@ def c_d_saves(p, non_zero_nu_time, *args):
         np.save(p.folderName + "data/cell_count_l.npy", args[1])
 
 
+def get_col_depth(s, p):
+    den = 1 - np.mean(np.isnan(s), axis=2)
+    ht = []
+    for w in range(p.nx):
+        if np.mean(den[w]) > 0:
+            ht.append(np.max(np.nonzero(den[w])))
+        else:
+            ht.append(0)
+    return ht
+
+
+def get_profile(x, y, s, c, p, t):
+    # if p.get_ht == True:
+
+    nm = s.shape[2]
+    mask = np.sum(np.isnan(s), axis=2) > 0.95 * nm
+
+    creq = np.ma.masked_where(mask, np.nanmean(c, axis=2))
+
+    # den = 1 - np.mean(np.isnan(s), axis=2)
+    # den = np.ma.masked_where(den < p.nu_cs / 7.0, den)
+
+    if p.current_cycle == 1:
+        val = p.current_cycle
+    else:
+        val = (p.current_cycle - 1 + p.current_cycle) / 2
+
+    ht = []
+
+    for w in range(p.nx):
+        if np.argmin(creq[w]) == 0 and np.ma.is_masked(np.ma.max(creq[w])):
+            ht.append(0)
+        else:
+            ht.append(np.max(np.nonzero(creq[w] == np.max(creq[w]))))
+
+    np.save(p.folderName + "c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
+    return ht
+
+
 def kozeny_carman(s):
     sphericity = 1
     with warnings.catch_warnings():
@@ -454,8 +493,15 @@ def plot_s(s, p, t, *args):
         s_plot = np.nanmean(s, axis=2).T
     s_plot = np.ma.masked_where(np.isnan(s_plot), s_plot)
 
-    if p.charge_discharge and p.gsd_mode == "mono":
-        plt.pcolormesh(p.x, p.y, s_plot, cmap=cmap, vmin=p.s_m, vmax=p.s_M)
+    if p.gsd_mode == "fbi":
+        plt.pcolormesh(
+            x,
+            y,
+            s_plot,
+            cmap=orange_blue_cmap,
+            vmin=p.s_m - (p.s_m / 100),
+            vmax=(p.Fr * p.s_M) + ((p.Fr * p.s_M) / 100),
+        )
     else:
         plt.pcolormesh(p.x, p.y, s_plot, cmap=orange_blue_cmap, vmin=p.s_m, vmax=p.s_M)
         # plt.colorbar()
@@ -606,6 +652,9 @@ def plot_c(s, c, p, t):
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    if hasattr(p, "plot_colorbar"):
+        plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
+        # np.save(p.folderName + "c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
     plt.savefig(p.folderName + "c_" + str(t).zfill(6) + ".png")
 
 

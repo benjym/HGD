@@ -189,6 +189,23 @@ def pour(u, v, s, p, c, outlet):
     return u, v, s, c, outlet
 
 
+def wall(u, v, s, p, c, outlet):  # Remove at central outlet - use this one
+    for i in range(0, p.half_width):
+        for k in range(p.nm):
+            # if np.random.rand() < 0.1:
+            if not np.isnan(s[i, 0, k]):
+                if p.refill:
+                    if np.sum(np.isnan(s[0 : p.half_width, -1, k])) > 0:
+                        target = np.random.choice(np.nonzero(np.isnan(s[0 : p.half_width, -1, k]))[0])
+                        s[target, -1, k], s[i, 0, k] = s[i, 0, k], s[target, -1, k]
+
+                else:
+                    s[i, 0, k] = np.nan
+                    if hasattr(p, "charge_discharge"):
+                        c[i, 0, k] = np.nan
+                outlet[-1] += 1
+
+
 def place_on_top(u, v, s, p, c, outlet):  # place cells on top, centre starting at base
     if p.gsd_mode == "bi":  # bidisperse
         if p.silo_width == "half":

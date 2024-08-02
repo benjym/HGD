@@ -108,8 +108,12 @@ def time_step(
         sigma = stress.calculate_stress(s, last_swap, p)
 
     if p.charge_discharge:
-        p = cycles.charge_discharge(p, t)
+        Mass_inside = np.count_nonzero(~np.isnan(s)) * p.M_of_each_cell
+        p = cycles.charge_discharge(p, t, Mass_inside)
         p_count[t], p_count_s[t], p_count_l[t], non_zero_nu_time[t] = cycles.save_quantities(p, s)
+        if p.get_ht == True:
+            ht = plotter.get_profile(x, y, s, c, p, t)
+            surface_profile.append(ht)
 
     u, v, s, c, T, N_swap, last_swap = p.move_voids(u, v, s, sigma, last_swap, p, c=c, T=T, N_swap=N_swap)
 
@@ -120,6 +124,25 @@ def time_step(
 
     if t % p.save_inc == 0:
         plotter.update(p, state, t, queue)
+
+        # if hasattr(p, "charge_discharge") and (p.gsd_mode == 'bi' or p.gsd_mode == 'fbi'):
+        #     plotter.plot_pdf_cdf(p,s,xpoints,ypoints,t)
+
+        ## to simulate wall motion
+        if p.wall_motion:
+            if t % p.save_wall == 0:
+                s_mean = np.nanmean(s, axis=2)
+
+                start_sim = np.min(np.argwhere(s_mean > 0), axis=0)[
+                    0
+                ]  # gives the start position of column in x-direction
+                end_sim = np.max(np.argwhere(s_mean > 0), axis=0)[
+                    0
+                ]  # gives the end position of column in x-direction
+
+                if start_sim > 1 and end_sim + 1 < p.nx - 1:
+                    # s[start_sim-2:start_sim-1,:,:] = np.nan
+                    s[end_sim + 2 : end_sim + 3, :, :] = np.nan
 
     return s, u, v, c, T, p_count, p_count_s, p_count_l, non_zero_nu_time, N_swap, last_swap, sigma, outlet
 
@@ -141,6 +164,13 @@ def time_march(p, queue=None, stop_event=None):
         )
 
     plotter.update(p, state, t, queue)
+
+    if p.charge_discharge:
+        plotter.c_d_saves(p, non_zero_nu_time, p_count, p_count_s, p_count_l)
+    plotter.update(x, y, s, u, v, c, T, outlet, p, t)
+    col_ht = plotter.get_col_depth(s, p)
+    np.save(p.folderName + "ht_" + str(p.repose_angle) + ".npy", col_ht)
+    np.save(p.folderName + "surface_profiles.npy", surface_profile)
 
 
 def run_simulation(sim_with_index):

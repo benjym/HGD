@@ -66,7 +66,6 @@ def IC(p):
             for m in y_ordinates[3]:
                 fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
                 s[i, m, fill] = p.s_m
-
         if hasattr(p, "charge_discharge"):
             pre_masked = False
         else:
@@ -92,6 +91,7 @@ def IC(p):
             pre_masked = False
         else:
             pre_masked = True
+
     elif p.gsd_mode == "poly":  # polydisperse
         """
         # s_0 = p.s_m / (1.0 - p.s_m)  # intermediate calculation
@@ -145,7 +145,9 @@ def IC(p):
                 :, -1, :
             ] = True  # top row can't be filled for algorithmic reasons - could solve this if we need to
 
-        elif p.wall_motion:
+        s[mask] = np.nan
+
+        if p.wall_motion:
             nu = 1.0 - np.mean(np.isnan(s[:, :, :]), axis=2)
             start_sim = np.min(np.argwhere(nu > 0), axis=0)[
                 0
@@ -156,8 +158,6 @@ def IC(p):
 
             s[0 : start_sim - 1, :, :] = 0  ## Depending upon these values, make changes in void_migration.py
             s[end_sim + 2 :, :, :] = 0
-
-        s[mask] = np.nan
 
     return s
 

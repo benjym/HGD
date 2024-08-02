@@ -242,7 +242,7 @@ def move_voids(
     )
 
     s[all_ids], s[all_swap_ids] = s[all_swap_ids], s[all_ids]
-    # c[all_ids], c[all_swap_ids] = c[all_swap_ids], c[all_ids]
+    c[all_ids], c[all_swap_ids] = c[all_swap_ids], c[all_ids]
 
     # T[ids_left],T[ids_swap] = T[ids_swap],T[ids_left]
 

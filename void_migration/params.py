@@ -98,7 +98,7 @@ class dict_to_class:
         self.diffusivity = self.alpha * self.free_fall_velocity * s_bar  # diffusivity (m^2/s)
 
         safe = False
-        stability = 1
+        stability = 0.5
         while not safe:
             self.P_u_ref = stability
             self.dt = self.P_u_ref * self.dy / self.free_fall_velocity
