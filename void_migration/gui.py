@@ -10,7 +10,8 @@ from kivymd.uix.textfield import MDTextField as TextInput
 from kivymd.uix.menu import MDDropdownMenu as DropdownMenu
 from kivymd.uix.dropdownitem import MDDropDownItem as DropDownItem
 from kivymd.uix.button.button import MDRaisedButton as Button
-from kivy.cache import Cache
+
+# from kivy.cache import Cache
 from kivy.config import Config
 from kivy.logger import Logger, LOG_LEVELS
 import void_migration.params as params
@@ -122,7 +123,7 @@ class VoidMigrationApp(App):
         main_layout.add_widget(param_layout)
         main_layout.add_widget(img_layout)
 
-        Clock.schedule_interval(lambda dt: self.update_image(), 0.1)  # Start watching image directory
+        Clock.schedule_interval(lambda dt: self.update_image(), 0.01)  # Start watching image directory
 
         return main_layout
 
@@ -157,19 +158,21 @@ class VoidMigrationApp(App):
     def update_image(self):
         # Check for updates from the queue
         while not self.queue.empty():
-            t = self.queue.get()
-            LATEST_IMAGE = p.folderName + f"{self.p.view}_{str(t).zfill(6)}.png"
-            if os.path.exists(LATEST_IMAGE):
-                try:
-                    Cache.remove("kv.image")
-                    Cache.remove("kv.texture")
-                    core_img = CoreImage(LATEST_IMAGE, ext="png")
-                    core_img.texture.min_filter = "nearest"
-                    core_img.texture.mag_filter = "nearest"
-                    self.img.texture = core_img.texture
-                    self.img.canvas.ask_update()  # Force the image widget to redraw
-                except Exception as e:
-                    print(f"Error updating image: {e}")
+            try:
+                # Cache.remove("kv.image")
+                # Cache.remove("kv.texture")
+
+                # Retrieve the image buffer from the queue
+                png_buffer = self.queue.get()
+                png_buffer.seek(0)  # Ensure the buffer is at the start
+
+                core_img = CoreImage(png_buffer, ext="png")
+                core_img.texture.min_filter = "nearest"
+                core_img.texture.mag_filter = "nearest"
+                self.img.texture = core_img.texture
+                self.img.canvas.ask_update()  # Force the image widget to redraw
+            except Exception as e:
+                print(f"Error updating image: {e}")
 
     def start_time_march(self, instance):
         if self.process is not None:
