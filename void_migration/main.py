@@ -44,23 +44,23 @@ def init(p):
         p.print_optimal_resolution()
 
     s = initial.IC(p)  # non-dimensional size
-    print("s", s)
+
     u = np.zeros([p.nx, p.ny])
     v = np.zeros([p.nx, p.ny])
     p_count = np.zeros([p.nt])
     p_count_s = np.zeros([p.nt])
     p_count_l = np.zeros([p.nt])
     non_zero_nu_time = np.zeros([p.nt])
-    print("a")
+
     # last_swap is used to keep track of the last time a void was swapped
     # start off homoegeous and nan where s is voids
     last_swap = np.zeros_like(s)
     # last_swap[np.isnan(s)] = np.nan
-    print("aa")
+
     c = initial.set_concentration(s, p.X, p.Y, p)
-    print("bb")
+
     initial.set_boundary(s, p.X, p.Y, p)
-    print("cc")
+
     if hasattr(p, "temperature"):
         T = p.temperature["inlet_temperature"] * np.ones_like(s)
         T[np.isnan(s)] = np.nan

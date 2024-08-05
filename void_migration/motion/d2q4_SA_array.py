@@ -250,5 +250,5 @@ def move_voids(
     nu_req[all_swap_ids] -= 1 / p.nm
 
     nu = nu_req[:, :, 0]
-    print("lfjghflkg")
+
     return u, v, s, c, T, N_swap, last_swap
