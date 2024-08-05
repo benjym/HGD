@@ -157,14 +157,14 @@ def check_folders_exist(p):
             os.makedirs(p.folderName + "data/")
 
 
-def update(p, state, t, queue, *args):
+def update(p, state, t, *args):
     s, u, v, c, T, p_count, p_count_s, p_count_l, non_zero_nu_time, N_swap, last_swap, sigma, outlet = state
 
     check_folders_exist(p)
 
     if p.gui is not None:
         t = 0
-        if queue is not None:
+        if p.queue is not None:
             vmin = None
             vmax = None
             if p.view == "s":
@@ -190,7 +190,7 @@ def update(p, state, t, queue, *args):
                 colorbar = inferno_r
 
             buffer = array_to_png_buffer(to_plot, colorbar, vmin, vmax)
-            queue.put(buffer)
+            p.queue.put(buffer)
 
     else:
         if "s" in p.plot:
