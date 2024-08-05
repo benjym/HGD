@@ -1,0 +1,30 @@
+{
+    // resolution
+    nx : 100, // width
+
+    // geometry
+    H : 1, // (m)
+    aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
+    aspect_ratio_m : 0.5,    // nm = aspect_ratio * nx
+
+    // material properties
+    repose_angle : 30, // (degrees)
+    gsd_mode : 'mono',
+    s_m : 0.01, // minimum particle size (m)
+    s_M : 0.01, // maximum particle size (m)
+    nu_cs : 0.5,
+    alpha : 10.1,
+    
+    // initial condition:
+    fill_ratio : 0.25,
+    nu_fill : 0.5,
+    IC_mode : "column",
+    
+    // saving
+    save_inc : 10,
+    t_f : 100,  // s
+    plot : ['nu'],  //,'stable'],
+    videos : ['nu'],
+    save : ['nu'],
+    mask_s_bar : false
+}

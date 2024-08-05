@@ -7,7 +7,7 @@ import matplotlib.cm as cm
 import matplotlib.colors as colors
 from void_migration.params import load_file
 
-plt.style.use("papers/Kinematic_SLM/post_process/paper.mplstyle")
+plt.style.use("papers/Kinematic_SLM/paper.mplstyle")
 
 with open("papers/Kinematic_SLM/json/collapse_angles.json5") as f:
     dict, p = load_file(f)

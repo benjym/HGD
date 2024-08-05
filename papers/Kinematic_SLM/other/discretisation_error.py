@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import colormaps
 
-matplotlib.style.use("paper.mplstyle")
+matplotlib.style.use("../paper.mplstyle")
 
 cmap = colormaps["inferno"]
 
