@@ -59,4 +59,7 @@
     show_optimal_resolution : false, // should the optimal resolution be shown on the screen at runtime
 
     gui : null, // this is None in Python, but null in JavaScript
+    stop_event : null, // this is None in Python, but null in JavaScript
+    queue: null,
+    queue2: null,
 }

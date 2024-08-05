@@ -33,7 +33,7 @@ from void_migration import boundary
 # import void_migration.stress as stress
 
 
-def init(p, queue=None):
+def init(p):
     p.move_voids = importlib.import_module(f"void_migration.motion.{p.motion_model}").move_voids
 
     plotter.set_plot_size(p)
@@ -97,7 +97,7 @@ def init(p, queue=None):
 
     if len(p.save) > 0:
         plotter.save_coordinate_system(p)
-    plotter.update(p, state, 0, queue)
+    plotter.update(p, state, 0)
 
     return state
 
@@ -105,10 +105,16 @@ def init(p, queue=None):
 def time_step(
     p,
     state,
-    t,
-    queue=None,
-    stop_event=None,
+    t
 ):
+  
+  def time_step(p, state, t):
+    if p.queue2 is not None:
+        while not p.queue2.empty():
+            update = p.queue2.get()
+            for key, value in update.items():
+                setattr(p, key, value)
+                
     (
         s,
         u,
@@ -125,7 +131,8 @@ def time_step(
         outlet,
         surface_profile,
     ) = state
-    if stop_event is not None and stop_event.is_set():
+
+    if p.stop_event is not None and p.stop_event.is_set():
         raise KeyboardInterrupt
 
     outlet.append(0)
@@ -154,7 +161,7 @@ def time_step(
         u, v, s = boundary.close_voids(u, v, s)
 
     if t % p.save_inc == 0:
-        plotter.update(p, state, t, queue)
+        plotter.update(p, state, t)
 
         # if hasattr(p, "charge_discharge") and (p.gsd_mode == 'bi' or p.gsd_mode == 'fbi'):
         #     plotter.plot_pdf_cdf(p,s,xpoints,ypoints,t)
@@ -193,23 +200,21 @@ def time_step(
     )
 
 
-def time_march(p, queue=None, stop_event=None):
+def time_march(p):
     """
     Run the actual simulation(s) as defined in the input json file `p`.
     """
 
-    state = init(p, queue)
+    state = init(p)
 
     for t in tqdm(range(1, p.nt), leave=False, desc="Time", position=p.concurrent_index + 1):
         state = time_step(
             p,
             state,
             t,
-            queue,
-            stop_event,
         )
 
-    plotter.update(p, state, t, queue)
+    plotter.update(p, state, t)
 
     # if p.charge_discharge:
     #     plotter.c_d_saves(p, state[8], state[5], state[6], state[7])

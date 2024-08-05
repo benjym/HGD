@@ -1,12 +1,14 @@
 import subprocess
 import os
+import warnings
+import io
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.cm as cm
-import warnings
+
+from PIL import Image
 from void_migration import operators
-from void_migration.motion import d2q4_SA_array
 from void_migration import stress
 
 # _video_encoding = ["-c:v", "libx265", "-preset", "fast", "-crf", "28", "-tag:v", "hvc1"] # nice small file sizes
@@ -82,6 +84,41 @@ replacements = {
 }
 
 
+def array_to_png_buffer(array, colormap, vmin=None, vmax=None):
+    """
+    Convert a NumPy array to a PNG image buffer using a colormap.
+
+    Parameters:
+    array (numpy.ndarray): The input array with shape (height, width).
+    colormap (function): A function that maps array values to RGB tuples.
+
+    Returns:
+    io.BytesIO: A buffer containing the PNG image.
+    """
+
+    # Normalize the array to the range [0, 1]
+    if vmin is None:
+        vmin = np.nanmin(array)
+    if vmax is None:
+        vmax = np.nanmax(array)
+    norm_array = (array - vmin) / (vmax - vmin)
+
+    # Apply the colormap to the normalized array to get RGBA values
+    rgba_image = colormap(norm_array)
+
+    # Convert the RGBA image to RGB (ignoring the alpha channel)
+    rgb_image = np.flipud((rgba_image * 255).astype(np.uint8).transpose(1, 0, 2))
+
+    buffer = io.BytesIO()
+
+    # Create a PIL image from the RGB array
+    img = Image.fromarray(rgb_image)
+    img.save(buffer, format="PNG")
+    buffer.seek(0)  # Reset buffer position to the beginning
+
+    return buffer
+
+
 def replace_strings(text, replacements):
     """
     Replaces substrings in a given text based on a dictionary of replacements.
@@ -140,67 +177,91 @@ def update(p, state, t, queue, *args):
 
     check_folders_exist(p)
 
-    if p.gui is not None:
-        t = 0
-        if queue is not None:
-            queue.put(str(t).zfill(6))
+    if p.queue is not None:
+        vmin = None
+        vmax = None
+        if p.view == "s":
+            to_plot = operators.get_average(s)
+            colorbar = orange_blue_cmap
+        elif p.view == "nu":
+            nu = 1 - np.mean(np.isnan(s), axis=2)
+            to_plot = np.ma.masked_where(nu == 0, nu)
+            colorbar = inferno_r
+            vmin = 0
+            vmax = 1
+        elif p.view == "pressure":
+            if sigma is None:
+                sigma = stress.calculate_stress(s, last_swap, p)
+            pressure = stress.get_pressure(sigma, p)
+            to_plot = np.ma.masked_where(pressure == 0.0, pressure)
+            colorbar = inferno_r
+        elif p.view == "deviatoric":
+            if sigma is None:
+                sigma = stress.calculate_stress(s, last_swap, p)
+            deviatoric = stress.get_deviatoric(sigma, p)
+            to_plot = np.ma.masked_where(deviatoric == 0.0, deviatoric)
+            colorbar = inferno_r
 
-    if "s" in p.plot:
-        if hasattr(p, "charge_discharge"):
-            plot_s(s, p, t, *args)
-        else:
-            plot_s(s, p, t)
-    if "nu" in p.plot:
-        plot_nu(s, p, t)
-    if "rel_nu" in p.plot:
-        plot_relative_nu(s, p, t)
-    if "U_mag" in p.plot:
-        plot_u(s, u, v, p, t)
-    if "c" in p.plot:
-        plot_c(s, c, p, t)
-    if "temperature" in p.plot:
-        plot_T(s, T, p, t)
-    # if "density_profile" in p.plot:
-    #     plot_profile(x, nu_time_x, p)
-    if "permeability" in p.plot:
-        plot_permeability(s, p, t)
-    if "stable" in p.plot:
-        plot_stable(s, p, t)
-    if "h" in p.plot:
-        plot_h(s, p, t)
-    if "stress" in p.plot:
-        plot_stress(s, sigma, last_swap, p, t)
-    if "sigma_yy" in p.plot:
-        plot_sigma_yy(s, sigma, last_swap, p, t)
-    if "pressure" in p.plot:
-        plot_pressure(s, sigma, last_swap, p, t)
-    if "deviatoric" in p.plot:
-        plot_deviatoric(s, sigma, last_swap, p, t)
+        buffer = array_to_png_buffer(to_plot, colorbar, vmin, vmax)
+        p.queue.put(buffer)
 
-    if "s" in p.save:
-        save_s(s, p, t)
-    if "nu" in p.save:
-        save_nu(s, p, t)
-    if "rel_nu" in p.save:
-        save_relative_nu(s, p, t)
-    # if "U_mag" in p.save:
-    #     save_u(s, u, v, p, t)
-    if "permeability" in p.save:
-        save_permeability(s, p, t)
-    if "concentration" in p.save:
-        save_c(c, p.folderName, t)
-    if "outlet" in p.save:
-        np.savetxt(p.folderName + "data/outlet.csv", np.array(outlet), delimiter=",")
-    # if "temperature" in p.save:
-    #     np.savetxt(p.folderName + "outlet_T.csv", np.array(outlet_T), delimiter=",")
-    if "velocity" in p.save:
-        np.savetxt(p.folderName + "data/u.csv", u / np.sum(np.isnan(s), axis=2), delimiter=",")
-    if "charge_discharge" in p.save:
-        c_d_saves(p, non_zero_nu_time, p_count, p_count_s, p_count_l)
-    if "col_depth" in p.save:
-        get_col_depth(p, s)
-    if "surface_profiles" in p.save:
-        np.save(p.folderName + "data/surface_profiles.npy", surface_profile)
+    else:
+        if "s" in p.plot:
+            if hasattr(p, "charge_discharge"):
+                plot_s(s, p, t, *args)
+            else:
+                plot_s(s, p, t)
+        if "nu" in p.plot:
+            plot_nu(s, p, t)
+        if "rel_nu" in p.plot:
+            plot_relative_nu(s, p, t)
+        if "U_mag" in p.plot:
+            plot_u(s, u, v, p, t)
+        if "c" in p.plot:
+            plot_c(s, c, p, t)
+        if "temperature" in p.plot:
+            plot_T(s, T, p, t)
+        # if "density_profile" in p.plot:
+        #     plot_profile(x, nu_time_x, p)
+        if "permeability" in p.plot:
+            plot_permeability(s, p, t)
+        if "stable" in p.plot:
+            plot_stable(s, p, t)
+        if "h" in p.plot:
+            plot_h(s, p, t)
+        if "stress" in p.plot:
+            plot_stress(s, sigma, last_swap, p, t)
+        if "sigma_yy" in p.plot:
+            plot_sigma_yy(s, sigma, last_swap, p, t)
+        if "pressure" in p.plot:
+            plot_pressure(s, sigma, last_swap, p, t)
+        if "deviatoric" in p.plot:
+            plot_deviatoric(s, sigma, last_swap, p, t)
+
+        if "s" in p.save:
+            save_s(s, p, t)
+        if "nu" in p.save:
+            save_nu(s, p, t)
+        if "rel_nu" in p.save:
+            save_relative_nu(s, p, t)
+        # if "U_mag" in p.save:
+        #     save_u(s, u, v, p, t)
+        if "permeability" in p.save:
+            save_permeability(s, p, t)
+        if "concentration" in p.save:
+            save_c(c, p.folderName, t)
+        if "outlet" in p.save:
+            np.savetxt(p.folderName + "data/outlet.csv", np.array(outlet), delimiter=",")
+        # if "temperature" in p.save:
+        #     np.savetxt(p.folderName + "outlet_T.csv", np.array(outlet_T), delimiter=",")
+        if "velocity" in p.save:
+            np.savetxt(p.folderName + "data/u.csv", u / np.sum(np.isnan(s), axis=2), delimiter=",")
+        if "charge_discharge" in p.save:
+            c_d_saves(p, non_zero_nu_time, p_count, p_count_s, p_count_l)
+        if "col_depth" in p.save:
+            get_col_depth(p, s)
+        if "surface_profiles" in p.save:
+            np.save(p.folderName + "data/surface_profiles.npy", surface_profile)
 
 
 def plot_u_time(y, U, nu_time, p):
@@ -234,15 +295,15 @@ def plot_stable(s, p, t):
     solid = np.zeros([p.nx, p.ny])
     for i in range(1, p.nx - 1):
         for j in range(p.ny):
-            slope[i, j, 0] = d2q5_array.stable_slope(s, i, j, i - 1, p)
-            slope[i, j, 1] = d2q5_array.stable_slope(s, i, j, i + 1, p)
+            slope[i, j, 0] = d2q4_array.stable_slope(s, i, j, i - 1, p)
+            slope[i, j, 1] = d2q4_array.stable_slope(s, i, j, i + 1, p)
 
     for i in range(p.nx):
         for j in range(p.ny):
-            solid[i, j] = d2q5_array.locally_solid(s, i, j, p)
+            solid[i, j] = d2q4_array.locally_solid(s, i, j, p)
 
     nu = operators.get_solid_fraction(s)
-    empty = d2q5_array.empty_nearby(nu, p)
+    empty = d2q4_array.empty_nearby(nu, p)
 
     for f in [
         [slope[:, :, 0], "slope_right"],

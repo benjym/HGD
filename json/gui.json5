@@ -1,7 +1,7 @@
 {
     // resolution
     // nx : 20, // width
-    nx : 50,
+    nx : 20,
     aspect_ratio_y : 2,  // ny = aspect_ratio * nx
     aspect_ratio_m : 2,  // nm = aspect_ratio * nx
     // nm : 2,
@@ -33,12 +33,11 @@
     fill_ratio : 0.75,
 
     // temporal stuff
-    t_f : 10,  // final time
+    t_f : 1000000000000000000,  // final time
     
     // saving
     save_inc : 1,
     // saves : 100,  // how often to save
-    plot : ['nu', 's', 'pressure', 'deviatoric'],  // what to plot
     // videos : ['nu', 's', 'stress'],  // what to save videos of
     // save : ['outlet'],
 

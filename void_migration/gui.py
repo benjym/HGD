@@ -10,7 +10,8 @@ from kivymd.uix.textfield import MDTextField as TextInput
 from kivymd.uix.menu import MDDropdownMenu as DropdownMenu
 from kivymd.uix.dropdownitem import MDDropDownItem as DropDownItem
 from kivymd.uix.button.button import MDRaisedButton as Button
-from kivy.cache import Cache
+
+# from kivy.cache import Cache
 from kivy.config import Config
 from kivy.logger import Logger, LOG_LEVELS
 import void_migration.params as params
@@ -31,9 +32,9 @@ Config.set("kivy", "log_level", "warning")
 Logger.setLevel(LOG_LEVELS["warning"])
 
 
-def run_time_march(p, queue, stop_event, *args):
+def run_time_march(p, *args):
     p.set_defaults()
-    time_march(p, queue, stop_event)
+    time_march(p)
 
 
 class VoidMigrationApp(App):
@@ -43,9 +44,13 @@ class VoidMigrationApp(App):
         self.p = p
         self.halt = False
         self.queue = multiprocessing.Queue()
+        self.queue2 = multiprocessing.Queue()
         self.process = None
         self.stop_event = multiprocessing.Event()
         self.menus = {}
+        self.p.queue = self.queue
+        self.p.queue2 = self.queue2
+        self.p.stop_event = self.stop_event
 
     def build(self):
         self.title = "Void Migration"
@@ -122,7 +127,7 @@ class VoidMigrationApp(App):
         main_layout.add_widget(param_layout)
         main_layout.add_widget(img_layout)
 
-        Clock.schedule_interval(lambda dt: self.update_image(), 0.1)  # Start watching image directory
+        Clock.schedule_interval(lambda dt: self.update_image(), 0.01)  # Start watching image directory
 
         return main_layout
 
@@ -154,29 +159,32 @@ class VoidMigrationApp(App):
         setattr(self.p, key, value)
         print(f"Updated {key} to {value}")
 
+        if key in ["view"]:
+            self.queue2.put({key: self.p.view})
+
     def update_image(self):
         # Check for updates from the queue
         while not self.queue.empty():
-            t = self.queue.get()
-            LATEST_IMAGE = p.folderName + f"{self.p.view}_{str(t).zfill(6)}.png"
-            if os.path.exists(LATEST_IMAGE):
-                try:
-                    Cache.remove("kv.image")
-                    Cache.remove("kv.texture")
-                    core_img = CoreImage(LATEST_IMAGE, ext="png")
-                    core_img.texture.min_filter = "nearest"
-                    core_img.texture.mag_filter = "nearest"
-                    self.img.texture = core_img.texture
-                    self.img.canvas.ask_update()  # Force the image widget to redraw
-                except Exception as e:
-                    print(f"Error updating image: {e}")
+            try:
+                # Cache.remove("kv.image")
+                # Cache.remove("kv.texture")
+
+                # Retrieve the image buffer from the queue
+                png_buffer = self.queue.get()
+                png_buffer.seek(0)  # Ensure the buffer is at the start
+
+                core_img = CoreImage(png_buffer, ext="png")
+                core_img.texture.min_filter = "nearest"
+                core_img.texture.mag_filter = "nearest"
+                self.img.texture = core_img.texture
+                self.img.canvas.ask_update()  # Force the image widget to redraw
+            except Exception as e:
+                print(f"Error updating image: {e}")
 
     def start_time_march(self, instance):
         if self.process is not None:
             self.stop_time_march(instance)
-        self.process = multiprocessing.Process(
-            target=run_time_march, args=(self.p, self.queue, self.stop_event)
-        )
+        self.process = multiprocessing.Process(target=run_time_march, args=(self.p,))
         self.process.start()
 
     def stop_time_march(self, instance):
