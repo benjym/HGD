@@ -14,12 +14,13 @@ def delete_element(arr, element):
     return np.array([x for x in arr if not np.array_equal(x, element)])
 
 
-# @jit(nopython=False)
 def move_voids(
     u: ArrayLike,
     v: ArrayLike,
     s: ArrayLike,
-    p: params.dict_to_class,
+    sigma: ArrayLike,
+    last_swap: ArrayLike,
+    p,
     diag: int = 0,
     c: None | ArrayLike = None,
     T: None | ArrayLike = None,
@@ -241,7 +242,7 @@ def move_voids(
     )
 
     s[all_ids], s[all_swap_ids] = s[all_swap_ids], s[all_ids]
-    # c[all_ids], c[all_swap_ids] = c[all_swap_ids], c[all_ids]
+    c[all_ids], c[all_swap_ids] = c[all_swap_ids], c[all_ids]
 
     # T[ids_left],T[ids_swap] = T[ids_swap],T[ids_left]
 
@@ -250,4 +251,4 @@ def move_voids(
 
     nu = nu_req[:, :, 0]
 
-    return u, v, s, c, T, N_swap
+    return u, v, s, c, T, N_swap, last_swap

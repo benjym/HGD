@@ -10,7 +10,7 @@
     add_voids : "None",
 
     // material properties
-    repose_angle : [0,15,30,45,60,75,90], // (degrees)
+    repose_angle : [0,30,45,75,90], // (degrees)
     gsd_mode : 'mono',
     s_m : 0.001, // minimum particle size (m)
     // s_M : 0.01, // maximum particle size (m)
@@ -18,10 +18,11 @@
     alpha : 1.0,
     
     // initial condition:
-    fill_ratio : 0.25,
+    wall_motion : false,
+    nu_fill : 0.25,
     IC_mode : "column",
     
     // saving
-    save_inc : 1,
+    save_inc : 200,
     t_f : 20,  // s
 }

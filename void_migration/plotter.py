@@ -28,7 +28,7 @@ _video_encoding = [
 ]  # powerpoint compatible
 
 _dpi = 10
-plt.rcParams["figure.dpi"] = _dpi
+# plt.rcParams["figure.dpi"] = _dpi
 
 
 def is_ffmpeg_installed():
@@ -157,40 +157,53 @@ def check_folders_exist(p):
             os.makedirs(p.folderName + "data/")
 
 
-def update(p, state, t, *args):
-    s, u, v, c, T, p_count, p_count_s, p_count_l, non_zero_nu_time, N_swap, last_swap, sigma, outlet = state
+def update(p, state, t, queue, *args):
+    (
+        s,
+        u,
+        v,
+        c,
+        T,
+        p_count,
+        p_count_s,
+        p_count_l,
+        non_zero_nu_time,
+        N_swap,
+        last_swap,
+        sigma,
+        outlet,
+        surface_profile,
+    ) = state
 
     check_folders_exist(p)
 
-    if p.gui is not None:
-        t = 0
-        if p.queue is not None:
-            vmin = None
-            vmax = None
-            if p.view == "s":
-                to_plot = operators.get_average(s)
-                colorbar = orange_blue_cmap
-            elif p.view == "nu":
-                nu = 1 - np.mean(np.isnan(s), axis=2)
-                to_plot = np.ma.masked_where(nu == 0, nu)
-                colorbar = inferno_r
-                vmin = 0
-                vmax = 1
-            elif p.view == "pressure":
-                if sigma is None:
-                    sigma = stress.calculate_stress(s, last_swap, p)
-                pressure = stress.get_pressure(sigma, p)
-                to_plot = np.ma.masked_where(pressure == 0.0, pressure)
-                colorbar = inferno_r
-            elif p.view == "deviatoric":
-                if sigma is None:
-                    sigma = stress.calculate_stress(s, last_swap, p)
-                deviatoric = stress.get_deviatoric(sigma, p)
-                to_plot = np.ma.masked_where(deviatoric == 0.0, deviatoric)
-                colorbar = inferno_r
+    if p.queue is not None:
+        vmin = None
+        vmax = None
+        if p.view == "s":
+            to_plot = operators.get_average(s)
+            colorbar = orange_blue_cmap
+        elif p.view == "nu":
+            nu = 1 - np.mean(np.isnan(s), axis=2)
+            to_plot = np.ma.masked_where(nu == 0, nu)
+            colorbar = inferno_r
+            vmin = 0
+            vmax = 1
+        elif p.view == "pressure":
+            if sigma is None:
+                sigma = stress.calculate_stress(s, last_swap, p)
+            pressure = stress.get_pressure(sigma, p)
+            to_plot = np.ma.masked_where(pressure == 0.0, pressure)
+            colorbar = inferno_r
+        elif p.view == "deviatoric":
+            if sigma is None:
+                sigma = stress.calculate_stress(s, last_swap, p)
+            deviatoric = stress.get_deviatoric(sigma, p)
+            to_plot = np.ma.masked_where(deviatoric == 0.0, deviatoric)
+            colorbar = inferno_r
 
-            buffer = array_to_png_buffer(to_plot, colorbar, vmin, vmax)
-            p.queue.put(buffer)
+        buffer = array_to_png_buffer(to_plot, colorbar, vmin, vmax)
+        p.queue.put(buffer)
 
     else:
         if "s" in p.plot:
@@ -245,6 +258,10 @@ def update(p, state, t, *args):
             np.savetxt(p.folderName + "data/u.csv", u / np.sum(np.isnan(s), axis=2), delimiter=",")
         if "charge_discharge" in p.save:
             c_d_saves(p, non_zero_nu_time, p_count, p_count_s, p_count_l)
+        if "col_depth" in p.save:
+            get_col_depth(p, s)
+        if "surface_profiles" in p.save:
+            np.save(p.folderName + "data/surface_profiles.npy", surface_profile)
 
 
 def plot_u_time(y, U, nu_time, p):
@@ -469,13 +486,52 @@ def save_coordinate_system(p):
     np.savetxt(p.folderName + "data/y.csv", p.y, delimiter=",")
 
 
-def c_d_saves(p, non_zero_nu_time, *args):
+def c_d_saves(p, non_zero_nu_time, p_count, p_count_s, p_count_l):
     np.save(p.folderName + "data/nu_non_zero_avg.npy", non_zero_nu_time)
     if p.gsd_mode == "mono":
-        np.save(p.folderName + "data/cell_count.npy", args[0])
+        np.save(p.folderName + "data/cell_count.npy", p_count)
     elif p.gsd_mode == "bi":
-        np.save(p.folderName + "data/cell_count_s.npy", args[0])
-        np.save(p.folderName + "data/cell_count_l.npy", args[1])
+        np.save(p.folderName + "data/cell_count_s.npy", p_count_s)
+        np.save(p.folderName + "data/cell_count_l.npy", p_count_l)
+
+
+def get_col_depth(p, s):
+    den = 1 - np.mean(np.isnan(s), axis=2)
+    ht = []
+    for w in range(p.nx):
+        if np.mean(den[w]) > 0:
+            ht.append(np.max(np.nonzero(den[w])))
+        else:
+            ht.append(0)
+    np.save(p.folderName + "data/each_col_ht.npy", ht)
+
+
+def get_profile(s, c, p, t):
+    # if p.get_ht == True:
+
+    nm = s.shape[2]
+    mask = np.sum(np.isnan(s), axis=2) > 0.95 * nm
+
+    creq = np.ma.masked_where(mask, np.nanmean(c, axis=2))
+
+    # den = 1 - np.mean(np.isnan(s), axis=2)
+    # den = np.ma.masked_where(den < p.nu_cs / 7.0, den)
+
+    if p.current_cycle == 1:
+        val = p.current_cycle
+    else:
+        val = (p.current_cycle - 1 + p.current_cycle) / 2
+
+    ht = []
+
+    for w in range(p.nx):
+        if np.argmin(creq[w]) == 0 and np.ma.is_masked(np.ma.max(creq[w])):
+            ht.append(0)
+        else:
+            ht.append(np.max(np.nonzero(creq[w] == np.max(creq[w]))))
+
+    np.save(p.folderName + "c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
+    return ht
 
 
 def kozeny_carman(s):
@@ -517,8 +573,15 @@ def plot_s(s, p, t, *args):
         s_plot = np.nanmean(s, axis=2).T
     s_plot = np.ma.masked_where(np.isnan(s_plot), s_plot)
 
-    if hasattr(p, "charge_discharge") and p.gsd_mode == "mono":
-        plt.pcolormesh(p.x, p.y, s_plot, cmap=cmap, vmin=args[0][0], vmax=args[0][1])
+    if p.gsd_mode == "fbi":
+        plt.pcolormesh(
+            x,
+            y,
+            s_plot,
+            cmap=orange_blue_cmap,
+            vmin=p.s_m - (p.s_m / 100),
+            vmax=(p.Fr * p.s_M) + ((p.Fr * p.s_M) / 100),
+        )
     else:
         plt.pcolormesh(p.x, p.y, s_plot, cmap=orange_blue_cmap, vmin=p.s_m, vmax=p.s_M)
         # plt.colorbar()
@@ -669,6 +732,9 @@ def plot_c(s, c, p, t):
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    if hasattr(p, "plot_colorbar"):
+        plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
+        # np.save(p.folderName + "c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
     plt.savefig(p.folderName + "c_" + str(t).zfill(6) + ".png")
 
 

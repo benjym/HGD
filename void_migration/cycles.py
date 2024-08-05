@@ -1,10 +1,12 @@
+import initial
+import params
 import numpy as np
+import boundary
 
 op_arr = []
-s_ms = [0, 0]
 
 
-def charge_discharge(p, t):
+def charge_discharge(p, t, Mass_inside):
     """
     As of now two times (t_fill and t_empty) are calculated and t_settle is given
     t_fill - filling time
@@ -15,40 +17,45 @@ def charge_discharge(p, t):
     this is done in the time_march function
     """
 
-    if p.gsd_mode == "mono":
-        colsm = []
-        for i in range(p.no_of_cycles):
-            if i % 2 == 0:
-                colsm.append(p.s_m)
-            else:
-                colsm.append(p.s_m * 1.00000000001)
-
-    res = [sub["t_empty"] for sub in op_arr]  # Just take the t_empty values from the op_arr dictionary
+    p.get_ht = False
+    res = [sub["t_settle2"] for sub in op_arr]  # Just take the t_empty values from the op_arr dictionary
 
     yj = []
     for j in range(len(res)):
         if t < int(np.ceil(res[j] / p.dt)):
             yj.append(op_arr[j])
 
-    if p.gsd_mode == "mono":
-        col_index = colsm[int(len(op_arr) - len(yj))]
-
     if t <= int(
         np.ceil(yj[0].get("t_fill") / p.dt)
     ):  # To always pick the time belonging to the first element in the array
+        p.half_width = p.half_width_top
         if p.gsd_mode == "mono":
-            p.s_m = col_index
             p.s_M = p.s_m
-            p.add_voids = "place_on_top"  # 'pour_base'
+            p.boundaries = ["place_on_top"]  # 'pour_base'
         else:
-            p.add_voids = "place_on_top"
+            p.boundaries = ["place_on_top"]
 
-    elif int(np.ceil(yj[0].get("t_fill") / p.dt)) < t <= int(np.ceil(yj[0].get("t_settle") / p.dt)):
-        p.add_voids = "None"
+    elif int(np.ceil(yj[0].get("t_fill") / p.dt)) < t <= int(np.ceil(yj[0].get("t_settle1") / p.dt)):
+        if t == int(np.ceil(yj[0].get("t_settle1") / p.dt)):
+            p.get_ht = True
+        p.boundaries = ["None"]
 
-    elif int(np.ceil(yj[0].get("t_settle") / p.dt)) < t < int(np.ceil(yj[0].get("t_empty") / p.dt) - 1):
-        p.add_voids = "central_outlet"
-        p.save_outlet = True
+    elif int(np.ceil(yj[0].get("t_settle1") / p.dt)) < t <= int(np.ceil(yj[0].get("t_empty") / p.dt)):
+        p.half_width = p.half_width_bottom
+
+        if Mass_inside > p.Mass_remain_cumsum[len(op_arr) - len(yj)]:
+            if p.silo_width == "half":
+                p.boundaries = ["wall"]
+            elif p.silo_width == "full":
+                p.boundaries = ["central_outlet"]
+            p.save_outlet = True
+        else:
+            p.boundaries = ["None"]
+
+    elif int(np.ceil(yj[0].get("t_empty") / p.dt)) < t < int(np.ceil(yj[0].get("t_settle2") / p.dt)):
+        if t == int(np.ceil(yj[0].get("t_settle2") / p.dt)) - 1:
+            p.get_ht = True
+        p.boundaries = ["None"]
 
     p.current_cycle = len(op_arr) - len(yj) + 1
     p.num_cycles = len(op_arr)
@@ -69,20 +76,28 @@ def cals_in_cd(p):
 
     """
     if hasattr(p, "give_mass"):
-        M_of_each_cell = p.dy * p.dy * p.rho_p / p.nm
+        p.M_of_each_cell = p.dx * p.dy * p.rho_p / p.nm
 
         # Total mass = no. of non-nan cells * Mass of each cell
-        M_total = p.nx * p.ny * p.nm * M_of_each_cell * p.nu_cs
+        M_total = p.nx * p.ny * p.nm * p.M_of_each_cell * p.nu_cs
 
         # Mass per unit time
-        Mass_in_per_u_t = (p.half_width * 2 + 1) * p.nm * p.fill_ratio * M_of_each_cell
-        Mass_out_per_u_t = (p.half_width * 2 + 1) * p.nm * p.free_par * M_of_each_cell
+        if p.silo_width == "half":
+            Mass_in_per_u_t = p.half_width_top * p.nm * p.fill_ratio * p.M_of_each_cell
+            Mass_out_per_u_t = p.half_width_bottom * p.nm * p.free_par * p.M_of_each_cell
+        elif p.silo_width == "full":
+            Mass_in_per_u_t = (p.half_width_top * 2) * p.nm * p.fill_ratio * p.M_of_each_cell
+            Mass_out_per_u_t = (p.half_width_bottom * 2) * p.nm * p.free_par * p.M_of_each_cell
 
         # Mass in
         Mass_in = M_total * np.array(list(p.M_ins.values()))
 
         # Mass out
         Mass_out = Mass_in * np.array(list(p.M_empty.values()))
+
+        # Mass remaining
+        p.Mass_remain = Mass_in - Mass_out
+        p.Mass_remain_cumsum = np.cumsum(p.Mass_remain)
 
         # Time in
         T_in = [
@@ -91,8 +106,8 @@ def cals_in_cd(p):
             int((Mass_in[2] / Mass_in_per_u_t) * p.dt),
         ]
 
-        # Time settle
-        T_settle = np.array(list(p.T_settle.values()))
+        # Time settle - stage1
+        T_settle1 = np.array(list(p.T_settle1.values()))
 
         # Time out
         T_out = [
@@ -101,13 +116,18 @@ def cals_in_cd(p):
             int((Mass_out[2] / Mass_out_per_u_t) * p.dt),
         ]
 
+        # Time settle - stage2
+        T_settle2 = np.array(list(p.T_settle2.values()))
+
         tmp = 0
 
         for i in range(p.no_of_cycles):
             T_in[i] = T_in[i] + tmp
-            T_settle[i] = T_settle[i] + T_in[i]
-            T_out[i] = T_out[i] + T_settle[i]
-            tmp = T_out[i]
+            T_settle1[i] = T_settle1[i] + T_in[i]
+            T_out[i] = T_out[i] + T_settle1[i]
+            T_settle2[i] = T_settle2[i] + T_out[i]
+            # tmp = T_out[i]
+            tmp = T_settle2[i]
 
     if hasattr(p, "give_time") and hasattr(p, "T_in") and hasattr(p, "T_settle") and hasattr(p, "T_empty"):
         T_in = list(p.T_in.values())
@@ -120,10 +140,10 @@ def cals_in_cd(p):
             T_out[i] = T_out[i] + T_settle[i]
             tmp = T_out[i]
 
-    all_Ts = np.transpose([T_in, T_settle, T_out])  # to arange the times in a cycle fashion
+    all_Ts = np.transpose([T_in, T_settle1, T_out, T_settle2])  # to arange the times in a cycle fashion
 
     # Initialize dictionary
-    times = ["t_fill", "t_settle", "t_empty"]
+    times = ["t_fill", "t_settle1", "t_empty", "t_settle2"]
 
     for i in range(p.no_of_cycles):
         op_arr.append({x: {} for x in times})  # creating empty dictionary with empty times
@@ -145,6 +165,7 @@ def save_quantities(p, s):
     if p.gsd_mode == "mono":
         p_count = np.count_nonzero(s[~np.isnan(s)])
     elif p.gsd_mode == "bi":
+        p_count = np.count_nonzero(s[~np.isnan(s)])
         p_count_s = np.count_nonzero(s[~np.isnan(s)] == p.s_m)
         p_count_l = np.count_nonzero(s[~np.isnan(s)] == p.s_M)
 
@@ -164,5 +185,5 @@ def set_nt(p):
 
     else:
         op_arr = p.T_cycles
-
-    return int(np.ceil(op_arr[-1].get("t_empty") / p.dt))  # cal the number of steps based on final t_empty
+    print("OOOOOOOOOOOOOOOOO", op_arr, int(np.ceil(op_arr[-1].get("t_settle2"))))
+    return int(np.ceil(op_arr[-1].get("t_settle2") / p.dt))  # cal the number of steps based on final t_empty

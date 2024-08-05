@@ -72,12 +72,28 @@ def init(p):
         sigma = None
 
     outlet = []
+    surface_profile = []
 
     N_swap = None
     p.indices = np.arange(p.nx * (p.ny - 1) * p.nm)
     np.random.shuffle(p.indices)
 
-    state = s, u, v, c, T, p_count, p_count_s, p_count_l, non_zero_nu_time, N_swap, last_swap, sigma, outlet
+    state = (
+        s,
+        u,
+        v,
+        c,
+        T,
+        p_count,
+        p_count_s,
+        p_count_l,
+        non_zero_nu_time,
+        N_swap,
+        last_swap,
+        sigma,
+        outlet,
+        surface_profile,
+    )
 
     if len(p.save) > 0:
         plotter.save_coordinate_system(p)
@@ -86,14 +102,36 @@ def init(p):
     return state
 
 
-def time_step(p, state, t):
+def time_step(
+    p,
+    state,
+    t
+):
+  
+  def time_step(p, state, t):
     if p.queue2 is not None:
         while not p.queue2.empty():
             update = p.queue2.get()
             for key, value in update.items():
                 setattr(p, key, value)
+                
+    (
+        s,
+        u,
+        v,
+        c,
+        T,
+        p_count,
+        p_count_s,
+        p_count_l,
+        non_zero_nu_time,
+        N_swap,
+        last_swap,
+        sigma,
+        outlet,
+        surface_profile,
+    ) = state
 
-    s, u, v, c, T, p_count, p_count_s, p_count_l, non_zero_nu_time, N_swap, last_swap, sigma, outlet = state
     if p.stop_event is not None and p.stop_event.is_set():
         raise KeyboardInterrupt
 
@@ -108,8 +146,12 @@ def time_step(p, state, t):
         sigma = stress.calculate_stress(s, last_swap, p)
 
     if p.charge_discharge:
-        p = cycles.charge_discharge(p, t)
+        Mass_inside = np.count_nonzero(~np.isnan(s)) * p.M_of_each_cell
+        p = cycles.charge_discharge(p, t, Mass_inside)
         p_count[t], p_count_s[t], p_count_l[t], non_zero_nu_time[t] = cycles.save_quantities(p, s)
+        if p.get_ht == True:
+            ht = plotter.get_profile(s, c, p, t)
+            surface_profile.append(ht)
 
     u, v, s, c, T, N_swap, last_swap = p.move_voids(u, v, s, sigma, last_swap, p, c=c, T=T, N_swap=N_swap)
 
@@ -121,7 +163,41 @@ def time_step(p, state, t):
     if t % p.save_inc == 0:
         plotter.update(p, state, t)
 
-    return s, u, v, c, T, p_count, p_count_s, p_count_l, non_zero_nu_time, N_swap, last_swap, sigma, outlet
+        # if hasattr(p, "charge_discharge") and (p.gsd_mode == 'bi' or p.gsd_mode == 'fbi'):
+        #     plotter.plot_pdf_cdf(p,s,xpoints,ypoints,t)
+
+        ## to simulate wall motion
+        if p.wall_motion:
+            if t % p.save_wall == 0:
+                s_mean = np.nanmean(s, axis=2)
+
+                start_sim = np.min(np.argwhere(s_mean > 0), axis=0)[
+                    0
+                ]  # gives the start position of column in x-direction
+                end_sim = np.max(np.argwhere(s_mean > 0), axis=0)[
+                    0
+                ]  # gives the end position of column in x-direction
+
+                if start_sim > 1 and end_sim + 1 < p.nx - 1:
+                    # s[start_sim-2:start_sim-1,:,:] = np.nan
+                    s[end_sim + 2 : end_sim + 3, :, :] = np.nan
+
+    return (
+        s,
+        u,
+        v,
+        c,
+        T,
+        p_count,
+        p_count_s,
+        p_count_l,
+        non_zero_nu_time,
+        N_swap,
+        last_swap,
+        sigma,
+        outlet,
+        surface_profile,
+    )
 
 
 def time_march(p):
@@ -139,6 +215,13 @@ def time_march(p):
         )
 
     plotter.update(p, state, t)
+
+    # if p.charge_discharge:
+    #     plotter.c_d_saves(p, state[8], state[5], state[6], state[7])
+    # plotter.update(x, y, s, u, v, c, T, outlet, p, t)
+    # col_ht = plotter.get_col_depth(s, p)
+    # np.save(p.folderName + "ht_" + str(p.repose_angle) + ".npy", col_ht)
+    # np.save(p.folderName + "surface_profiles.npy", state[13])
 
 
 def run_simulation(sim_with_index):
