@@ -111,7 +111,7 @@ class dict_to_class:
             self.P_u_max = self.P_u_ref * (self.s_M / self.s_m)
             self.P_lr_max = self.P_lr_ref * (self.s_M / self.s_m)
 
-            if self.motion_model == "d2q4_SA_array":
+            if self.motion_model == "d2q4_array":
                 if self.P_u_max <= 1 and self.P_lr_max <= self.P_stab:
                     safe = True
                 else:

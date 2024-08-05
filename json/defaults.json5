@@ -3,7 +3,7 @@
     nx : 10, // number of cells horizontally
     ny : 10, // number of cells vertically
     nm : 10,  // number of cells in internal direction
-    P_stab : 0.5, // maximum probability to allow for stability
+    P_stab : 0.1, // maximum probability to allow for stability
 
 
     // geometry

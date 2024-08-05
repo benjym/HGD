@@ -241,7 +241,8 @@ def move_voids(
     )
 
     s[all_ids], s[all_swap_ids] = s[all_swap_ids], s[all_ids]
-    c[all_ids], c[all_swap_ids] = c[all_swap_ids], c[all_ids]
+    if c is not None:
+        c[all_ids], c[all_swap_ids] = c[all_swap_ids], c[all_ids]
 
     # T[ids_left],T[ids_swap] = T[ids_swap],T[ids_left]
 
@@ -249,5 +250,5 @@ def move_voids(
     nu_req[all_swap_ids] -= 1 / p.nm
 
     nu = nu_req[:, :, 0]
-
+    print("lfjghflkg")
     return u, v, s, c, T, N_swap, last_swap
