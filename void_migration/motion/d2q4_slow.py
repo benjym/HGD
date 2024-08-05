@@ -12,6 +12,7 @@ def move_voids(
     c: None | ArrayLike = None,
     T: None | ArrayLike = None,
     N_swap: None | ArrayLike = None,
+    last_swap: None | ArrayLike = None,
 ) -> tuple[ArrayLike, ArrayLike, ArrayLike, None | ArrayLike, None | ArrayLike]:
     """
     Function to move voids each timestep.
@@ -159,4 +160,4 @@ def move_voids(
                         # N_swap[i, j] += 1
                         # N_swap[dest[0],dest[1]] += 1
 
-    return u, v, s, c, T, N_swap
+    return u, v, s, c, T, N_swap, last_swap

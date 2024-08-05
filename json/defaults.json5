@@ -15,6 +15,7 @@
     cyclic_BC : false, // true if cyclic BCs are used horizontally
     refill : false, // should the particles come back in the top if they leave the bottom
     outlet_rate : 1.0, // proportion of each timestep that the outlet is open
+    wall_motion : false, // should the walls move
     
     // void migration model parameters
     diag : 0,
@@ -53,7 +54,7 @@
     // parallel code
     max_workers : 5, // max number of workers to run simultaneously. Default value is actually set void_migration.py
     
-    motion_model : 'd2q4_SA_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
+    motion_model : 'd2q4_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
 
     // diagnostics
     show_optimal_resolution : false, // should the optimal resolution be shown on the screen at runtime

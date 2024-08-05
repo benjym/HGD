@@ -44,22 +44,23 @@ def init(p):
         p.print_optimal_resolution()
 
     s = initial.IC(p)  # non-dimensional size
+    print("s", s)
     u = np.zeros([p.nx, p.ny])
     v = np.zeros([p.nx, p.ny])
     p_count = np.zeros([p.nt])
     p_count_s = np.zeros([p.nt])
     p_count_l = np.zeros([p.nt])
     non_zero_nu_time = np.zeros([p.nt])
-
+    print("a")
     # last_swap is used to keep track of the last time a void was swapped
     # start off homoegeous and nan where s is voids
     last_swap = np.zeros_like(s)
     # last_swap[np.isnan(s)] = np.nan
-
+    print("aa")
     c = initial.set_concentration(s, p.X, p.Y, p)
-
+    print("bb")
     initial.set_boundary(s, p.X, p.Y, p)
-
+    print("cc")
     if hasattr(p, "temperature"):
         T = p.temperature["inlet_temperature"] * np.ones_like(s)
         T[np.isnan(s)] = np.nan
@@ -102,19 +103,14 @@ def init(p):
     return state
 
 
-def time_step(
-    p,
-    state,
-    t
-):
-  
-  def time_step(p, state, t):
+def time_step(p, state, t):
     if p.queue2 is not None:
         while not p.queue2.empty():
             update = p.queue2.get()
             for key, value in update.items():
+                print("Updating parameter {} to {}".format(key, value))
                 setattr(p, key, value)
-                
+
     (
         s,
         u,
@@ -153,7 +149,7 @@ def time_step(
             ht = plotter.get_profile(s, c, p, t)
             surface_profile.append(ht)
 
-    u, v, s, c, T, N_swap, last_swap = p.move_voids(u, v, s, sigma, last_swap, p, c=c, T=T, N_swap=N_swap)
+    u, v, s, c, T, N_swap, last_swap = p.move_voids(u, v, s, p, c=c, T=T, N_swap=N_swap, last_swap=last_swap)
 
     u, v, s, c, outlet = boundary.add_voids(u, v, s, p, c, outlet)
 
@@ -215,13 +211,6 @@ def time_march(p):
         )
 
     plotter.update(p, state, t)
-
-    # if p.charge_discharge:
-    #     plotter.c_d_saves(p, state[8], state[5], state[6], state[7])
-    # plotter.update(x, y, s, u, v, c, T, outlet, p, t)
-    # col_ht = plotter.get_col_depth(s, p)
-    # np.save(p.folderName + "ht_" + str(p.repose_angle) + ".npy", col_ht)
-    # np.save(p.folderName + "surface_profiles.npy", state[13])
 
 
 def run_simulation(sim_with_index):

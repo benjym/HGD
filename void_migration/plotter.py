@@ -157,7 +157,7 @@ def check_folders_exist(p):
             os.makedirs(p.folderName + "data/")
 
 
-def update(p, state, t, queue, *args):
+def update(p, state, t, *args):
     (
         s,
         u,

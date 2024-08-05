@@ -33,7 +33,7 @@
     fill_ratio : 0.75,
 
     // temporal stuff
-    t_f : 1000000000000000000,  // final time
+    t_f : 1000,  // final time
     
     // saving
     save_inc : 1,
