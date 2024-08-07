@@ -506,34 +506,6 @@ def get_col_depth(p, s):
     np.save(p.folderName + "data/each_col_ht.npy", ht)
 
 
-def get_profile(s, c, p, t):
-    # if p.get_ht == True:
-
-    nm = s.shape[2]
-    mask = np.sum(np.isnan(s), axis=2) > 0.95 * nm
-
-    creq = np.ma.masked_where(mask, np.nanmean(c, axis=2))
-
-    # den = 1 - np.mean(np.isnan(s), axis=2)
-    # den = np.ma.masked_where(den < p.nu_cs / 7.0, den)
-
-    if p.current_cycle == 1:
-        val = p.current_cycle
-    else:
-        val = (p.current_cycle - 1 + p.current_cycle) / 2
-
-    ht = []
-
-    for w in range(p.nx):
-        if np.argmin(creq[w]) == 0 and np.ma.is_masked(np.ma.max(creq[w])):
-            ht.append(0)
-        else:
-            ht.append(np.max(np.nonzero(creq[w] == np.max(creq[w]))))
-
-    np.save(p.folderName + "c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
-    return ht
-
-
 def kozeny_carman(s):
     sphericity = 1
     with warnings.catch_warnings():

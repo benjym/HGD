@@ -35,6 +35,11 @@
     nu_fill : 0.5, // solid fraction of the particles in the initial condition
     IC_mode : "column", // where should the initial particles be, "column", "random", "top", "full" or "empty"
 
+    // temperature
+    calculate_temperature : false, // should the temperature be calculated
+    T_init : 20, // initial temperature (C)
+
+
     // stress
     calculate_stress : false, // should the stress be calculated
     stress_mode : 'isotropic', // 'isotropic' or 'anisotropic'

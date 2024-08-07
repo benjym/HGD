@@ -6,6 +6,17 @@ import boundary
 op_arr = []
 
 
+def update(s, c, p, t, p_count, p_count_s, p_count_l, non_zero_nu_time, surface_profile):
+    Mass_inside = np.count_nonzero(~np.isnan(s)) * p.M_of_each_cell
+    p = charge_discharge(p, t, Mass_inside)
+    p_count[t], p_count_s[t], p_count_l[t], non_zero_nu_time[t] = save_quantities(p, s)
+    if p.get_ht is True:
+        ht = get_profile(s, c, p, t)
+        surface_profile.append(ht)
+
+    return p_count, p_count_s, p_count_l, non_zero_nu_time, surface_profile
+
+
 def charge_discharge(p, t, Mass_inside):
     """
     As of now two times (t_fill and t_empty) are calculated and t_settle is given
@@ -187,3 +198,31 @@ def set_nt(p):
         op_arr = p.T_cycles
     print("OOOOOOOOOOOOOOOOO", op_arr, int(np.ceil(op_arr[-1].get("t_settle2"))))
     return int(np.ceil(op_arr[-1].get("t_settle2") / p.dt))  # cal the number of steps based on final t_empty
+
+
+def get_profile(s, c, p, t):
+    # if p.get_ht == True:
+
+    nm = s.shape[2]
+    mask = np.sum(np.isnan(s), axis=2) > 0.95 * nm
+
+    creq = np.ma.masked_where(mask, np.nanmean(c, axis=2))
+
+    # den = 1 - np.mean(np.isnan(s), axis=2)
+    # den = np.ma.masked_where(den < p.nu_cs / 7.0, den)
+
+    if p.current_cycle == 1:
+        val = p.current_cycle
+    else:
+        val = (p.current_cycle - 1 + p.current_cycle) / 2
+
+    ht = []
+
+    for w in range(p.nx):
+        if np.argmin(creq[w]) == 0 and np.ma.is_masked(np.ma.max(creq[w])):
+            ht.append(0)
+        else:
+            ht.append(np.max(np.nonzero(creq[w] == np.max(creq[w]))))
+
+    np.save(p.folderName + "c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
+    return ht

@@ -4,16 +4,37 @@ import operators
 import random
 
 
-def add_voids(u, v, s, p, c, outlet):
+def update(u, v, s, p, c, outlet):
     """
     Add voids to the system. This function is called at each time step.
     Loop through all functions defined here and call them if they are in the list of boundary methods.
     """
+    outlet.append(0)
+
     boundary_methods = [name for name, obj in globals().items() if callable(obj)]
 
     for method in p.boundaries:
         if method in boundary_methods:
             u, v, s, c, outlet = globals()[method](u, v, s, p, c, outlet)
+
+    if p.close_voids:
+        u, v, s = close_voids(u, v, s)
+
+    if p.wall_motion:
+        if t % p.save_wall == 0:
+            s_mean = np.nanmean(s, axis=2)
+
+            start_sim = np.min(np.argwhere(s_mean > 0), axis=0)[
+                0
+            ]  # gives the start position of column in x-direction
+            end_sim = np.max(np.argwhere(s_mean > 0), axis=0)[
+                0
+            ]  # gives the end position of column in x-direction
+
+            if start_sim > 1 and end_sim + 1 < p.nx - 1:
+                # s[start_sim-2:start_sim-1,:,:] = np.nan
+                s[end_sim + 2 : end_sim + 3, :, :] = np.nan
+
     return u, v, s, c, outlet
 
 
