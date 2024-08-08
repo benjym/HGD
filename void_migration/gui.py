@@ -117,6 +117,14 @@ class VoidMigrationApp(App):
         stop_button.bind(on_press=self.stop_time_march)
         buttons.add_widget(stop_button)
 
+        save_button = Button(text="Save", size_hint_x=0.5)
+        save_button.bind(on_press=lambda x: self.save_state())
+        buttons.add_widget(save_button)
+
+        load_button = Button(text="Load", size_hint_x=0.5)
+        load_button.bind(on_press=lambda x: self.load_state())
+        buttons.add_widget(load_button)
+
         img_layout = BoxLayout(orientation="vertical")
         img_layout.add_widget(buttons)
 
@@ -198,6 +206,12 @@ class VoidMigrationApp(App):
         self.stop_time_march(None)
         # Kill the process when the app closes
         os.kill(self.process.pid, signal.SIGTERM)
+
+    def save_state(self):
+        self.queue2.put("Save state")
+
+    def load_state(self):
+        self.queue2.put("Load state")
 
 
 if __name__ == "__main__":

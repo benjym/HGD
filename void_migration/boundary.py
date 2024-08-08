@@ -9,7 +9,6 @@ def update(u, v, s, p, c, outlet):
     Add voids to the system. This function is called at each time step.
     Loop through all functions defined here and call them if they are in the list of boundary methods.
     """
-    outlet.append(0)
 
     boundary_methods = [name for name, obj in globals().items() if callable(obj)]
 

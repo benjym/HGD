@@ -5,8 +5,8 @@ void_migration.py
 
 This script simulates the migration of voids in a granular material.
 """
-__author__ = "Benjy Marks, Shivakumar Athani"
-__version__ = "0.3"
+__author__ = "Benjy Marks, Shivakumar Athani, Jiahuan Li"
+__version__ = "0.4"
 
 import sys
 import numpy as np
@@ -23,14 +23,6 @@ from void_migration import cycles
 from void_migration import initial
 from void_migration import stress
 from void_migration import boundary
-
-# import void_migration.params as params
-# import void_migration.plotter as plotter
-# import void_migration.thermal as thermal
-# import void_migration.motion as motion
-# import void_migration.cycles as cycles
-# import void_migration.initial as initial
-# import void_migration.stress as stress
 
 
 def init(p):
@@ -51,6 +43,8 @@ def init(p):
     p_count_s = np.zeros([p.nt])
     p_count_l = np.zeros([p.nt])
     non_zero_nu_time = np.zeros([p.nt])
+    outlet = np.zeros([p.nt])
+    surface_profile = np.zeros([p.nt])
 
     # last_swap is used to keep track of the last time a void was swapped
     # start off homoegeous and nan where s is voids
@@ -71,9 +65,6 @@ def init(p):
         sigma = stress.calculate_stress(s, last_swap, p)
     else:
         sigma = None
-
-    outlet = []
-    surface_profile = []
 
     N_swap = None
     p.indices = np.arange(p.nx * (p.ny - 1) * p.nm)
@@ -107,9 +98,17 @@ def time_step(p, state, t):
     if p.queue2 is not None:
         while not p.queue2.empty():
             update = p.queue2.get()
-            for key, value in update.items():
-                print("Updating parameter {} to {}".format(key, value))
-                setattr(p, key, value)
+            if type(update) is str:
+                if update == "Save state":
+                    save_state(p, state)
+                elif update == "Load state":
+                    state = load_state(p)
+            elif type(update) is dict:
+                for key, value in update.items():
+                    print("Updating parameter {} to {}".format(key, value))
+                    setattr(p, key, value)
+            else:
+                print("Unknown update: {}".format(update))
 
     (
         s,
@@ -203,6 +202,28 @@ def run_simulation(sim_with_index):
     time_march(p)
     plotter.make_video(p)
     return folderName
+
+
+def save_state(p, state):
+    new_state = []
+    for i, d in enumerate(state):
+        if d is None:
+            print("State[{}] is None".format(i))
+            new_state.append([-1])
+        else:
+            new_state.append(d)
+    np.savez(p.folderName + "state.npz", *new_state)
+
+
+def load_state(p):
+    data = np.load(p.folderName + "state.npz")
+    state = []
+    for key in data.files:
+        if data[key].shape == (1,) and data[key][0] == -1:
+            state.append(None)
+        else:
+            state.append(data[key])
+    return state
 
 
 if __name__ == "__main__":
