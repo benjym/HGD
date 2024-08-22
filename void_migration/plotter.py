@@ -157,7 +157,7 @@ def check_folders_exist(p):
             os.makedirs(p.folderName + "data/")
 
 
-def update(p, state, t, *args):
+def update(p, state, chi, t, *args):
     (
         s,
         u,
@@ -168,7 +168,6 @@ def update(p, state, t, *args):
         p_count_s,
         p_count_l,
         non_zero_nu_time,
-        N_swap,
         last_swap,
         sigma,
         outlet,
@@ -183,8 +182,10 @@ def update(p, state, t, *args):
         if p.view == "s":
             to_plot = operators.get_average(s)
             colorbar = orange_blue_cmap
+            vmin = p.s_m
+            vmax = p.s_M
         elif p.view == "nu":
-            nu = 1 - np.mean(np.isnan(s), axis=2)
+            nu = operators.get_solid_fraction(s)
             to_plot = np.ma.masked_where(nu == 0, nu)
             colorbar = inferno_r
             vmin = 0
@@ -201,6 +202,22 @@ def update(p, state, t, *args):
             deviatoric = stress.get_deviatoric(sigma, p)
             to_plot = np.ma.masked_where(deviatoric == 0.0, deviatoric)
             colorbar = inferno_r
+        elif p.view == "minus_45":
+            minus_45 = np.sum(s <= 45e-6 * (~np.isnan(s)), axis=2)  # less than 45 microns
+            nu = operators.get_solid_fraction(s)
+            to_plot = minus_45 / nu
+            to_plot = np.ma.masked_where(nu == 0, to_plot)
+            colorbar = inferno_r
+            vmin = 0
+            vmax = 1
+        elif p.view == "plus_150":
+            plus_150 = np.sum(s >= 150e-6 * (~np.isnan(s)), axis=2)  # greater than 150 microns
+            nu = operators.get_solid_fraction(s)
+            to_plot = plus_150 / nu
+            to_plot = np.ma.masked_where(nu == 0, to_plot)
+            colorbar = inferno_r
+            vmin = 0
+            vmax = 1
 
         buffer = array_to_png_buffer(to_plot, colorbar, vmin, vmax)
         p.queue.put(buffer)
@@ -217,6 +234,8 @@ def update(p, state, t, *args):
             plot_relative_nu(s, p, t)
         if "U_mag" in p.plot:
             plot_u(s, u, v, p, t)
+        if "gamma_dot" in p.plot:
+            plot_gamma_dot(s, chi, p, t)
         if "c" in p.plot:
             plot_c(s, c, p, t)
         if "temperature" in p.plot:
@@ -288,6 +307,24 @@ def plot_u_time(y, U, nu_time, p):
     np.save(p.folderName + "data/nu.npy", np.mean(nu_time[p.nt // 2 :], axis=0))
 
 
+def plot_gamma_dot(s, chi, p, t):
+    solid_fraction = operators.get_solid_fraction(s)
+    s_bar = operators.get_average(s)
+    if chi is None:
+        gamma_dot = np.zeros([p.nx, p.ny])
+    else:
+        gamma_dot = chi * solid_fraction * np.sqrt(p.g / s_bar)
+
+    plt.figure(fig)
+    plt.clf()
+    plt.pcolormesh(p.x, p.y, gamma_dot.T)
+    plt.axis("off")
+    plt.xlim(p.x[0], p.x[-1])
+    plt.ylim(p.y[0], p.y[-1])
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    plt.savefig(p.folderName + "gamma_dot_" + str(t).zfill(6) + ".png")
+
+
 def plot_stable(s, p, t):
     plt.figure(fig)
 
@@ -295,15 +332,15 @@ def plot_stable(s, p, t):
     solid = np.zeros([p.nx, p.ny])
     for i in range(1, p.nx - 1):
         for j in range(p.ny):
-            slope[i, j, 0] = d2q4_array.stable_slope(s, i, j, i - 1, p)
-            slope[i, j, 1] = d2q4_array.stable_slope(s, i, j, i + 1, p)
+            slope[i, j, 0] = operators.stable_slope(s, i, j, i - 1, p)
+            slope[i, j, 1] = operators.stable_slope(s, i, j, i + 1, p)
 
     for i in range(p.nx):
         for j in range(p.ny):
-            solid[i, j] = d2q4_array.locally_solid(s, i, j, p)
+            solid[i, j] = operators.locally_solid(s, i, j, p)
 
     nu = operators.get_solid_fraction(s)
-    empty = d2q4_array.empty_nearby(nu, p)
+    empty = operators.empty_nearby(nu, p)
 
     for f in [
         [slope[:, :, 0], "slope_right"],
@@ -547,8 +584,8 @@ def plot_s(s, p, t, *args):
 
     if p.gsd_mode == "fbi":
         plt.pcolormesh(
-            x,
-            y,
+            p.x,
+            p.y,
             s_plot,
             cmap=orange_blue_cmap,
             vmin=p.s_m - (p.s_m / 100),
@@ -880,3 +917,32 @@ def stack_videos(paths, name, videos):
                 print("Error message:", result.stderr)
     else:
         print("ffmpeg not installed, cannot make videos")
+
+
+# def generate_colormap_image(width, height, colormap_name='viridis'):
+#     # Create a gradient image (2D array)
+#     gradient = np.linspace(0, 1, width * height).reshape(height, width)
+
+#     # Get the colormap
+#     colormap = cm.get_cmap(colormap_name)
+
+#     # Apply the colormap to the gradient
+#     colored_img = colormap(gradient)
+
+#     # Convert the image to 8-bit (0-255)
+#     colored_img = (colored_img[:, :, :3] * 255).astype(np.uint8)
+
+#     # Convert the NumPy array to a PIL image
+#     pil_img = Image.fromarray(colored_img)
+
+#     # Save the image to a buffer
+#     buffer = io.BytesIO()
+#     pil_img.save(buffer, format='PNG')
+#     buffer.seek(0)
+
+#     return buffer
+
+# # Generate the colormap image and save it to a file for later use (optional)
+# buffer = generate_colormap_image(256, 256)
+# with open('colormap.png', 'wb') as f:
+#     f.write(buffer.read())

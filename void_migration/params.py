@@ -10,8 +10,8 @@ class dict_to_class:
     """
 
     def __init__(self, dict: dict):
-        list_keys: List[str] = []
-        lists: List[List] = []
+        list_keys: List[str] = []  # noqa
+        lists: List[List] = []  # noqa
         for key in dict:
             setattr(self, key, dict[key])
             if isinstance(dict[key], list) and key not in [
@@ -50,9 +50,15 @@ class dict_to_class:
                 setattr(self, key, defaults_dict[key])
 
         if hasattr(self, "aspect_ratio_y"):
-            self.ny = int(self.nx * self.aspect_ratio_y)
+            if isinstance(self.aspect_ratio_y, list):
+                self.ny = [int(self.nx * ar) for ar in self.aspect_ratio_y]
+            else:
+                self.ny = int(self.nx * self.aspect_ratio_y)
         if hasattr(self, "aspect_ratio_m"):
-            self.nm = int(self.nx * self.aspect_ratio_m)
+            if isinstance(self.aspect_ratio_m, list):
+                self.nm = [int(self.nx * ar) for ar in self.aspect_ratio_m]
+            else:
+                self.nm = int(self.nx * self.aspect_ratio_m)
 
         if self.gsd_mode == "mono":
             if hasattr(self, "s_m") and hasattr(self, "s_M"):

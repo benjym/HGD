@@ -36,7 +36,7 @@
     
     // saving
     saves : 100,  // how often to save
-    plot : ['nu', 's', 'stress'],  // what to plot
-    videos : ['nu', 's', 'stress'],  // what to save videos of
+    plot : ['nu', 's', 'stress', 'gamma_dot'],  // what to plot
+    videos : ['nu', 's', 'stress', 'gamma_dot'],  // what to save videos of
     save : ['outlet'],
 }

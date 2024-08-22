@@ -30,9 +30,9 @@
     IC_mode : "column",
 
     // stress
-    // calculate_stress : true, // should the stress be calculated
-    // stress_mode : 'isotropic',
-    stress_mode : 'anisotropic',
+    calculate_stress : true, // should the stress be calculated
+    stress_mode : 'isotropic',
+    // stress_mode : 'anisotropic',
     
     // saving
     saves : 100,   // how many saves to make

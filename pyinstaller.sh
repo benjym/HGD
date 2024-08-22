@@ -1,7 +1,6 @@
 pyinstaller \
     --onefile \
     --windowed \
-    --no-confirm \
     void_migration/gui.py \
     --paths ./void_migration/ \
     --collect-all void_migration \

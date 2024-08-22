@@ -9,21 +9,20 @@
     // geometry
     H : 1, // m
     // theta : 0.0,  // angle of gravity - keep set to zero
-    refill : true,  // should particles go back to top or not
-    // add_voids : "central_outlet",
+    refill : false,  // should particles go back to top or not
     boundaries : ["central_outlet"],
     
     // material properties
     // alpha : [1.0,10.0,100.0],
-    // alpha : 1.0,
+    alpha : 1.0,
     // alpha : [0.5,1.0,2.0],  
     // repose_angle : 30,  // friction angle, degrees
-    half_width : 1,  // half width of outlet in grid points
+    half_width : 0,  // half width of outlet in grid points
     outlet_rate : 1,  // rate of outlet opening
     // P_stab : 0.5,
 
-    s_m : 0.01, // minimum particle size (m)
-    s_M : 0.02, // maximum particle size (m)
+    s_m : 40e-6, // minimum particle size (m)
+    s_M : 200e-6, // maximum particle size (m)
     gsd_mode : 'bi',
     nu_cs : 0.5,  // critical density above which motion stops
 
@@ -47,16 +46,17 @@
     view : 'nu',
 
     gui : {
-        nx : {min: 10, max: 100, step: 1, dtype: 'int', 'title': 'width in grid points'},
-        aspect_ratio_y : {min: 0.2, max: 5, step: 0.1, dtype: 'float', 'title': 'aspect ratio'},
-        refill : {dtype: 'bool', 'title': 'refill on discharge'},
-        s_m : {min: 0.001, max: 0.1, step: 0.001, dtype: 'float', 'title': 'min particle size (m)'},
-        s_M : {min: 0.001, max: 0.1, step: 0.001, dtype: 'float', 'title': 'max particle size (m)'},
-        gsd_mode : {dtype: 'select', options: ['mono', 'bi'], 'title': 'grain size distribution'},
-        nu_cs : {min: 0.1, max: 1.0, step: 0.1, dtype: 'float', 'title': 'critical solid fraction'},
-        IC_mode : {dtype: 'select', options: ['top', 'random'], 'title': 'initial condition'},
-        nu_fill : {min: 0.1, max: 1.0, step: 0.1, dtype: 'float', 'title': 'fill solid fraction'},
-        fill_ratio : {min: 0.1, max: 1.0, step: 0.1, dtype: 'float', 'title': 'fill ratio'},
-        view : {dtype: 'select', options: ['nu', 's', 'pressure', 'deviatoric'], 'title': 'View'},
+        nx : {min: 10, max: 100, step: 1, dtype: 'int', 'title': 'Resolution in grid points'},
+        aspect_ratio_y : {min: 0.2, max: 5, step: 0.1, dtype: 'float', 'title': 'Aspect ratio'},
+        // refill : {dtype: 'bool', 'title': 'Refill on discharge?'},
+        alpha : {min: 0.1, max: 10, step: 0.1, dtype: 'float', 'title': 'Alpha'},
+        s_m : {min: 0.00001, max: 0.001, step: 0.00001, dtype: 'float', 'title': 'Min particle size (m)'},
+        s_M : {min: 0.00001, max: 1000e-6, step: 0.00001, dtype: 'float', 'title': 'Max particle size (m)'},
+        gsd_mode : {dtype: 'select', options: ['mono', 'bi'], labels:['One size', 'Two sizes'], 'title': 'Grain size distribution'},
+        nu_cs : {min: 0.1, max: 1.0, step: 0.1, dtype: 'float', 'title': 'Critical solid fraction'},
+        IC_mode : {dtype: 'select', options: ['top', 'random'], labels: ['Empty at top', 'Randomly fillec'], 'title': 'Initial condition'},
+        nu_fill : {min: 0.1, max: 1.0, step: 0.01, dtype: 'float', 'title': 'Initial solid fraction'},
+        fill_ratio : {min: 0.1, max: 1.0, step: 0.01, dtype: 'float', 'title': 'Initial fill ratio'},
+        view : {dtype: 'select', options: ['nu', 's', 'minus_45', 'plus_150'], labels: ['Density', 'Average size', '45-', '150+'], 'title': 'View'},
     }
 }

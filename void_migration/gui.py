@@ -15,7 +15,7 @@ from kivymd.uix.button.button import MDRaisedButton as Button
 from kivy.config import Config
 from kivy.logger import Logger, LOG_LEVELS
 import void_migration.params as params
-from void_migration.main import time_march
+from void_migration.main import time_march, init
 
 
 import sys
@@ -35,6 +35,11 @@ Logger.setLevel(LOG_LEVELS["warning"])
 def run_time_march(p, *args):
     p.set_defaults()
     time_march(p)
+
+
+def run_init(p, *args):
+    p.set_defaults()
+    init(p)
 
 
 class VoidMigrationApp(App):
@@ -59,46 +64,55 @@ class VoidMigrationApp(App):
 
         for key, limits in self.data["gui"].items():
             value = getattr(self.p, key)
-            if key not in ["save", "videos", "plot"]:
-                param_layout.add_widget(Label(text=limits["title"]))
-                if limits["dtype"] == "bool":
-                    input_widget = CheckBox(active=value)
-                    input_widget.bind(active=partial(self.update_param, key=key))
-                elif limits["dtype"] == "int":
-                    input_widget = Slider(
-                        min=limits["min"], max=limits["max"], step=limits["step"], value=value
-                    )
-                    input_widget.bind(value=partial(self.update_param, key=key))
-                elif limits["dtype"] == "float":
-                    input_widget = Slider(
-                        min=limits["min"], max=limits["max"], step=limits["step"], value=value
-                    )
-                    input_widget.bind(value=partial(self.update_param, key=key))
-                elif limits["dtype"] == "str":
-                    input_widget = TextInput(text=value)
-                    input_widget.bind(text=partial(self.update_param, key=key))
-                elif limits["dtype"] == "select":
-                    input_widget = DropDownItem()
-                    menu_items = [
+
+            param_layout.add_widget(Label(text=limits["title"]))
+            if limits["dtype"] == "bool":
+                input_widget = CheckBox(active=value)
+                input_widget.bind(active=partial(self.update_param, key=key))
+            elif limits["dtype"] == "int":
+                input_widget = Slider(min=limits["min"], max=limits["max"], step=limits["step"], value=value)
+                input_widget.bind(value=partial(self.update_param, key=key))
+            elif limits["dtype"] == "float":
+                input_widget = Slider(min=limits["min"], max=limits["max"], step=limits["step"], value=value)
+                input_widget.bind(value=partial(self.update_param, key=key))
+            elif limits["dtype"] == "str":
+                input_widget = TextInput(text=value)
+                input_widget.bind(text=partial(self.update_param, key=key))
+            elif limits["dtype"] == "select":
+                input_widget = DropDownItem()
+                menu_items = []
+                for i, option in enumerate(limits["options"]):
+                    if "labels" in self.data["gui"][key]:
+                        label = self.data["gui"][key]["labels"][i]
+                    else:
+                        label = option
+                    menu_items += [
                         {
-                            "text": option,
+                            "text": label,
                             "viewclass": "OneLineListItem",
-                            "on_release": lambda x=option, k=key: self.menu_callback(x, k),
+                            "on_release": lambda option=option, label=label, key=key: self.menu_callback(
+                                option, label, key
+                            ),
                         }
-                        for option in limits["options"]
                     ]
-                    dropdown_menu = DropdownMenu(
-                        caller=input_widget,
-                        items=menu_items,
-                        width_mult=4,
-                    )
-                    self.menus[key] = dropdown_menu
-                    input_widget.bind(on_release=lambda x, k=key: self.menus[k].open())
-                    input_widget.set_item(value)
+                dropdown_menu = DropdownMenu(
+                    caller=input_widget,
+                    items=menu_items,
+                    width_mult=4,
+                )
+                self.menus[key] = dropdown_menu
+                input_widget.bind(on_release=lambda x, k=key: self.menus[k].open())
+
+                i = limits["options"].index(value)
+                if "labels" in self.data["gui"][key]:
+                    label = self.data["gui"][key]["labels"][i]
                 else:
-                    raise ValueError(f"Unsupported type: {type(value)} for key: {key}")
-                param_layout.add_widget(input_widget)
-                setattr(self, f"input_{key}", input_widget)
+                    label = option
+                input_widget.set_item(label)
+            else:
+                raise ValueError(f"Unsupported type: {type(value)} for key: {key}")
+            param_layout.add_widget(input_widget)
+            setattr(self, f"input_{key}", input_widget)
 
         buttons = BoxLayout(
             orientation="horizontal",
@@ -137,17 +151,21 @@ class VoidMigrationApp(App):
 
         Clock.schedule_interval(lambda dt: self.update_image(), 0.01)  # Start watching image directory
 
+        run_init(self.p)
+
         return main_layout
 
-    def menu_callback(self, text_item, key):
+    def menu_callback(self, option, label, key):
         dropdown_item = getattr(self, f"input_{key}", None)
         if isinstance(dropdown_item, DropDownItem):
-            dropdown_item.set_item(text_item)
-            self.update_param(dropdown_item, key=key)
+            dropdown_item.set_item(label)
+            self.update_param(option, key=key)
             self.menus[key].dismiss()
 
     def update_param(self, instance, *args, **kwargs):
         key = kwargs.get("key")
+        if isinstance(instance, str):
+            value = instance
         if isinstance(instance, CheckBox):
             value = instance.active
         elif isinstance(instance, DropDownItem):
@@ -169,14 +187,14 @@ class VoidMigrationApp(App):
 
         if key in ["view"]:
             self.queue2.put({key: self.p.view})
+        else:
+            self.stop_time_march(None)
+            run_init(self.p)
 
     def update_image(self):
         # Check for updates from the queue
         while not self.queue.empty():
             try:
-                # Cache.remove("kv.image")
-                # Cache.remove("kv.texture")
-
                 # Retrieve the image buffer from the queue
                 png_buffer = self.queue.get()
                 png_buffer.seek(0)  # Ensure the buffer is at the start
@@ -188,6 +206,10 @@ class VoidMigrationApp(App):
                 self.img.canvas.ask_update()  # Force the image widget to redraw
             except Exception as e:
                 print(f"Error updating image: {e}")
+
+    def init_time_march(self, instance):
+        self.process = multiprocessing.Process(target=run_init, args=(self.p,))
+        self.process.start()
 
     def start_time_march(self, instance):
         if self.process is not None:

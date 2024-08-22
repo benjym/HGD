@@ -1,10 +1,7 @@
 import numpy as np
-import params
-import operators
-import random
 
 
-def update(u, v, s, p, c, outlet):
+def update(u, v, s, p, c, outlet, t):
     """
     Add voids to the system. This function is called at each time step.
     Loop through all functions defined here and call them if they are in the list of boundary methods.

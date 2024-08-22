@@ -66,7 +66,6 @@ def init(p):
     else:
         sigma = None
 
-    N_swap = None
     p.indices = np.arange(p.nx * (p.ny - 1) * p.nm)
     np.random.shuffle(p.indices)
 
@@ -80,7 +79,6 @@ def init(p):
         p_count_s,
         p_count_l,
         non_zero_nu_time,
-        N_swap,
         last_swap,
         sigma,
         outlet,
@@ -89,7 +87,7 @@ def init(p):
 
     if len(p.save) > 0:
         plotter.save_coordinate_system(p)
-    plotter.update(p, state, 0)
+    plotter.update(p, state, None, 0)
 
     return state
 
@@ -120,7 +118,6 @@ def time_step(p, state, t):
         p_count_s,
         p_count_l,
         non_zero_nu_time,
-        N_swap,
         last_swap,
         sigma,
         outlet,
@@ -144,12 +141,12 @@ def time_step(p, state, t):
             s, c, p, t, p_count, p_count_s, p_count_l, non_zero_nu_time, surface_profile
         )
 
-    u, v, s, c, T, N_swap, last_swap = p.move_voids(u, v, s, p, c=c, T=T, N_swap=N_swap, last_swap=last_swap)
+    u, v, s, c, T, chi, last_swap = p.move_voids(u, v, s, p, c=c, T=T, last_swap=last_swap)
 
-    u, v, s, c, outlet = boundary.update(u, v, s, p, c, outlet)
+    u, v, s, c, outlet = boundary.update(u, v, s, p, c, outlet, t)
 
     if t % p.save_inc == 0:
-        plotter.update(p, state, t)
+        plotter.update(p, state, chi, t)
 
     return (
         s,
@@ -161,7 +158,6 @@ def time_step(p, state, t):
         p_count_s,
         p_count_l,
         non_zero_nu_time,
-        N_swap,
         last_swap,
         sigma,
         outlet,
@@ -183,7 +179,7 @@ def time_march(p):
             t,
         )
 
-    plotter.update(p, state, t)
+    plotter.update(p, state, None, t)
 
 
 def run_simulation(sim_with_index):

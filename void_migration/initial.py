@@ -28,7 +28,7 @@ def IC(p):
             pre_masked = True
 
     if p.gsd_mode == "half_half":
-        in_ny = int(np.ceil(p.ny * 0.4))  ## the height can be controlled here if required
+        in_ny = int(np.ceil(p.ny * 0.4))  # the height can be controlled here if required
         s = np.nan * np.ones([p.nx, p.ny, p.nm])  # monodisperse
         for i in range(p.nx):
             for j in range(in_ny // 2):
@@ -156,7 +156,7 @@ def IC(p):
                 0
             ]  # gives the end position of column in x-direction
 
-            s[0 : start_sim - 1, :, :] = 0  ## Depending upon these values, make changes in void_migration.py
+            s[0 : start_sim - 1, :, :] = 0  # Depending upon these values, make changes in void_migration.py
             s[end_sim + 2 :, :, :] = 0
 
     return s

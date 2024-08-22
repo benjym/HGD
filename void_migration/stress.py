@@ -56,12 +56,22 @@ def calculate_stress(s, last_swap, p):
                 if i == 0:
                     right_up = sigma[i + 1, j + 1]
                     # left_up = [0, 0] # walls carry no load!!
-                    left_up = right_up  # FIXME: no gradient at boundary???
+                    # left_up = right_up  # FIXME: no gradient at boundary???
+                    if p.wall_friction_angle == 0 or p.repose_angle == 0:
+                        left_up = [0, 0]
+                    else:
+                        left_up = (
+                            p.wall_friction_angle / p.repose_angle * right_up
+                        )  # FIXME: somehow scale the friction. should at least be with mu and not angle, even if this somehow miraculously works
 
                 elif i == p.nx - 1:
                     left_up = sigma[i - 1, j + 1]
                     # right_up = [0, 0]
-                    right_up = left_up  # FIXME: no gradient at boundary???
+                    # right_up = left_up  # FIXME: no gradient at boundary???
+                    if p.wall_friction_angle == 0 or p.repose_angle == 0:
+                        right_up = [0, 0]
+                    else:
+                        right_up = p.wall_friction_angle / p.repose_angle * left_up
                 else:
                     left_up = sigma[i - 1, j + 1]
                     right_up = sigma[i + 1, j + 1]

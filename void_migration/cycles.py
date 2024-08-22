@@ -1,7 +1,4 @@
-import initial
-import params
 import numpy as np
-import boundary
 
 op_arr = []
 
@@ -211,10 +208,10 @@ def get_profile(s, c, p, t):
     # den = 1 - np.mean(np.isnan(s), axis=2)
     # den = np.ma.masked_where(den < p.nu_cs / 7.0, den)
 
-    if p.current_cycle == 1:
-        val = p.current_cycle
-    else:
-        val = (p.current_cycle - 1 + p.current_cycle) / 2
+    # if p.current_cycle == 1:
+    #     val = p.current_cycle
+    # else:
+    #     val = (p.current_cycle - 1 + p.current_cycle) / 2
 
     ht = []
 

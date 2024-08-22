@@ -1,11 +1,12 @@
 {
     // resolution
-    nx : 100, // width
+    nx : 50, // width
 
     // geometry
     H : 1, // (m)
     aspect_ratio_y : 1,  // ny = aspect_ratio * nx
-    aspect_ratio_m : 10,    // nm = aspect_ratio * nx
+    // aspect_ratio_m : 10,    // nm = aspect_ratio * nx
+    aspect_ratio_m : [1,2,5,10,20,50,100],    // nm = aspect_ratio * nx
 
     // material properties
     repose_angle : 30, // (degrees)
@@ -29,5 +30,7 @@
     plot : ['nu'],  //,'stable'],
     videos : ['nu'],
     save : ['nu'],
-    mask_s_bar : false
+    mask_s_bar : false,
+
+    max_workers : 7
 }
