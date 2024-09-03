@@ -100,7 +100,18 @@ class dict_to_class:
 
         # self.t_p = self.s_m / np.sqrt(self.g * self.H)  # smallest confinement timescale (at bottom) (s)
         s_bar = (self.s_m + self.s_M) / 2.0  # mean diameter (m)
-        self.free_fall_velocity = np.sqrt(self.g * s_bar)  # time to fall one mean diameter (s)
+        if self.advection_model == "average_size":
+            self.free_fall_velocity = np.sqrt(self.g * s_bar)  # typical speed to fall one mean diameter (s)
+        elif self.advection_model == "freefall":
+            self.free_fall_velocity = np.sqrt(
+                2 * self.g * self.dy
+            )  # typical speed to fall one grid spacing (m/s)
+        elif self.advection_model == "stress":
+            max_pressure = self.solid_density * self.g * self.H
+            self.free_fall_velocity = np.sqrt(
+                2 * max_pressure / self.solid_density
+            )  # confinement velocity (m/s)
+
         self.diffusivity = self.alpha * self.free_fall_velocity * s_bar  # diffusivity (m^2/s)
 
         safe = False
@@ -136,10 +147,16 @@ class dict_to_class:
         if self.charge_discharge:
             self.nt = cycles.set_nt(self)
         else:
-            self.nt = int(np.ceil(self.t_f / self.dt))
+            if self.t_f is None:
+                self.nt = 0
+            else:
+                self.nt = int(np.ceil(self.t_f / self.dt))
 
         if hasattr(self, "saves"):
-            self.save_inc = int(self.nt / self.saves)
+            if self.nt == 0:
+                sys.exit("Fatal error: nt = 0. Cannot use `saves` parameter.")
+            else:
+                self.save_inc = int(self.nt / self.saves)
 
 
 def load_file(f):

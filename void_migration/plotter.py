@@ -157,7 +157,7 @@ def check_folders_exist(p):
             os.makedirs(p.folderName + "data/")
 
 
-def update(p, state, chi, t, *args):
+def update(p, state, t, *args):
     (
         s,
         u,
@@ -169,6 +169,7 @@ def update(p, state, chi, t, *args):
         p_count_l,
         non_zero_nu_time,
         last_swap,
+        chi,
         sigma,
         outlet,
         surface_profile,
@@ -458,7 +459,7 @@ def plot_stress(s, sigma, last_swap, p, t):
         p.x,
         p.y,
         pressure.T,
-        cmap="bwr",
+        # cmap="bwr",
         vmin=0,
         vmax=pressure.max(),
     )
@@ -468,7 +469,7 @@ def plot_stress(s, sigma, last_swap, p, t):
     # plt.colorbar()
 
     plt.subplot(312)
-    plt.pcolormesh(p.x, p.y, deviatoric.T)
+    plt.pcolormesh(p.x, p.y, deviatoric.T, vmin=0, vmax=deviatoric.max())
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])

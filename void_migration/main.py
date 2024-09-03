@@ -50,6 +50,7 @@ def init(p):
     # start off homoegeous and nan where s is voids
     last_swap = np.zeros_like(s)
     # last_swap[np.isnan(s)] = np.nan
+    chi = np.zeros([p.nx, p.ny, 2])
 
     c = initial.set_concentration(s, p.X, p.Y, p)
 
@@ -80,6 +81,7 @@ def init(p):
         p_count_l,
         non_zero_nu_time,
         last_swap,
+        chi,
         sigma,
         outlet,
         surface_profile,
@@ -87,7 +89,7 @@ def init(p):
 
     if len(p.save) > 0:
         plotter.save_coordinate_system(p)
-    plotter.update(p, state, None, 0)
+    plotter.update(p, state, 0)
 
     return state
 
@@ -119,6 +121,7 @@ def time_step(p, state, t):
         p_count_l,
         non_zero_nu_time,
         last_swap,
+        chi,
         sigma,
         outlet,
         surface_profile,
@@ -146,7 +149,7 @@ def time_step(p, state, t):
     u, v, s, c, outlet = boundary.update(u, v, s, p, c, outlet, t)
 
     if t % p.save_inc == 0:
-        plotter.update(p, state, chi, t)
+        plotter.update(p, state, t)
 
     return (
         s,
@@ -159,6 +162,7 @@ def time_step(p, state, t):
         p_count_l,
         non_zero_nu_time,
         last_swap,
+        chi,
         sigma,
         outlet,
         surface_profile,
@@ -172,14 +176,24 @@ def time_march(p):
 
     state = init(p)
 
-    for t in tqdm(range(1, p.nt), leave=False, desc="Time", position=p.concurrent_index + 1):
-        state = time_step(
-            p,
-            state,
-            t,
-        )
-
-    plotter.update(p, state, None, t)
+    if p.t_f is not None:
+        for t in tqdm(range(1, p.nt), leave=False, desc="Time", position=p.concurrent_index + 1):
+            state = time_step(
+                p,
+                state,
+                t,
+            )
+            plotter.update(p, state, t)
+    else:
+        t = 0
+        no_motion = 0
+        while no_motion < p.nt_settle:
+            state = time_step(p, state, t)
+            t += 1
+            chi = state[10]
+            if np.sum(chi[:, :, 1]) == 0:  # just vertical motion
+                no_motion += 1
+        plotter.update(p, state, t)
 
 
 def run_simulation(sim_with_index):

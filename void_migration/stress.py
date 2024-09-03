@@ -75,6 +75,7 @@ def calculate_stress(s, last_swap, p):
                 else:
                     left_up = sigma[i - 1, j + 1]
                     right_up = sigma[i + 1, j + 1]
+                # TODO: ADD CHECK TO REDIRECT STRESS IF VOID IS PRESENT
                 sigma[i, j, 0] = 0.5 * (left_up[0] + right_up[0]) + 0.5 * (1 - stress_fraction[i, j]) * (
                     left_up[1] - right_up[1]
                 )
@@ -123,3 +124,14 @@ def get_deviatoric(sigma, p):
 
     q = np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
     return q
+
+
+def get_friction_angle(sigma, p):
+    sigma_xy = sigma[:, :, 0]
+    sigma_yy = sigma[:, :, 1]
+    sigma_xx = get_sigma_xx(sigma, p)
+    q = get_deviatoric(sigma, p)
+
+    friction_angle = np.degrees(np.arcsin(q / p))
+
+    return friction_angle
