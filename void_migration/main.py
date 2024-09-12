@@ -51,6 +51,7 @@ def init(p):
     last_swap = np.zeros_like(s)
     chi = np.zeros_like(u)
     # last_swap[np.isnan(s)] = np.nan
+    chi = np.zeros([p.nx, p.ny, 2])
 
     c = initial.set_concentration(s, p.X, p.Y, p)
 
@@ -82,6 +83,7 @@ def init(p):
         non_zero_nu_time,
         chi,
         last_swap,
+        chi,
         sigma,
         outlet,
         surface_profile,
@@ -124,6 +126,7 @@ def time_step(p, state, t):
         non_zero_nu_time,
         chi,
         last_swap,
+        chi,
         sigma,
         outlet,
         surface_profile,
@@ -165,6 +168,7 @@ def time_step(p, state, t):
         non_zero_nu_time,
         chi,
         last_swap,
+        chi,
         sigma,
         outlet,
         surface_profile,

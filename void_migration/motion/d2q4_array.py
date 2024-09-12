@@ -54,16 +54,18 @@ def move_voids(
 
         # potential_free_surface = operators.empty_up(nu)
 
-        # U_dest = np.sqrt(p.g * S_bar_dest)
-        U_dest = np.sqrt(2 * p.g * p.dy)
-
-        # sigma = stress.calculate_stress(s, last_swap, p)
-        # pressure = stress.get_pressure(sigma, p)
-        # u = np.sqrt(2 * pressure / p.solid_density)
-        # U = np.repeat(u[:, :, np.newaxis], p.nm, axis=2)
-        # U_dest = np.roll(
-        #     U, d, axis=axis
-        # )  # NEED TO TAKE DESTINATION VALUE BECAUSE PRESSURE IS ZERO AT OUTLET!!!
+        if p.advection_model == "average_size":
+            U_dest = np.sqrt(p.g * S_bar_dest)
+        elif p.advection_model == "freefall":
+            U_dest = np.sqrt(2 * p.g * p.dy)
+        elif p.advection_model == "stress":
+            sigma = stress.calculate_stress(s, last_swap, p)
+            pressure = stress.get_pressure(sigma, p)
+            u = np.sqrt(2 * pressure / p.solid_density)
+            U = np.repeat(u[:, :, np.newaxis], p.nm, axis=2)
+            U_dest = np.roll(
+                U, d, axis=axis
+            )  # NEED TO TAKE DESTINATION VALUE BECAUSE PRESSURE IS ZERO AT OUTLET!!!
 
         if axis == 1:  # vertical
             s_inv_bar = operators.get_hyperbolic_average(s)
@@ -99,8 +101,9 @@ def move_voids(
             # max_swap = np.where(
             #     potential_free_surface, ((delta_nu - p.delta_limit) * p.nm).astype(int), max_swap
             # )
-            max_swap_2 = ((delta_nu - p.delta_limit) * p.nm).astype(int)
-            max_swap = np.where(max_swap_2 < max_swap, max_swap_2, max_swap)
+            max_swap_2 = ((delta_nu - p.delta_limit) * p.nm).astype(int)  # check free surface overfilling
+            max_swap = np.maximum(max_swap_2, 0)  #
+            max_swap = np.minimum(max_swap, max_swap_2)  # dont overfill either condition
 
         overfilled = total_swap - max_swap
         overfilled = np.maximum(overfilled, 0)
@@ -121,6 +124,7 @@ def move_voids(
             v[swap_indices[:, 0], swap_indices[:, 1]] += d
         elif axis == 0:
             u[swap_indices[:, 0], swap_indices[:, 1]] += d
+
         N_swap[:, :, axis] += np.sum(swap, axis=2)
 
         (
@@ -137,4 +141,5 @@ def move_voids(
 
     last_swap[np.isnan(s)] = np.nan
     chi = N_swap / p.nm
+
     return u, v, s, c, T, chi, last_swap

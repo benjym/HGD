@@ -1,8 +1,7 @@
 {
     // resolution
     // testing
-    // nx : 40, // width
-    // nx : 80, // width
+    // nx : 50, // width
     // nx : 100,
 
     // paper version
@@ -35,8 +34,9 @@
     // stress_mode : 'anisotropic',
     
     // saving
-    saves : 100,   // how many saves to make
-    t_f : 150,  // s
+    save_inc : 100,   // how many saves to make
+    t_f : null,  // s
+    nt_settle: 1000, 
     plot : ['nu', 'stress'],
     videos : ['nu','stress'],
     save : ['nu'],
