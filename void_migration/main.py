@@ -49,6 +49,7 @@ def init(p):
     # last_swap is used to keep track of the last time a void was swapped
     # start off homoegeous and nan where s is voids
     last_swap = np.zeros_like(s)
+    chi = np.zeros_like(u)
     # last_swap[np.isnan(s)] = np.nan
 
     c = initial.set_concentration(s, p.X, p.Y, p)
@@ -79,6 +80,7 @@ def init(p):
         p_count_s,
         p_count_l,
         non_zero_nu_time,
+        chi,
         last_swap,
         sigma,
         outlet,
@@ -87,7 +89,7 @@ def init(p):
 
     if len(p.save) > 0:
         plotter.save_coordinate_system(p)
-    plotter.update(p, state, None, 0)
+    plotter.update(p, state, 0)
 
     return state
 
@@ -105,6 +107,8 @@ def time_step(p, state, t):
                 for key, value in update.items():
                     print("Updating parameter {} to {}".format(key, value))
                     setattr(p, key, value)
+            elif type(update) is list:
+                p.process_charge_discharge_csv(update)
             else:
                 print("Unknown update: {}".format(update))
 
@@ -118,6 +122,7 @@ def time_step(p, state, t):
         p_count_s,
         p_count_l,
         non_zero_nu_time,
+        chi,
         last_swap,
         sigma,
         outlet,
@@ -146,7 +151,7 @@ def time_step(p, state, t):
     u, v, s, c, outlet = boundary.update(u, v, s, p, c, outlet, t)
 
     if t % p.save_inc == 0:
-        plotter.update(p, state, chi, t)
+        plotter.update(p, state, t)
 
     return (
         s,
@@ -158,6 +163,7 @@ def time_step(p, state, t):
         p_count_s,
         p_count_l,
         non_zero_nu_time,
+        chi,
         last_swap,
         sigma,
         outlet,
@@ -171,15 +177,27 @@ def time_march(p):
     """
 
     state = init(p)
+    if p.t_f is not None:
+        for t in tqdm(range(1, p.nt), leave=False, desc="Time", position=p.concurrent_index + 1):
+            state = time_step(
+                p,
+                state,
+                t,
+            )
+    else:
+        t = 1
+        stopped_times = 0
+        while stopped_times < p.save_inc:
+            state = time_step(p, state, t)
+            t += 1
+            chi_y = state[9][:, :, 1]  # just vertical motion
 
-    for t in tqdm(range(1, p.nt), leave=False, desc="Time", position=p.concurrent_index + 1):
-        state = time_step(
-            p,
-            state,
-            t,
-        )
+            if chi_y.sum() == 0:
+                stopped_times += 1
+            else:
+                stopped_times = 0
 
-    plotter.update(p, state, None, t)
+    plotter.update(p, state, t)
 
 
 def run_simulation(sim_with_index):

@@ -1,26 +1,27 @@
 {
     // resolution
     nx : 51,
-    ny : [51],
-    nm : 1,  // number of simultaneous simulations
+    ny : 51,
+    nm : 21,  // number of simultaneous simulations
 
     // geometry
-    H : 0.1, // m
+    H : 1, // m
     theta : 45,  // angle of gravity (degrees)
-    refill : true,  // should particles go back to top or not
-    add_voids : "slope",
+    boundaries : ["slope"],
     cyclic_BC : true,
+    Tg : 0.00001, 
     
     // material properties
     mu : 0.5,  // friction angle
     s_m : 0.001, // minimum particle size (m)
     s_M : 0.01, // maximum particle size (m)
     gsd_mode : 'bi',
-    Tg : 0.1,
-
+    nu_cs : 0.5,
+    
     // initial conditions
     IC_mode : "top",  // just leave empty space at the top
     fill_ratio : 0.8,
+    nu_fill : 0.5,
 
     // temporal stuff
     t_f : 2.0,  // final time

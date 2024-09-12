@@ -10,6 +10,8 @@ from kivymd.uix.textfield import MDTextField as TextInput
 from kivymd.uix.menu import MDDropdownMenu as DropdownMenu
 from kivymd.uix.dropdownitem import MDDropDownItem as DropDownItem
 from kivymd.uix.button.button import MDRaisedButton as Button
+from kivy.uix.popup import Popup
+from kivy.uix.filechooser import FileChooserListView
 
 # from kivy.cache import Cache
 from kivy.config import Config
@@ -23,6 +25,7 @@ import os
 import signal
 import multiprocessing
 from functools import partial
+import csv
 
 os.environ["KIVY_NO_ARGS"] = "1"
 os.environ["KIVY_NO_CONSOLELOG"] = "1"
@@ -131,13 +134,17 @@ class VoidMigrationApp(App):
         stop_button.bind(on_press=self.stop_time_march)
         buttons.add_widget(stop_button)
 
-        save_button = Button(text="Save", size_hint_x=0.5)
-        save_button.bind(on_press=lambda x: self.save_state())
-        buttons.add_widget(save_button)
+        save_state_button = Button(text="Save state", size_hint_x=0.5)
+        save_state_button.bind(on_press=lambda x: self.save_state())
+        buttons.add_widget(save_state_button)
 
-        load_button = Button(text="Load", size_hint_x=0.5)
-        load_button.bind(on_press=lambda x: self.load_state())
-        buttons.add_widget(load_button)
+        load_state_button = Button(text="Load state", size_hint_x=0.5)
+        load_state_button.bind(on_press=lambda x: self.load_state())
+        buttons.add_widget(load_state_button)
+
+        charge_button = Button(text="Enter charge/discharge", size_hint_x=0.5)
+        charge_button.bind(on_press=lambda x: self.load_charge_discharge())
+        buttons.add_widget(charge_button)
 
         img_layout = BoxLayout(orientation="vertical")
         img_layout.add_widget(buttons)
@@ -234,6 +241,33 @@ class VoidMigrationApp(App):
 
     def load_state(self):
         self.queue2.put("Load state")
+
+    def load_charge_discharge(self):
+        home_directory = os.path.expanduser("~")
+
+        # Create a file chooser popup for selecting CSV files, setting the default path to the home directory
+        file_chooser = FileChooserListView(filters=["*.csv"], path=home_directory, size_hint=(0.9, 0.9))
+
+        popup = Popup(title="Select CSV File", content=file_chooser, size_hint=(0.9, 0.9))
+
+        file_chooser.bind(on_submit=lambda chooser, selection, touch: self.on_file_select(selection, popup))
+
+        popup.open()
+
+    def on_file_select(self, selection, popup):
+        # Close the file chooser popup after selection
+        popup.dismiss()
+
+        if selection:
+            file_path = selection[0]
+            try:
+                with open(file_path, "r") as csv_file:
+                    reader = csv.reader(csv_file)
+                    data = list(reader)  # Read the CSV contents as a list of rows
+                    self.queue2.put(data)  # Send the CSV data to queue2
+                    # print(f"CSV data loaded and sent to queue2: {data}")
+            except Exception as e:
+                print(f"Error loading CSV file: {e}")
 
 
 if __name__ == "__main__":

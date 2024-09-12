@@ -100,7 +100,8 @@ class dict_to_class:
 
         # self.t_p = self.s_m / np.sqrt(self.g * self.H)  # smallest confinement timescale (at bottom) (s)
         s_bar = (self.s_m + self.s_M) / 2.0  # mean diameter (m)
-        self.free_fall_velocity = np.sqrt(self.g * s_bar)  # time to fall one mean diameter (s)
+        # self.free_fall_velocity = np.sqrt(self.g * s_bar)  # time to fall one mean diameter (s)
+        self.free_fall_velocity = np.sqrt(2 * self.g * self.dy)
         self.diffusivity = self.alpha * self.free_fall_velocity * s_bar  # diffusivity (m^2/s)
 
         safe = False
@@ -135,11 +136,25 @@ class dict_to_class:
 
         if self.charge_discharge:
             self.nt = cycles.set_nt(self)
-        else:
+        elif self.t_f is not None:
             self.nt = int(np.ceil(self.t_f / self.dt))
-
+        else:
+            self.nt = 1
         if hasattr(self, "saves"):
             self.save_inc = int(self.nt / self.saves)
+
+    def process_charge_discharge_csv(self, array):
+        self.cycles = []
+        for row in array:
+            cycle = {}
+            cycle["mode"] = row[0]
+            cycle["-45"] = row[1]
+            cycle["-53"] = row[2]
+            cycle["-76"] = row[3]
+            cycle["-106"] = row[4]
+            cycle["+150"] = row[5]
+            cycle["mass"] = row[6]
+            self.cycles.append(cycle)
 
 
 def load_file(f):

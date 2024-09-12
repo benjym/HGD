@@ -13,19 +13,19 @@
     repose_angle : 30, // (degrees)
     gsd_mode : 'bi',
     large_concentration: 0.5,
-    s_m : 0.0005, // minimum particle size (m)
+    s_m : [0.0001,0.0003,0.0005], // minimum particle size (m)
     s_M : 0.001, // maximum particle size (m)
     nu_cs : 0.5,
-    alpha : [1],
+    alpha : 1,
     
     // initial condition:
     fill_ratio : 0.25,
-    fill_density : 0.5,
+    nu_fill : 0.5,
     IC_mode : "column",
     
     // saving
-    save_inc : 1,
-    t_f : 5,  // s
+    save_inc : 100,
+    t_f : null,  // s
     videos : ['nu','s'],
     save : ['nu','s'],
     mask_s_bar : true

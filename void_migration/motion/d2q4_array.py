@@ -37,7 +37,7 @@ def move_voids(
     """
     options = np.array([(1, -1), (0, -1), (0, 1)])  # up, left, right
     np.random.shuffle(options)  # oh boy, this is a massive hack
-    N_swap = np.zeros([p.nx, p.ny], dtype=int)
+    N_swap = np.zeros([p.nx, p.ny, 2], dtype=int)
 
     for axis, d in options:
         nu = operators.get_solid_fraction(s)
@@ -52,19 +52,20 @@ def move_voids(
         S_bar = np.repeat(s_bar[:, :, np.newaxis], p.nm, axis=2)
         S_bar_dest = np.roll(S_bar, d, axis=axis)
 
-        potential_free_surface = operators.empty_up(nu)
+        # potential_free_surface = operators.empty_up(nu)
 
-        U_dest = np.sqrt(p.g * S_bar_dest)
+        # U_dest = np.sqrt(p.g * S_bar_dest)
+        U_dest = np.sqrt(2 * p.g * p.dy)
 
         # sigma = stress.calculate_stress(s, last_swap, p)
         # pressure = stress.get_pressure(sigma, p)
-        # u = np.sqrt(pressure / p.solid_density)
+        # u = np.sqrt(2 * pressure / p.solid_density)
         # U = np.repeat(u[:, :, np.newaxis], p.nm, axis=2)
         # U_dest = np.roll(
         #     U, d, axis=axis
         # )  # NEED TO TAKE DESTINATION VALUE BECAUSE PRESSURE IS ZERO AT OUTLET!!!
 
-        if axis == 1:
+        if axis == 1:  # vertical
             s_inv_bar = operators.get_hyperbolic_average(s)
             S_inv_bar = np.repeat(s_inv_bar[:, :, np.newaxis], p.nm, axis=2)
             S_inv_bar_dest = np.roll(S_inv_bar, d, axis=axis)
@@ -73,7 +74,7 @@ def move_voids(
             # print(P[~np.isnan(P)].max())
 
             P[:, -1, :] = 0  # no swapping up from top row
-        elif axis == 0:
+        elif axis == 0:  # horizontal
             # P = p.P_lr_ref * (dest / S_bar_dest)
             P = p.alpha * U_dest * S_bar_dest * (p.dt / p.dy**2) * (dest / S_bar_dest)
 
@@ -82,7 +83,7 @@ def move_voids(
             elif d == -1:  # right
                 P[-1, :, :] = 0  # no swapping right from rightmost column
 
-            slope_stable = operators.stable_slope_fast(s, d, p, potential_free_surface)
+            slope_stable = operators.stable_slope_fast(s, d, p)  # , potential_free_surface)
             P[slope_stable] = 0
 
         swap_possible = unstable * ~np.isnan(dest)
@@ -95,9 +96,11 @@ def move_voids(
         if axis == 0:
             nu_dest = np.roll(nu, d, axis=axis)
             delta_nu = nu_dest - nu
-            max_swap = np.where(
-                potential_free_surface, ((delta_nu - p.delta_limit) * p.nm).astype(int), max_swap
-            )
+            # max_swap = np.where(
+            #     potential_free_surface, ((delta_nu - p.delta_limit) * p.nm).astype(int), max_swap
+            # )
+            max_swap_2 = ((delta_nu - p.delta_limit) * p.nm).astype(int)
+            max_swap = np.where(max_swap_2 < max_swap, max_swap_2, max_swap)
 
         overfilled = total_swap - max_swap
         overfilled = np.maximum(overfilled, 0)
@@ -118,7 +121,7 @@ def move_voids(
             v[swap_indices[:, 0], swap_indices[:, 1]] += d
         elif axis == 0:
             u[swap_indices[:, 0], swap_indices[:, 1]] += d
-            N_swap += np.sum(swap, axis=2)
+        N_swap[:, :, axis] += np.sum(swap, axis=2)
 
         (
             s[swap_indices[:, 0], swap_indices[:, 1], swap_indices[:, 2]],

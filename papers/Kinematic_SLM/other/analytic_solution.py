@@ -89,4 +89,4 @@ for aspect in aspects:
             )
             plt.colorbar()
 
-        plt.savefig(f"papers/Kinematic_SLM/other/analytic_solution_{alpha}.pdf")
+        plt.savefig(f"papers/Kinematic_SLM/other/analytic_solution_{alpha}_{aspect}.pdf")
