@@ -61,7 +61,16 @@
     max_workers : 5, // max number of workers to run simultaneously. Default value is actually set void_migration.py
     
     motion_model : 'd2q4_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
-    advection_model : 'freefall', // 'average_size', 'freefall' or 'stress'
+    advection_model : 'average_size', // 'average_size', 'freefall' or 'stress'
+
+    // cycles
+    cycles : [], // list of dicts that define any cycles
+    inlet : 0, // amount of material added this cycle
+    outlet : 0, // amount of material removed this cycle
+
+    // stopping
+    stop_event : false,
+    stop_after : 100, // number of timesteps to run with nothing happening before stopping
 
     // diagnostics
     show_optimal_resolution : false, // should the optimal resolution be shown on the screen at runtime

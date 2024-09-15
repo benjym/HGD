@@ -71,6 +71,19 @@ def empty_up(nu_here):
 
 
 def stable_slope_fast(s, dir, p):  # , potential_free_surface):
+    def stable_slope_fast(s, dir, p):
+        """
+        Determines the stability of slopes based on the solid fraction.
+
+        Parameters:
+        s (numpy.ndarray): A 3D array representing the solid fraction in the system.
+        dir (int): The direction in which to roll the array (shift axis).
+        p (object): An object containing the parameter `delta_limit` which is used to determine stability.
+
+        Returns:
+        numpy.ndarray: A 3D boolean array where `True` indicates stable slopes and `False` indicates unstable slopes.
+        """
+
     nu_here = get_solid_fraction(s)
     nu_dest = np.roll(nu_here, dir, axis=0)
     delta_nu = nu_dest - nu_here

@@ -39,12 +39,12 @@ def init(p):
 
     u = np.zeros([p.nx, p.ny])
     v = np.zeros([p.nx, p.ny])
-    p_count = np.zeros([p.nt])
-    p_count_s = np.zeros([p.nt])
-    p_count_l = np.zeros([p.nt])
-    non_zero_nu_time = np.zeros([p.nt])
+    # p_count = np.zeros([p.nt])
+    # p_count_s = np.zeros([p.nt])
+    # p_count_l = np.zeros([p.nt])
+    # non_zero_nu_time = np.zeros([p.nt])
     outlet = np.zeros([p.nt])
-    surface_profile = np.zeros([p.nt])
+    # surface_profile = np.zeros([p.nt])
 
     # last_swap is used to keep track of the last time a void was swapped
     # start off homoegeous and nan where s is voids
@@ -77,16 +77,15 @@ def init(p):
         v,
         c,
         T,
-        p_count,
-        p_count_s,
-        p_count_l,
-        non_zero_nu_time,
-        chi,
+        # p_count,
+        # p_count_s,
+        # p_count_l,
+        # non_zero_nu_time,
         last_swap,
         chi,
         sigma,
         outlet,
-        surface_profile,
+        # surface_profile,
     )
 
     if len(p.save) > 0:
@@ -120,16 +119,15 @@ def time_step(p, state, t):
         v,
         c,
         T,
-        p_count,
-        p_count_s,
-        p_count_l,
-        non_zero_nu_time,
-        chi,
+        # p_count,
+        # p_count_s,
+        # p_count_l,
+        # non_zero_nu_time,
         last_swap,
         chi,
         sigma,
         outlet,
-        surface_profile,
+        # surface_profile,
     ) = state
 
     if p.stop_event is not None and p.stop_event.is_set():
@@ -144,10 +142,12 @@ def time_step(p, state, t):
     if p.calculate_stress:
         sigma = stress.calculate_stress(s, last_swap, p)
 
-    if p.charge_discharge:
-        p_count, p_count_s, p_count_l, non_zero_nu_time, surface_profile = cycles.update(
-            s, c, p, t, p_count, p_count_s, p_count_l, non_zero_nu_time, surface_profile
-        )
+    # if p.charge_discharge:
+    #     p_count, p_count_s, p_count_l, non_zero_nu_time, surface_profile = cycles.update(
+    #         s, c, p, t, p_count, p_count_s, p_count_l, non_zero_nu_time, surface_profile
+    #     )
+    if len(p.cycles) > 0:
+        p = cycles.update(p, t, state)
 
     u, v, s, c, T, chi, last_swap = p.move_voids(u, v, s, p, c=c, T=T, last_swap=last_swap)
 
@@ -162,16 +162,15 @@ def time_step(p, state, t):
         v,
         c,
         T,
-        p_count,
-        p_count_s,
-        p_count_l,
-        non_zero_nu_time,
-        chi,
+        # p_count,
+        # p_count_s,
+        # p_count_l,
+        # non_zero_nu_time,
         last_swap,
         chi,
         sigma,
         outlet,
-        surface_profile,
+        # surface_profile,
     )
 
 
@@ -190,16 +189,19 @@ def time_march(p):
             )
     else:
         t = 1
-        stopped_times = 0
-        while stopped_times < p.save_inc:
+        p.stopped_times = 0
+        while not p.stop_event:
             state = time_step(p, state, t)
             t += 1
-            chi_y = state[9][:, :, 1]  # just vertical motion
+            chi_y = state[6][:, :, 1]  # just vertical motion
 
             if chi_y.sum() == 0:
-                stopped_times += 1
+                p.stopped_times += 1
             else:
-                stopped_times = 0
+                p.stopped_times = 0
+
+            if p.stopped_times > p.stop_after:
+                p.stop_event = True
 
     plotter.update(p, state, t)
 

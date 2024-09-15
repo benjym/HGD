@@ -20,6 +20,7 @@ class dict_to_class:
                 "videos",
                 "T_cycles",
                 "boundaries",
+                "cycles",
             ]:
                 list_keys.append(key)
                 lists.append(dict[key])
@@ -83,6 +84,11 @@ class dict_to_class:
             inv_mu = np.nan_to_num(1.0 / self.mu, nan=0.0, posinf=1e30, neginf=0.0)
         self.delta_limit = self.nu_cs / (inv_mu + 1)
 
+        if len(self.cycles) > 0:
+            for cycle in self.cycles:
+                cycle["completed"] = False
+            self.n_cycles = len(self.cycles)
+
     def update_before_time_march(self, cycles):
         self.y = np.linspace(0, self.H, self.ny)
         self.dy = self.y[1] - self.y[0]
@@ -92,7 +98,7 @@ class dict_to_class:
         self.dx = self.x[1] - self.x[0]
         if not np.isclose(self.dx, self.dy):
             sys.exit(f"Fatal error: dx != dy. dx = {self.dx}, dy = {self.dy}")
-
+        self.W = self.nx * self.dx
         self.X, self.Y = np.meshgrid(self.x, self.y, indexing="ij")
 
         self.y += self.dy / 2.0
@@ -144,13 +150,13 @@ class dict_to_class:
         # print(f"P_lr_ref : {self.P_lr_ref}")
         # print(f"P_lr_max : {self.P_lr_max}")
 
-        if self.charge_discharge:
-            self.nt = cycles.set_nt(self)
+        # if self.charge_discharge:
+        #     self.nt = cycles.set_nt(self)
+        # else:
+        if self.t_f is None:
+            self.nt = 0
         else:
-            if self.t_f is None:
-                self.nt = 0
-            else:
-                self.nt = int(np.ceil(self.t_f / self.dt))
+            self.nt = int(np.ceil(self.t_f / self.dt))
 
         if hasattr(self, "saves"):
             if self.nt == 0:
@@ -163,12 +169,13 @@ class dict_to_class:
         for row in array:
             cycle = {}
             cycle["mode"] = row[0]
-            cycle["-45"] = row[1]
-            cycle["-53"] = row[2]
-            cycle["-76"] = row[3]
-            cycle["-106"] = row[4]
-            cycle["+150"] = row[5]
-            cycle["mass"] = row[6]
+            cycle["-45"] = float(row[1])
+            cycle["-53"] = float(row[2])
+            cycle["-76"] = float(row[3])
+            cycle["-106"] = float(row[4])
+            cycle["+150"] = float(row[5])
+            cycle["mass"] = float(row[6])
+            cycle["completed"] = False
             self.cycles.append(cycle)
 
 

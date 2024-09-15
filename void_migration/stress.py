@@ -122,16 +122,13 @@ def get_deviatoric(sigma, p):
     sigma_yy = sigma[:, :, 1]
     sigma_xx = get_sigma_xx(sigma, p)
 
-    q = np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
-    return q
+    return np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
 
 
 def get_friction_angle(sigma, p):
-    sigma_xy = sigma[:, :, 0]
-    sigma_yy = sigma[:, :, 1]
-    sigma_xx = get_sigma_xx(sigma, p)
-    q = get_deviatoric(sigma, p)
+    pressure = get_pressure(sigma, p)
+    deviatoric = get_deviatoric(sigma, p)
 
-    friction_angle = np.degrees(np.arcsin(q / p))
+    friction_angle = np.degrees(np.arcsin(deviatoric / pressure))
 
     return friction_angle

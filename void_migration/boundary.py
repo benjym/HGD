@@ -34,7 +34,54 @@ def update(u, v, s, p, c, outlet, t):
     return u, v, s, c, outlet
 
 
+def charge(u, v, s, p, c, outlet):
+    fill_mass = p.dx * p.dy / p.nm * p.solid_density
+    to_fill = []
+    for i in range(p.nx):
+        for k in range(p.nm):
+            gaussian = (
+                p.charge_rate
+                * np.exp(-((i - p.nx // 2) ** 2) / (2 * (p.nx * p.sigma_charge) ** 2))
+                / (p.nx * p.sigma_charge * np.sqrt(2 * np.pi))
+            )  # Gaussian distribution, more likely to fill in the middle
+            if np.random.rand() < gaussian:
+                nu_up = np.roll(1 - np.mean(np.isnan(s[i, :, :]), axis=1), -1)
+                solid = ~np.isnan(s[i, :, k])
+                liquid_up = nu_up + 1 / p.nm <= p.nu_cs
+
+                solid_indices = np.nonzero(solid & liquid_up)[0]
+                if len(solid_indices) > 0:
+                    topmost_solid = solid_indices[-1]
+                    if topmost_solid < p.ny - 1:
+                        to_fill.append((i, topmost_solid + 1, k))
+                        p.inlet += fill_mass
+
+    if len(to_fill) > 0:
+        fill_sizes = np.random.choice(p.size_choices, size=len(to_fill), p=p.size_weights)
+        # Sort the array in ascending order
+        fill_sizes = np.sort(fill_sizes)
+
+        # Split the sorted array into two parts
+        first_half = fill_sizes[::2]  # Pick every second element starting from index 0 (smallest values)
+        second_half = fill_sizes[1::2][
+            ::-1
+        ]  # Pick every second element starting from index 1 (largest values, reversed)
+
+        # Create an empty array to hold the result
+        fill_sizes_sorted = np.empty_like(fill_sizes)
+
+        # Place smaller values at both ends
+        fill_sizes_sorted[: len(first_half)] = first_half
+        fill_sizes_sorted[len(first_half) :] = second_half
+
+        i, j, k = np.array(to_fill).T
+        s[i, j, k] = fill_sizes_sorted
+
+    return u, v, s, c, outlet
+
+
 def central_outlet(u, v, s, p, c, outlet):
+    fill_mass = p.dx * p.dy / p.nm * p.solid_density
     for i in range(p.nx // 2 - p.half_width, p.nx // 2 + p.half_width + 1):
         for k in range(p.nm):
             if np.random.rand() < p.outlet_rate:
@@ -55,7 +102,7 @@ def central_outlet(u, v, s, p, c, outlet):
                                 )
                     else:
                         s[i, 0, k] = np.nan
-                    outlet[-1] += 1
+                    p.outlet += fill_mass
 
     return u, v, s, c, outlet
 
