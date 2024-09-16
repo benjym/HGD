@@ -37,7 +37,7 @@ def move_voids(
     """
     options = np.array([(1, -1), (0, -1), (0, 1)])  # up, left, right
     np.random.shuffle(options)  # oh boy, this is a massive hack
-    N_swap = np.zeros([p.nx, p.ny, 2], dtype=int)
+    N_swap = np.zeros([p.nx, p.ny], dtype=int)
 
     for axis, d in options:
         nu = operators.get_solid_fraction(s)
@@ -77,8 +77,13 @@ def move_voids(
 
             P[:, -1, :] = 0  # no swapping up from top row
         elif axis == 0:  # horizontal
-            # P = p.P_lr_ref * (dest / S_bar_dest)
-            P = p.alpha * U_dest * S_bar_dest * (p.dt / p.dy**2) * (dest / S_bar_dest)
+            if p.advection_model == "average_size":
+                D = p.alpha * U_dest * S_bar_dest
+            elif p.advection_model == "freefall":
+                D = p.alpha * np.sqrt(p.g * p.dy**3)
+            P = D * (p.dt / p.dy**2) * (dest / S_bar_dest)
+
+            # P = p.alpha * U_dest * (p.dt / p.dy**2) * (dest / S_bar_dest) # HACK: Changed by Benjy because this is how it _SHOULD_ be, we just dont know why yet
 
             if d == 1:  # left
                 P[0, :, :] = 0  # no swapping left from leftmost column
@@ -125,7 +130,8 @@ def move_voids(
         elif axis == 0:
             u[swap_indices[:, 0], swap_indices[:, 1]] += d
 
-        N_swap[:, :, axis] += np.sum(swap, axis=2)
+        # N_swap[:, :, axis] += np.sum(swap, axis=2)
+        N_swap += np.sum(swap, axis=2)
 
         (
             s[swap_indices[:, 0], swap_indices[:, 1], swap_indices[:, 2]],

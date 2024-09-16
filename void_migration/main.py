@@ -51,7 +51,7 @@ def init(p):
     last_swap = np.zeros_like(s)
     chi = np.zeros_like(u)
     # last_swap[np.isnan(s)] = np.nan
-    chi = np.zeros([p.nx, p.ny, 2])
+    # chi = np.zeros([p.nx, p.ny, 2])
 
     c = initial.set_concentration(s, p.X, p.Y, p)
 
@@ -193,9 +193,9 @@ def time_march(p):
         while not p.stop_event:
             state = time_step(p, state, t)
             t += 1
-            chi_y = state[6][:, :, 1]  # just vertical motion
-
-            if chi_y.sum() == 0:
+            # chi_y = state[6][:, :, 1]  # just vertical motion
+            chi = state[6]
+            if chi.sum() == 0:
                 p.stopped_times += 1
             else:
                 p.stopped_times = 0

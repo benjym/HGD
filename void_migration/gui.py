@@ -136,15 +136,15 @@ class VoidMigrationApp(App):
 
         save_state_button = Button(text="Save state", size_hint_x=0.5)
         save_state_button.bind(on_press=lambda x: self.save_state())
-        buttons.add_widget(save_state_button)
+        # buttons.add_widget(save_state_button)
 
         load_state_button = Button(text="Load state", size_hint_x=0.5)
         load_state_button.bind(on_press=lambda x: self.load_state())
-        buttons.add_widget(load_state_button)
+        # buttons.add_widget(load_state_button)
 
         charge_button = Button(text="Enter charge/discharge", size_hint_x=0.5)
         charge_button.bind(on_press=lambda x: self.load_charge_discharge())
-        buttons.add_widget(charge_button)
+        # buttons.add_widget(charge_button)
 
         img_layout = BoxLayout(orientation="vertical")
         img_layout.add_widget(buttons)

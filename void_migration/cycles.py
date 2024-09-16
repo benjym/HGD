@@ -23,7 +23,7 @@ def update(p, t, state):
             else:
                 p.boundaries = ["central_outlet"]
 
-        if this_cycle["completed"] and p.stopped_times > 20:
+        if this_cycle["completed"] and p.stopped_times > p.stop_after / 2:
             print(f"Cycle {p.n_cycles - len(p.cycles) + 1}/{p.n_cycles} completed")
             p.cycles.pop(0)
             p.inlet = 0

@@ -58,24 +58,28 @@ def charge(u, v, s, p, c, outlet):
 
     if len(to_fill) > 0:
         fill_sizes = np.random.choice(p.size_choices, size=len(to_fill), p=p.size_weights)
-        # Sort the array in ascending order
-        fill_sizes = np.sort(fill_sizes)
-
-        # Split the sorted array into two parts
-        first_half = fill_sizes[::2]  # Pick every second element starting from index 0 (smallest values)
-        second_half = fill_sizes[1::2][
-            ::-1
-        ]  # Pick every second element starting from index 1 (largest values, reversed)
-
-        # Create an empty array to hold the result
-        fill_sizes_sorted = np.empty_like(fill_sizes)
-
-        # Place smaller values at both ends
-        fill_sizes_sorted[: len(first_half)] = first_half
-        fill_sizes_sorted[len(first_half) :] = second_half
-
         i, j, k = np.array(to_fill).T
-        s[i, j, k] = fill_sizes_sorted
+
+        if p.elutriation:
+            # Sort the array in ascending order
+            fill_sizes = np.sort(fill_sizes)
+
+            # Split the sorted array into two parts
+            first_half = fill_sizes[::2]  # Pick every second element starting from index 0 (smallest values)
+            second_half = fill_sizes[1::2][
+                ::-1
+            ]  # Pick every second element starting from index 1 (largest values, reversed)
+
+            # Create an empty array to hold the result
+            fill_sizes_sorted = np.empty_like(fill_sizes)
+
+            # Place smaller values at both ends
+            fill_sizes_sorted[: len(first_half)] = first_half
+            fill_sizes_sorted[len(first_half) :] = second_half
+
+            s[i, j, k] = fill_sizes_sorted
+        else:
+            s[i, j, k] = fill_sizes
 
     return u, v, s, c, outlet
 

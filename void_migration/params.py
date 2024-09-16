@@ -104,6 +104,9 @@ class dict_to_class:
         self.y += self.dy / 2.0
         self.t = 0
 
+        if hasattr(self, "outlet_width"):
+            self.half_width = int(self.outlet_width / self.dx / 2)
+
         # self.t_p = self.s_m / np.sqrt(self.g * self.H)  # smallest confinement timescale (at bottom) (s)
         s_bar = (self.s_m + self.s_M) / 2.0  # mean diameter (m)
         if self.advection_model == "average_size":
@@ -119,6 +122,7 @@ class dict_to_class:
             )  # confinement velocity (m/s)
 
         self.diffusivity = self.alpha * self.free_fall_velocity * s_bar  # diffusivity (m^2/s)
+        # self.diffusivity = self.alpha * self.free_fall_velocity  # diffusivity (m^2/s) # HACK: Changed by Benjy because this is how it _SHOULD_ be, we just dont know why yet
 
         safe = False
         stability = 0.5

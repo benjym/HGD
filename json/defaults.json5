@@ -60,7 +60,7 @@
     // parallel code
     max_workers : 5, // max number of workers to run simultaneously. Default value is actually set void_migration.py
     
-    motion_model : 'd2q4_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
+    motion_model : 'd2q4_SA_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
     advection_model : 'average_size', // 'average_size', 'freefall' or 'stress'
 
     // cycles

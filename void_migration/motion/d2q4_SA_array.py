@@ -251,4 +251,8 @@ def move_voids(
 
     nu = nu_req[:, :, 0]
 
-    return u, v, s, c, T, N_swap, last_swap
+    swaps = np.zeros_like(s)
+    swaps[all_ids] = 1
+    chi = np.sum(swaps, axis=2) / p.nm
+
+    return u, v, s, c, T, chi, last_swap

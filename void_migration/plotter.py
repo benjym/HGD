@@ -314,8 +314,8 @@ def plot_gamma_dot(s, chi, p, t):
     if chi is None:
         gamma_dot = np.zeros([p.nx, p.ny])
     else:
-        chi_mag = np.sqrt(chi[:, :, 0] ** 2 + chi[:, :, 1] ** 2)
-        gamma_dot = chi_mag * solid_fraction * np.sqrt(p.g / s_bar)
+        # chi_mag = np.sqrt(chi[:, :, 0] ** 2 + chi[:, :, 1] ** 2)
+        gamma_dot = chi * solid_fraction * np.sqrt(p.g / s_bar)
 
     plt.figure(fig)
     plt.clf()
