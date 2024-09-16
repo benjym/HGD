@@ -17,7 +17,7 @@
     // repose_angle : 30,  // friction angle, degrees
     outlet_width : 0.01,  // m
     sigma_charge : 0.1,  // relative width of charge zone
-    charge_rate : 0.002,  // rate of charge zone filling (kg/s)
+    charge_rate : 0.0005,  // rate of charge zone filling (kg/s)
     outlet_rate : 0.1,  // rate of outlet opening
     
 
@@ -46,8 +46,8 @@
     view : 'nu',
 
     motion_model : 'd2q4_SA_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
-    inertia : true,
-    elutriation : true,
+    inertia : false,
+    elutriation : false,
     advection_model : 'freefall', // 'average_size', 'freefall' or 'stress'
 
     cycles : [
