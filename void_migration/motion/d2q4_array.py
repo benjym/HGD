@@ -80,7 +80,7 @@ def move_voids(
             if p.advection_model == "average_size":
                 D = p.alpha * U_dest * S_bar_dest
             elif p.advection_model == "freefall":
-                D = p.alpha * np.sqrt(p.g * p.dy**3)
+                D = p.alpha * np.sqrt(2 * p.g * p.dy**3)
             P = D * (p.dt / p.dy**2) * (dest / S_bar_dest)
 
             # P = p.alpha * U_dest * (p.dt / p.dy**2) * (dest / S_bar_dest) # HACK: Changed by Benjy because this is how it _SHOULD_ be, we just dont know why yet

@@ -67,6 +67,11 @@
     cycles : [], // list of dicts that define any cycles
     inlet : 0, // amount of material added this cycle
     outlet : 0, // amount of material removed this cycle
+    cycle_forever : false, // should the cycles be repeated indefinitely
+    charge_rate : 1, // rate of charge zone filling (kg/s)
+    sigma_charge : 0.1, // relative width of charge zone
+    elutriation : false, // should elutriation be used
+    stopped_times : 0, // number of times the system has stopped
 
     // stopping
     stop_event : false,

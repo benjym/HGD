@@ -121,8 +121,10 @@ class dict_to_class:
                 2 * max_pressure / self.solid_density
             )  # confinement velocity (m/s)
 
-        self.diffusivity = self.alpha * self.free_fall_velocity * s_bar  # diffusivity (m^2/s)
-        # self.diffusivity = self.alpha * self.free_fall_velocity  # diffusivity (m^2/s) # HACK: Changed by Benjy because this is how it _SHOULD_ be, we just dont know why yet
+        if self.advection_model == "average_size":
+            self.diffusivity = self.alpha * self.free_fall_velocity * s_bar  # diffusivity (m^2/s)
+        elif self.advection_model == "freefall":
+            self.diffusivity = self.alpha * np.sqrt(self.g * self.dy**3)
 
         safe = False
         stability = 0.5

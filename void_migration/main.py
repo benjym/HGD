@@ -156,6 +156,11 @@ def time_step(p, state, t):
     if t % p.save_inc == 0:
         plotter.update(p, state, t)
 
+    if chi.sum() == 0:
+        p.stopped_times += 1
+    else:
+        p.stopped_times = 0
+
     return (
         s,
         u,
@@ -193,12 +198,6 @@ def time_march(p):
         while not p.stop_event:
             state = time_step(p, state, t)
             t += 1
-            # chi_y = state[6][:, :, 1]  # just vertical motion
-            chi = state[6]
-            if chi.sum() == 0:
-                p.stopped_times += 1
-            else:
-                p.stopped_times = 0
 
             if p.stopped_times > p.stop_after:
                 p.stop_event = True

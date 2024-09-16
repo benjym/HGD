@@ -25,7 +25,12 @@ def update(p, t, state):
 
         if this_cycle["completed"] and p.stopped_times > p.stop_after / 2:
             print(f"Cycle {p.n_cycles - len(p.cycles) + 1}/{p.n_cycles} completed")
-            p.cycles.pop(0)
+            if not p.cycle_forever:
+                p.cycles.pop(0)
+            else:
+                this_cycle["completed"] = False
+                p.cycles.append(this_cycle)
+                p.cycles.pop(0)
             p.inlet = 0
             p.outlet = 0
     else:

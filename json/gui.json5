@@ -1,42 +1,41 @@
 {
     // resolution
     // nx : 20, // width
-    nx : 21,
+    nx : 20,
     aspect_ratio_y : 2,  // ny = aspect_ratio * nx
-    // aspect_ratio_m : 2,  // nm = aspect_ratio * nx
-    nm : 40,
-    // nm : 2,
+    aspect_ratio_m : 1,  // nm = aspect_ratio * nx
+    // nm : 40,
+    // nm : ,
 
     // geometry
     H : 1, // m
-    // theta : 0.0,  // angle of gravity - keep set to zero
-    refill : false,  // should particles go back to top or not
-    boundaries : ["central_outlet"],
     
     // material properties
     // alpha : [1.0,10.0,100.0],
-    alpha : 1.0,
+    alpha : 2.0,
     // alpha : [0.5,1.0,2.0],  
     // repose_angle : 30,  // friction angle, degrees
-    half_width : 0,  // half width of outlet in grid points
-    outlet_rate : 1,  // rate of outlet opening
-    // P_stab : 0.5,
+    outlet_width : 0.01,  // m
+    sigma_charge : 0.1,  // relative width of charge zone
+    charge_rate : 0.002,  // rate of charge zone filling (kg/s)
+    outlet_rate : 0.1,  // rate of outlet opening
+    
 
-    s_m : 0.05, // minimum particle size (m)
-    s_M : 0.1, // maximum particle size (m)
+    s_m : 45e-6, // minimum particle size (m)
+    s_M : 150e-6, // maximum particle size (m)
     gsd_mode : 'bi',
     nu_cs : 0.5,  // critical density above which motion stops
 
     // initial conditions
     IC_mode : "top",  // just leave empty space at the top
     nu_fill : 0.5,
-    fill_ratio : 0.75,
+    fill_ratio : 0.25,
 
     // temporal stuff
     t_f : 1000,  // final time
     
     // saving
-    save_inc : 1,
+    save_inc : 10,
     // saves : 100,  // how often to save
     // videos : ['nu', 's', 'stress'],  // what to save videos of
     // save : ['outlet'],
@@ -46,8 +45,35 @@
     // vectorize : false
     view : 'nu',
 
+    motion_model : 'd2q4_SA_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
+    inertia : true,
+    elutriation : true,
+    advection_model : 'freefall', // 'average_size', 'freefall' or 'stress'
+
+    cycles : [
+        { mode: "charge",
+        "-45" : 0.2,
+        "-53" : 0.2,
+        "-76" : 0.2,
+        "-106" : 0.2,
+        "+150" : 0.2,
+        mass : 200
+        },
+        { mode: "discharge",
+        "-45" : 0.2,
+        "-53" : 0.2,
+        "-76" : 0.2,
+        "-106" : 0.2,
+        "+150" : 0.2,
+        mass : 200
+        },
+    ],
+    cycle_forever : true,
+    mask_s_bar : false,
+
     gui : {
-        nx : {min: 10, max: 100, step: 1, dtype: 'int', 'title': 'Resolution in grid points'},
+        // nx : {min: 10, max: 100, step: 1, dtype: 'int', 'title': 'Resolution in grid points'},
+        nx : {dtype: 'select', options: [20, 40, 80], labels: ['Low', 'Medium', 'High'], 'title': 'Mesh quality'},
         // aspect_ratio_y : {min: 0.2, max: 5, step: 0.1, dtype: 'float', 'title': 'Aspect ratio'},
         // refill : {dtype: 'bool', 'title': 'Refill on discharge?'},
         // alpha : {min: 0.1, max: 10, step: 0.1, dtype: 'float', 'title': 'Alpha'},
@@ -57,7 +83,7 @@
         // nu_cs : {min: 0.1, max: 1.0, step: 0.1, dtype: 'float', 'title': 'Critical solid fraction'},
         // IC_mode : {dtype: 'select', options: ['top', 'random'], labels: ['Empty at top', 'Randomly fillec'], 'title': 'Initial condition'},
         // nu_fill : {min: 0.1, max: 1.0, step: 0.01, dtype: 'float', 'title': 'Initial solid fraction'},
-        fill_ratio : {min: 0.1, max: 1.0, step: 0.01, dtype: 'float', 'title': 'Initial fill ratio'},
+        // fill_ratio : {min: 0.1, max: 1.0, step: 0.01, dtype: 'float', 'title': 'Initial fill ratio'},
         // view : {dtype: 'select', options: ['nu', 's', 'minus_45', 'plus_150'], labels: ['Density', 'Average size', '45-', '150+'], 'title': 'View'},
         view : {dtype: 'select', options: ['nu', 's'], labels: ['Density', 'Average size'], 'title': 'View'},
     }

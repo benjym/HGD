@@ -38,17 +38,18 @@ def charge(u, v, s, p, c, outlet):
     fill_mass = p.dx * p.dy / p.nm * p.solid_density
     to_fill = []
     for i in range(p.nx):
-        for k in range(p.nm):
-            gaussian = (
-                p.charge_rate
-                * np.exp(-((i - p.nx // 2) ** 2) / (2 * (p.nx * p.sigma_charge) ** 2))
-                / (p.nx * p.sigma_charge * np.sqrt(2 * np.pi))
-            )  # Gaussian distribution, more likely to fill in the middle
-            if np.random.rand() < gaussian:
-                nu_up = np.roll(1 - np.mean(np.isnan(s[i, :, :]), axis=1), -1)
-                solid = ~np.isnan(s[i, :, k])
-                liquid_up = nu_up + 1 / p.nm <= p.nu_cs
+        gaussian = (
+            p.charge_rate
+            / p.dx
+            * np.exp(-((i - (p.nx - 1) / 2) ** 2) / (2 * (p.nx * p.sigma_charge) ** 2))
+            / (p.nx * p.sigma_charge * np.sqrt(2 * np.pi))
+        )  # Gaussian distribution, more likely to fill in the middle
 
+        nu_up = np.roll(1 - np.mean(np.isnan(s[i, :, :]), axis=1), -1)
+        liquid_up = nu_up + 1 / p.nm <= p.nu_cs
+        for k in range(p.nm):
+            if np.random.rand() < gaussian:
+                solid = ~np.isnan(s[i, :, k])
                 solid_indices = np.nonzero(solid & liquid_up)[0]
                 if len(solid_indices) > 0:
                     topmost_solid = solid_indices[-1]
@@ -86,6 +87,7 @@ def charge(u, v, s, p, c, outlet):
 
 def central_outlet(u, v, s, p, c, outlet):
     fill_mass = p.dx * p.dy / p.nm * p.solid_density
+
     for i in range(p.nx // 2 - p.half_width, p.nx // 2 + p.half_width + 1):
         for k in range(p.nm):
             if np.random.rand() < p.outlet_rate:

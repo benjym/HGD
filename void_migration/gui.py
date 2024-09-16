@@ -63,7 +63,7 @@ class VoidMigrationApp(App):
     def build(self):
         self.title = "Void Migration"
         main_layout = BoxLayout(orientation="horizontal")
-        param_layout = BoxLayout(orientation="vertical", size_hint_x=0.3, padding=20)
+        param_layout = BoxLayout(orientation="vertical", size_hint_x=0.3, padding=20, size_hint_y=0.5)
 
         for key, limits in self.data["gui"].items():
             value = getattr(self.p, key)
@@ -173,7 +173,7 @@ class VoidMigrationApp(App):
         key = kwargs.get("key")
         if isinstance(instance, str):
             value = instance
-        if isinstance(instance, CheckBox):
+        elif isinstance(instance, CheckBox):
             value = instance.active
         elif isinstance(instance, DropDownItem):
             value = instance.current_item
@@ -188,6 +188,10 @@ class VoidMigrationApp(App):
                     pass
         elif isinstance(instance, Slider):
             value = instance.value
+        elif isinstance(instance, int):
+            value = instance
+        else:
+            raise ValueError(f"Unsupported instance type: {type(instance)}")
 
         setattr(self.p, key, value)
         print(f"Updated {key} to {value}")

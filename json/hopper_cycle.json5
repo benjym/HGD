@@ -1,0 +1,66 @@
+{
+    // resolution
+    // nx : 20, // width
+    nx : 21,
+    aspect_ratio_y : 2,  // ny = aspect_ratio * nx
+    nm : 40,
+    // nm : 2,
+
+    // geometry
+    H : 1, // m
+    outlet_width : 0.01,  // m
+    sigma_charge : 0.1,  // relative width of charge zone
+    charge_rate : 1,  // rate of charge zone filling (kg/s)
+
+    // material properties
+    alpha : 1,
+    repose_angle : 30,  // friction angle, degrees
+
+    s_m : 45e-6, // minimum particle size (m)
+    s_M : 150e-6, // maximum particle size (m)
+    gsd_mode : 'bi',
+    nu_cs : 0.5,  // critical density above which motion stops
+
+    // initial conditions
+    IC_mode : "top",  // just leave empty space at the top
+    nu_fill : 0.5,
+    fill_ratio : 0.5,
+
+    cycles : [
+        { mode: "charge",
+        "-45" : 0.2,
+        "-53" : 0.2,
+        "-76" : 0.2,
+        "-106" : 0.2,
+        "+150" : 0.2,
+        mass : 50
+        },
+        { mode: "discharge",
+        "-45" : 0.2,
+        "-53" : 0.2,
+        "-76" : 0.2,
+        "-106" : 0.2,
+        "+150" : 0.2,
+        mass : 50
+        },
+    ],
+    cycle_forever : true,
+
+    // temporal stuff
+    t_f : null,  // final time
+    
+    advection_model : 'freefall', // 'average_size', 'freefall' or 'stress'
+    motion_model : 'd2q4_SA_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
+    inertia : false,
+    elutriation : [true,false],
+
+    // saving
+    // saves : 100,  // how often to save
+    save_inc : 100,
+    stop_after : 1000,  // stop after this many timesteps
+    plot : ['nu', 's'],  // what to plot
+    videos : ['nu', 's'],  // what to save videos of
+    save : ['outlet'],
+    mask_s_bar : true, // should the images of s_bar be masked to hide areas of low density
+
+}

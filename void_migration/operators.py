@@ -86,6 +86,7 @@ def stable_slope_fast(s, dir, p):  # , potential_free_surface):
     nu_here = get_solid_fraction(s)
     nu_dest = np.roll(nu_here, dir, axis=0)
     delta_nu = nu_dest - nu_here
+
     # delta_nu = -dir*np.gradient(nu_here,axis=0)
     stable = delta_nu <= p.delta_limit  # & potential_free_surface
 

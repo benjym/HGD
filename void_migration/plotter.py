@@ -181,7 +181,11 @@ def update(p, state, t, *args):
         vmin = None
         vmax = None
         if p.view == "s":
-            to_plot = operators.get_average(s)
+            if p.mask_s_bar:
+                nu = operators.get_solid_fraction(s)
+                to_plot = np.ma.masked_where(nu < p.nu_cs / 4.0, operators.get_average(s))
+            else:
+                to_plot = operators.get_average(s)
             colorbar = orange_blue_cmap
             vmin = p.s_m
             vmax = p.s_M
@@ -583,6 +587,9 @@ def plot_s(s, p, t, *args):
         warnings.simplefilter("ignore", category=RuntimeWarning)
         s_plot = np.nanmean(s, axis=2).T
     s_plot = np.ma.masked_where(np.isnan(s_plot), s_plot)
+    if p.mask_s_bar:
+        nu = operators.get_solid_fraction(s).T
+        s_plot = np.ma.masked_where(nu < p.nu_cs / 4.0, s_plot)
 
     if p.gsd_mode == "fbi":
         plt.pcolormesh(
