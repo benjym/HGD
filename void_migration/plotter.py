@@ -39,6 +39,9 @@ def is_ffmpeg_installed():
         return False
 
 
+# silence = subprocess.DEVNULL
+# silence = None
+
 cdict = {
     "red": ((0.0, 1.0, 1.0), (0.25, 1.0, 1.0), (0.5, 1.0, 1.0), (0.75, 0.902, 0.902), (1.0, 0.0, 0.0)),
     "green": (
@@ -63,6 +66,8 @@ grey = cm.get_cmap("gray")
 grey.set_bad("w", 0.0)
 bwr = cm.get_cmap("bwr")
 bwr.set_bad("k", 1.0)
+bwr.set_under("k")
+bwr.set_over("k")
 colors = [(1, 0, 0), (0, 0, 1)]
 cmap_name = "my_list"
 cmap = LinearSegmentedColormap.from_list(cmap_name, colors, N=2)
@@ -226,6 +231,11 @@ def update(p, state, t, *args):
 
         buffer = array_to_png_buffer(to_plot, colorbar, vmin, vmax)
         p.queue.put(buffer)
+
+        # if p.queue_popup is not None:
+        #     buffer = io.BytesIO()
+        #     plot_outlet(outlet, buffer)
+        #     p.queue_popup.put(buffer)
 
     else:
         if "s" in p.plot:
@@ -481,7 +491,7 @@ def plot_stress(s, sigma, last_swap, p, t):
     # plt.colorbar()
 
     plt.subplot(313)
-    plt.pcolormesh(p.x, p.y, mu.T, vmin=0, vmax=p.mu)
+    plt.pcolormesh(p.x, p.y, mu.T, vmin=0, vmax=2 * p.mu, cmap=bwr)
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
@@ -760,7 +770,7 @@ def save_c(c, folderName, t):
     np.save(folderName + "data/c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
 
 
-def plot_outlet(outlet, folderName):
+def plot_outlet(outlet, output):
     plt.figure(summary_fig)
 
     plt.clf()
@@ -769,7 +779,10 @@ def plot_outlet(outlet, folderName):
     plt.ylabel("outflow")
     plt.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
 
-    plt.savefig(folderName + "outflow.png")
+    if type(output) is str:
+        plt.savefig(output + "outflow.png")
+    else:
+        plt.savefig(output, format="png")
 
 
 def plot_profile(x, nu_time_x, p):
@@ -858,15 +871,18 @@ def make_video(p):
                 "glob",
                 "-i",
                 f"{p.folderName}/{video}_*.png",
+                "-vf",
+                "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                 #  "-c:v", "libx264", "-pix_fmt", "yuv420p"
             ]
             # add a title to the last video so we know whats going on
             if i == len(p.videos) - 1:
-                cmd.extend(["-vf", subtitle])
+                # cmd.extend(["-vf", subtitle])
+                cmd[-1] += f",{subtitle}"
             cmd.extend(["-r", "30", *_video_encoding, f"{p.folderName}/{video}_video.mp4"])
             subprocess.run(
                 cmd,
-                stdout=subprocess.DEVNULL,
+                # stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
     else:

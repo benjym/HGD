@@ -11,7 +11,10 @@ from kivymd.uix.menu import MDDropdownMenu as DropdownMenu
 from kivymd.uix.dropdownitem import MDDropDownItem as DropDownItem
 from kivymd.uix.button.button import MDRaisedButton as Button
 from kivy.uix.popup import Popup
+from kivy.uix.modalview import ModalView
+
 from kivy.uix.filechooser import FileChooserListView
+from kivy.uix.gridlayout import GridLayout
 
 # from kivy.cache import Cache
 from kivy.config import Config
@@ -34,6 +37,9 @@ os.environ["KIVY_NO_CONSOLELOG"] = "1"
 Config.set("kivy", "log_level", "warning")
 Logger.setLevel(LOG_LEVELS["warning"])
 
+current_file_path = os.path.abspath(__file__)
+current_directory = os.path.dirname(current_file_path)
+
 
 def run_time_march(p, *args):
     p.set_defaults()
@@ -53,17 +59,40 @@ class VoidMigrationApp(App):
         self.halt = False
         self.queue = multiprocessing.Queue()
         self.queue2 = multiprocessing.Queue()
+        self.queue_popup = multiprocessing.Queue()
         self.process = None
         self.stop_event = multiprocessing.Event()
         self.menus = {}
         self.p.queue = self.queue
         self.p.queue2 = self.queue2
+        self.p.queue_popup = self.queue_popup
         self.p.stop_event = self.stop_event
 
     def build(self):
         self.title = "Void Migration"
         main_layout = BoxLayout(orientation="horizontal")
-        param_layout = BoxLayout(orientation="vertical", size_hint_x=0.3, padding=20, size_hint_y=0.5)
+        param_layout = BoxLayout(orientation="vertical", size_hint_x=0.4, padding=20, size_hint_y=0.5)
+
+        table_layout = GridLayout(cols=4, rows=5, size_hint_y=None, height=700)
+
+        labels = ["-45", "+150", "NaO2", "Na2O2", "NaOH", "Na2O", "NaOH", "Na2O", "NaOH", "AI"]
+
+        # Add a numeric input box for each value
+        for i in range(10):
+            # Add a label for each numeric input
+            label = Label(text=labels[i], size_hint_y=None)  # , height=20)
+            table_layout.add_widget(label)
+
+            # Add a numeric input box for each value
+            input_widget = TextInput(text="0", input_filter="float", size_hint_y=None)  # , height=20)
+            input_widget.bind(text=partial(self.update_param, key=f"value_{i}"))
+
+            # Save reference to the widget for later use when loading CSV
+            setattr(self, f"input_value_{i}", input_widget)
+
+            table_layout.add_widget(input_widget)
+
+        param_layout.add_widget(table_layout)
 
         for key, limits in self.data["gui"].items():
             value = getattr(self.p, key)
@@ -136,15 +165,15 @@ class VoidMigrationApp(App):
 
         save_state_button = Button(text="Save state", size_hint_x=0.5)
         save_state_button.bind(on_press=lambda x: self.save_state())
-        # buttons.add_widget(save_state_button)
+        buttons.add_widget(save_state_button)
 
         load_state_button = Button(text="Load state", size_hint_x=0.5)
         load_state_button.bind(on_press=lambda x: self.load_state())
-        # buttons.add_widget(load_state_button)
+        buttons.add_widget(load_state_button)
 
-        charge_button = Button(text="Enter charge/discharge", size_hint_x=0.5)
+        charge_button = Button(text="Enter fill/load", size_hint_x=0.5)
         charge_button.bind(on_press=lambda x: self.load_charge_discharge())
-        # buttons.add_widget(charge_button)
+        buttons.add_widget(charge_button)
 
         img_layout = BoxLayout(orientation="vertical")
         img_layout.add_widget(buttons)
@@ -171,7 +200,12 @@ class VoidMigrationApp(App):
 
     def update_param(self, instance, *args, **kwargs):
         key = kwargs.get("key")
-        if isinstance(instance, str):
+        if key.startswith("value_"):
+            try:
+                value = float(instance.text)
+            except ValueError:
+                value = 0.0
+        elif isinstance(instance, str):
             value = instance
         elif isinstance(instance, CheckBox):
             value = instance.active
@@ -218,6 +252,25 @@ class VoidMigrationApp(App):
             except Exception as e:
                 print(f"Error updating image: {e}")
 
+    def update_popup_image(self):
+        """
+        Update the second image inside the popup regularly.
+        """
+        # Check if the popup is open before updating
+        if self.second_img:
+            try:
+                # Load or update the image buffer for the second image (similar to the main image update)
+                png_buffer = self.queue_popup.get()
+                png_buffer.seek(0)
+
+                core_img = CoreImage(png_buffer, ext="png")
+                core_img.texture.min_filter = "nearest"
+                core_img.texture.mag_filter = "nearest"
+                self.second_img.texture = core_img.texture
+                self.second_img.canvas.ask_update()
+            except Exception as e:
+                print(f"Error updating popup image: {e}")
+
     def init_time_march(self, instance):
         self.process = multiprocessing.Process(target=run_init, args=(self.p,))
         self.process.start()
@@ -225,6 +278,25 @@ class VoidMigrationApp(App):
     def start_time_march(self, instance):
         if self.process is not None:
             self.stop_time_march(instance)
+
+        # # Create a ModalView (window-like behavior)
+        # self.second_window = ModalView(size_hint=(0.8, 0.8))
+
+        # # Create the layout for the new "window"
+        # second_layout = BoxLayout(orientation="vertical")
+
+        # # Create an image widget to show the second image in the new "window"
+        # self.second_img = Image(allow_stretch=True, keep_ratio=True)
+        # second_layout.add_widget(self.second_img)
+
+        # # Add the layout to the ModalView
+        # self.second_window.add_widget(second_layout)
+
+        # # Open the ModalView
+        # self.second_window.open()
+
+        # Clock.schedule_interval(lambda dt: self.update_popup_image(), 0.01)
+
         self.process = multiprocessing.Process(target=run_time_march, args=(self.p,))
         self.process.start()
 
@@ -247,10 +319,11 @@ class VoidMigrationApp(App):
         self.queue2.put("Load state")
 
     def load_charge_discharge(self):
-        home_directory = os.path.expanduser("~")
+        # default_directory = os.path.expanduser("~")
+        default_directory = os.path.join(current_directory, "../assets/")
 
         # Create a file chooser popup for selecting CSV files, setting the default path to the home directory
-        file_chooser = FileChooserListView(filters=["*.csv"], path=home_directory, size_hint=(0.9, 0.9))
+        file_chooser = FileChooserListView(filters=["*.csv"], path=default_directory, size_hint=(0.9, 0.9))
 
         popup = Popup(title="Select CSV File", content=file_chooser, size_hint=(0.9, 0.9))
 
@@ -270,6 +343,12 @@ class VoidMigrationApp(App):
                     data = list(reader)  # Read the CSV contents as a list of rows
                     self.queue2.put(data)  # Send the CSV data to queue2
                     # print(f"CSV data loaded and sent to queue2: {data}")
+
+                    row = data[1]  # Get the first data row
+                    for i, value in enumerate(row[4:]):
+                        input_widget = getattr(self, f"input_value_{i}", None)
+                        if input_widget:
+                            input_widget.text = value  # Set CSV value to the input field
             except Exception as e:
                 print(f"Error loading CSV file: {e}")
 

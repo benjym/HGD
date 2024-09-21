@@ -52,12 +52,24 @@ def move_voids(
         S_bar = np.repeat(s_bar[:, :, np.newaxis], p.nm, axis=2)
         S_bar_dest = np.roll(S_bar, d, axis=axis)
 
-        # potential_free_surface = operators.empty_up(nu)
+        potential_free_surface = operators.empty_up(nu, p)
+
+        # dnu_dx, dnu_dy = np.gradient(nu)
+        # dnu_mag = np.sqrt(dnu_dx**2 + dnu_dy**2)
+        # potential_free_surface = dnu_mag > 0.25
+
+        # potential_free_surface = None
+
+        # import matplotlib.pyplot as plt
+
+        # plt.clf()
+        # plt.imshow(potential_free_surface.T)
+        # plt.savefig("potential_free_surface.png")
 
         if p.advection_model == "average_size":
             U_dest = np.sqrt(p.g * S_bar_dest)
         elif p.advection_model == "freefall":
-            U_dest = np.sqrt(2 * p.g * p.dy)
+            U_dest = np.sqrt(p.g * p.dy)
         elif p.advection_model == "stress":
             sigma = stress.calculate_stress(s, last_swap, p)
             pressure = stress.get_pressure(sigma, p)
@@ -79,18 +91,17 @@ def move_voids(
         elif axis == 0:  # horizontal
             if p.advection_model == "average_size":
                 D = p.alpha * U_dest * S_bar_dest
+                P = D * (p.dt / p.dy**2) * (dest / S_bar_dest)
             elif p.advection_model == "freefall":
-                D = p.alpha * np.sqrt(2 * p.g * p.dy**3)
-            P = D * (p.dt / p.dy**2) * (dest / S_bar_dest)
-
-            # P = p.alpha * U_dest * (p.dt / p.dy**2) * (dest / S_bar_dest) # HACK: Changed by Benjy because this is how it _SHOULD_ be, we just dont know why yet
+                P = p.alpha * (p.dt / p.dy) * U_dest * (dest / S_bar_dest)
 
             if d == 1:  # left
                 P[0, :, :] = 0  # no swapping left from leftmost column
             elif d == -1:  # right
                 P[-1, :, :] = 0  # no swapping right from rightmost column
 
-            slope_stable = operators.stable_slope_fast(s, d, p)  # , potential_free_surface)
+            slope_stable = operators.stable_slope_fast(s, d, p, potential_free_surface)
+            # slope_stable = operators.stable_slope_gradient(s, d, p)
             P[slope_stable] = 0
 
         swap_possible = unstable * ~np.isnan(dest)
@@ -98,16 +109,18 @@ def move_voids(
         swap = np.random.rand(*P.shape) < P
 
         total_swap = np.sum(swap, axis=2, dtype=int)
-        max_swap = ((p.nu_cs - nu) * p.nm).astype(int)
+        max_swap = np.floor((p.nu_cs - nu) * p.nm).astype(int)
 
-        if axis == 0:
+        if axis == 0:  # horizontal
             nu_dest = np.roll(nu, d, axis=axis)
             delta_nu = nu_dest - nu
-            # max_swap = np.where(
-            #     potential_free_surface, ((delta_nu - p.delta_limit) * p.nm).astype(int), max_swap
-            # )
-            max_swap_2 = ((delta_nu - p.delta_limit) * p.nm).astype(int)  # check free surface overfilling
-            max_swap = np.maximum(max_swap_2, 0)  #
+            if potential_free_surface is not None:
+                max_swap_2 = np.where(
+                    potential_free_surface, np.floor((delta_nu - p.delta_limit) * p.nm).astype(int), max_swap
+                )
+            else:
+                max_swap_2 = ((delta_nu - p.delta_limit) * p.nm).astype(int)  # check free surface overfilling
+            max_swap_2 = np.maximum(max_swap_2, 0)  # ignore negative values
             max_swap = np.minimum(max_swap, max_swap_2)  # dont overfill either condition
 
         overfilled = total_swap - max_swap

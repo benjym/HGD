@@ -7,8 +7,10 @@
     
     // nice version
     nx : 100, // width
-    ny : 50, // height
-    nm : 1000,  // number of simultaneous simulations
+    // ny : 50, // height
+    aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
+    aspect_ratio_m : 5,    // nm = aspect_ratio * nx
+
     // geometry
     H : 1, // (m)
 
@@ -27,8 +29,8 @@
     IC_mode : "column",
     
     // saving
-    save_inc : 100,
-    t_f : 50,  // s
+    saves : 10,
+    t_f : 30,  // s
     plot : ['nu','s'],
     videos : ['nu','s'],
     save : ['nu','s'],

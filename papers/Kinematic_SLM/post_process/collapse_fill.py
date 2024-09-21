@@ -9,7 +9,7 @@ from void_migration.params import load_file
 
 plt.style.use("papers/Kinematic_SLM/paper.mplstyle")
 
-with open("papers/Kinematic_SLM/collapse_fill.json5") as f:
+with open("papers/Kinematic_SLM/json/collapse_fill.json5") as f:
     dict, p = load_file(f)
 
 W = p.H * (p.nx / p.ny)
@@ -80,4 +80,4 @@ cbar.ax.yaxis.set_label_coords(new_x, 0.5)
 
 
 plt.subplots_adjust(left=0.12, bottom=0.28, right=0.9, top=0.95, hspace=0.4)
-plt.savefig(os.path.expanduser("~/Dropbox/Apps/Overleaf/Kinematic SLM/im/collapse_fill.pdf"))
+plt.savefig(os.path.expanduser("~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/collapse_fill.pdf"))

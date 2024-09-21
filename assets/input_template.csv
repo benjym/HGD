@@ -1,5 +1,5 @@
-﻿Charge/Discharge,-45 (%),-53 (%),-76  (%),-106  (%),+150  (%),Tonnes in/out
-Charge,3,20,35,20,22,100
-Discharge,,,,,,50
-Charge,5,25,30,28,12,200
-Discharge,,,,,,30
+﻿Load/Unload,Tonnes in/out,-45 (%),+150  (%),NaO2,Na2O2,NaOH,Na2O,NaOH2,Na2O2,NaOH3,SO2,NO2,AI
+L,100,3,22,1,2,3,4,5,6,7,8,9,10
+U,50,,,,,,,,,,,,
+L,200,5,12,,,,,,,,,,
+U,30,,,,,,,,,,,,

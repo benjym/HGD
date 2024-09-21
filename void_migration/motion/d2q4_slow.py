@@ -56,7 +56,7 @@ def move_voids(
     #     # plt.colorbar()
     #     # plt.pause(1)
 
-    # N_swap = np.ones_like(s[:, :, 0]) # HACK - SET NON-ZERO Tg EVERYWHERE FOR TESTING
+    N_swap = np.ones_like(s[:, :, 0])
 
     nu = 1.0 - np.mean(np.isnan(s), axis=2)
 
@@ -64,6 +64,16 @@ def move_voids(
 
     s_bar = operators.get_average(s)
     s_inv_bar = operators.get_hyperbolic_average(s)
+
+    if p.advection_model == "average_size":
+        v_y = np.sqrt(p.g * s_bar)
+    elif p.advection_model == "freefall":
+        v_y = np.sqrt(2 * p.g * p.dy)
+    elif p.advection_model == "stress":
+        sys.exit("Stress model not implemented")
+
+    p.P_u_ref = v_y * p.dt / p.dy
+    p.P_lr_ref = p.alpha * p.P_u_ref
 
     for index in p.indices:
         i, j, k = np.unravel_index(index, [p.nx, p.ny - 1, p.nm])
@@ -157,7 +167,7 @@ def move_voids(
                         if dest is not None:
                             [s, c, T], nu = operators.swap([i, j, k], dest, [s, c, T], nu, p)
 
-                        # N_swap[i, j] += 1
-                        # N_swap[dest[0],dest[1]] += 1
-
-    return u, v, s, c, T, N_swap, last_swap
+                            N_swap[i, j] += 1
+                            N_swap[dest[0], dest[1]] += 1
+    chi = N_swap / p.nm
+    return u, v, s, c, T, chi, last_swap

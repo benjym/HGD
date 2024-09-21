@@ -9,12 +9,17 @@ import warnings
 
 # Since tan(psi) = 1, we have that c_0^2 = 1 - stress_fraction
 
-# ISOTROPIC STRESS
+# K_0 STRESS
 # c_0^2 = lateral earth pressure coefficient, K
 # Using Jaky's formula, K = 1 - sin(phi), where phi is the repose angle (actually effective angle of internal friction)
 # stress_fraction = sin(phi)
 # or if we have a different value for K, we have that
 # stress_fraction = 1 - K
+
+# ISOTROPIC STRESS
+# c_0^2 = 1 - stress_fraction = K
+# K = 1
+# stress_fraction = 0
 
 # ANISOTROPIC STRESS
 # Rothenburg and Bathurst: mu approx = a/2 <--- does this help??
@@ -31,9 +36,11 @@ import warnings
 
 
 def calculate_stress(s, last_swap, p):
-    if p.stress_mode == "isotropic":
+    if p.stress_mode == "K_0":
         stress_fraction = np.sin(np.radians(p.repose_angle))
         stress_fraction = np.full([p.nx, p.ny], stress_fraction)
+    elif p.stress_mode == "isotropic":
+        stress_fraction = np.zeros([p.nx, p.ny])
     elif p.stress_mode == "anisotropic":
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)

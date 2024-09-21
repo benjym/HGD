@@ -3,7 +3,7 @@
     nx : 10, // number of cells horizontally
     ny : 10, // number of cells vertically
     nm : 10,  // number of cells in internal direction
-    P_stab : 0.1, // maximum probability to allow for stability
+    P_stab : 0.5, // maximum probability to allow for stability
 
 
     // geometry
@@ -54,14 +54,13 @@
     videos : ['nu','s'], // which variables to save videos of.
     save : [], // which variables to save. By default none.
     mask_s_bar : false, // should the images of s_bar be masked to hide areas of low density
-    num_cycles : 0, // a list containing dicts that define any cycles
-    charge_discharge : false, // should the system be charged and discharged
 
     // parallel code
     max_workers : 5, // max number of workers to run simultaneously. Default value is actually set void_migration.py
     
-    motion_model : 'd2q4_SA_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
-    advection_model : 'average_size', // 'average_size', 'freefall' or 'stress'
+    motion_model : 'd2q4_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
+    advection_model : 'freefall', // 'average_size', 'freefall' or 'stress'
+    inertia : false, // should the inertia term be included
 
     // cycles
     cycles : [], // list of dicts that define any cycles
@@ -71,17 +70,16 @@
     charge_rate : 1, // rate of charge zone filling (kg/s)
     sigma_charge : 0.1, // relative width of charge zone
     elutriation : false, // should elutriation be used
-    stopped_times : 0, // number of times the system has stopped
-
+    
     // stopping
-    stop_event : false,
+    stop_event : null, // this is None in Python, but null in JavaScript
     stop_after : 100, // number of timesteps to run with nothing happening before stopping
+    stopped_times : 0, // number of times the system has stopped
 
     // diagnostics
     show_optimal_resolution : false, // should the optimal resolution be shown on the screen at runtime
 
     gui : null, // this is None in Python, but null in JavaScript
-    stop_event : null, // this is None in Python, but null in JavaScript
     queue: null,
     queue2: null,
 }

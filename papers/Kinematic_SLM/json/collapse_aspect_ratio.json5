@@ -1,7 +1,9 @@
 {
     // resolution
-    nx : 80, // width
+    // nx : 80, // width
     // nx : 200, // width
+    nx : [51,101,201], // width
+    motion_model : 'd2q4_array',
     
     // geometry
     H : 1, // (m)
@@ -11,10 +13,10 @@
     // material properties
     repose_angle : 30, // (degrees)
     gsd_mode : 'mono',
-    s_m : [0.001], // minimum particle size (m)
+    s_m : 0.001, // minimum particle size (m)
     nu_cs : 0.5,
     alpha : 1,
-    P_stab : 0.5,
+    // P_stab : 0.5,
     
     // initial condition:
     fill_ratio : [0.05,0.1,0.2,0.5],
@@ -23,7 +25,7 @@
     
     // saving
     saves : 100,   // how many saves to make
-    t_f : 150,  // s
+    t_f : 30,  // s
     plot : ['nu'],
     videos : ['nu'],
     save : ['nu'],

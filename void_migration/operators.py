@@ -1,6 +1,6 @@
 import warnings
 import numpy as np
-from scipy.ndimage import maximum_filter
+from scipy.ndimage import maximum_filter, minimum_filter
 
 
 def swap(src, dst, arrays, nu, p):
@@ -62,15 +62,69 @@ def get_depth(s):
     return depth
 
 
-def empty_up(nu_here):
+def empty_up(nu_here, p):
     # would this be faster with a convolution?
-    nu_up = np.roll(nu_here, -1, axis=1)
-    nu_up_left = np.roll(nu_up, -1, axis=0)
-    nu_up_right = np.roll(nu_up, 1, axis=0)
-    return (nu_up == 0.0) | (nu_up_left == 0.0) | (nu_up_right == 0.0)
+    # nu_up = np.roll(nu_here, -1, axis=1)
+    # nu_up_left = np.roll(nu_up, -1, axis=0)
+    # nu_up_right = np.roll(nu_up, 1, axis=0)
+    # nu_left = np.roll(nu_here, -1, axis=0)
+    # nu_right = np.roll(nu_here, 1, axis=0)
+    # return (nu_up == 0.0) | (nu_up_left == 0.0) | (nu_up_right == 0.0) | (nu_left == 0.0) | (nu_right == 0.0)
+    if p.mu == 0:
+        return np.zeros_like(nu_here, dtype=bool)
+    else:
+        L = np.ceil(p.nu_cs / p.delta_limit).astype(int)
+        # kernel = np.array([[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]).T
+        kernel = np.ones((2 * L + 1, 2 * L + 1))
+        kernel[L, L] = 0
+        nu_min = minimum_filter(nu_here, footprint=kernel)
+
+        # nu_min_dilated = maximu_filter(nu_min, size=3)
+
+        return nu_min == 0  # & (nu_here > 0)
 
 
-def stable_slope_fast(s, dir, p):  # , potential_free_surface):
+def stable_slope_gradient(s, dir, p, debug=False):
+    """
+    Determines the stability of slopes based on the solid fraction.
+
+    Parameters:
+    s (numpy.ndarray): A 3D array representing the solid fraction in the system.
+    dir (int): The direction in which to roll the array (shift axis).
+    p (object): An object containing the parameter `delta_limit` which is used to determine stability.
+
+    Returns:
+    numpy.ndarray: A 3D boolean array where `True` indicates stable slopes and `False` indicates unstable slopes.
+    """
+
+    nu = get_solid_fraction(s)
+    dnu_dx, dnu_dy = np.gradient(nu)
+    nu_mag = np.sqrt(dnu_dx**2 + dnu_dy**2)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        slope = np.nan_to_num(dnu_dy / dnu_dx, posinf=0, neginf=0)
+    stable = (np.abs(slope) < p.mu) & (nu_mag > 0.2)
+
+    if debug:
+        import matplotlib.pyplot as plt
+
+        plt.ion()
+        plt.figure(98)
+        plt.subplot(2, 2, 1)
+        plt.imshow(nu_mag)
+        plt.colorbar()
+        plt.subplot(2, 2, 2)
+        plt.imshow(slope)
+        plt.colorbar()
+        plt.subplot(2, 2, 3)
+        plt.imshow(stable)
+        plt.colorbar()
+        plt.pause(1e-1)
+
+    Stable = np.repeat(stable[:, :, np.newaxis], s.shape[2], axis=2)
+    return Stable
+
+
+def stable_slope_fast(s, dir, p, potential_free_surface=None):
     """
     Determines the stability of slopes based on the solid fraction.
 
@@ -88,7 +142,10 @@ def stable_slope_fast(s, dir, p):  # , potential_free_surface):
     delta_nu = nu_dest - nu_here
 
     # delta_nu = -dir*np.gradient(nu_here,axis=0)
-    stable = delta_nu <= p.delta_limit  # & potential_free_surface
+    if potential_free_surface is None:
+        stable = delta_nu <= p.delta_limit
+    else:
+        stable = (delta_nu <= p.delta_limit) & potential_free_surface
 
     Stable = np.repeat(stable[:, :, np.newaxis], s.shape[2], axis=2)
     return Stable

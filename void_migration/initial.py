@@ -22,10 +22,6 @@ def IC(p):
                 fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
                 s[i, j, fill] = p.s_m
         p.s_M = p.s_m
-        if hasattr(p, "charge_discharge"):
-            pre_masked = False
-        else:
-            pre_masked = True
 
     if p.gsd_mode == "half_half":
         in_ny = int(np.ceil(p.ny * 0.4))  # the height can be controlled here if required
@@ -37,7 +33,7 @@ def IC(p):
             for k in range(in_ny // 2, in_ny):
                 fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
                 s[i, k, fill] = p.s_m
-        if hasattr(p, "charge_discharge"):
+        if len(p.cycles) > 0:  # p.charge_discharge:
             pre_masked = False
         else:
             pre_masked = True
@@ -66,7 +62,7 @@ def IC(p):
             for m in y_ordinates[3]:
                 fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
                 s[i, m, fill] = p.s_m
-        if hasattr(p, "charge_discharge"):
+        if len(p.cycles) > 0:  # p.charge_discharge:
             pre_masked = False
         else:
             pre_masked = True
@@ -87,7 +83,7 @@ def IC(p):
                         remaining, size=int(p.nm * (1 - p.large_concentration) * p.nu_fill), replace=False
                     )
                     s[i, j, small] = p.s_m
-        if hasattr(p, "charge_discharge"):
+        if len(p.cycles) > 0:  # p.charge_discharge:
             pre_masked = False
         else:
             pre_masked = True
@@ -110,7 +106,7 @@ def IC(p):
 
         mask = np.random.rand(p.nx, p.ny, p.nm) > p.nu_fill
         s[mask] = np.nan
-        if hasattr(p, "charge_discharge"):
+        if len(p.cycles) > 0:  # p.charge_discharge:
             pre_masked = False
         else:
             pre_masked = True
@@ -224,7 +220,7 @@ def set_concentration(s, X, Y, p):
     #     c[int(p.internal_geometry.perf_pts[0] * p.nx) : int(p.internal_geometry.perf_pts[1] * p.nx)] = 1
     #     c[int(p.internal_geometry.perf_pts[1] * p.nx) :] = 2
     #     c[np.isnan(s)] = np.nan
-    if p.charge_discharge:  # p.charge_discharge:
+    if len(p.cycles) > 0:  # p.charge_discharge:
         if p.IC_mode == "full":
             c = np.ones_like(s)
         else:

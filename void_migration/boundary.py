@@ -90,8 +90,8 @@ def central_outlet(u, v, s, p, c, outlet):
 
     for i in range(p.nx // 2 - p.half_width, p.nx // 2 + p.half_width + 1):
         for k in range(p.nm):
-            if np.random.rand() < p.outlet_rate:
-                if not np.isnan(s[i, 0, k]):
+            if not np.isnan(s[i, 0, k]):
+                if np.random.rand() < p.outlet_rate:
                     if p.refill:
                         target_column = np.random.choice(p.nx)
                         nu_up = np.roll(1 - np.mean(np.isnan(s[target_column, :, :]), axis=1), -1)
@@ -106,6 +106,8 @@ def central_outlet(u, v, s, p, c, outlet):
                                     s[i, 0, k],
                                     s[target_column, topmost_solid + 1, k],
                                 )
+                            else:
+                                print("WARNING: No room to refill")
                     else:
                         s[i, 0, k] = np.nan
                     p.outlet += fill_mass
@@ -116,8 +118,8 @@ def central_outlet(u, v, s, p, c, outlet):
 def right_outlet(u, v, s, p, c, outlet):
     for i in range(p.nx - p.half_width * 2, p.nx):
         for k in range(p.nm):
-            if np.random.rand() < p.outlet_rate:
-                if not np.isnan(s[i, 0, k]):
+            if not np.isnan(s[i, 0, k]):
+                if np.random.rand() < p.outlet_rate:
                     if p.refill:
                         target_column = np.random.choice(p.half_width * 2)
                         nu_up = np.roll(1 - np.mean(np.isnan(s[target_column, :, :]), axis=1), -1)
@@ -259,7 +261,7 @@ def pour(u, v, s, p, c, outlet):
     return u, v, s, c, outlet
 
 
-def wall(u, v, s, p, c, outlet):  # Remove at central outlet - use this one
+def wall(u, v, s, p, c, outlet):
     for i in range(0, p.half_width):
         for k in range(p.nm):
             # if np.random.rand() < 0.1:

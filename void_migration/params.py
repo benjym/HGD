@@ -53,11 +53,15 @@ class dict_to_class:
         if hasattr(self, "aspect_ratio_y"):
             if isinstance(self.aspect_ratio_y, list):
                 self.ny = [int(self.nx * ar) for ar in self.aspect_ratio_y]
+            elif isinstance(self.nx, list):
+                self.ny = [int(nx * self.aspect_ratio_y) for nx in self.nx]
             else:
                 self.ny = int(self.nx * self.aspect_ratio_y)
         if hasattr(self, "aspect_ratio_m"):
             if isinstance(self.aspect_ratio_m, list):
                 self.nm = [int(self.nx * ar) for ar in self.aspect_ratio_m]
+            elif isinstance(self.nx, list):
+                self.nm = [int(nx * self.aspect_ratio_m) for nx in self.nx]
             else:
                 self.nm = int(self.nx * self.aspect_ratio_m)
 
@@ -113,7 +117,7 @@ class dict_to_class:
             self.free_fall_velocity = np.sqrt(self.g * s_bar)  # typical speed to fall one mean diameter (s)
         elif self.advection_model == "freefall":
             self.free_fall_velocity = np.sqrt(
-                2 * self.g * self.dy
+                self.g * self.dy
             )  # typical speed to fall one grid spacing (m/s)
         elif self.advection_model == "stress":
             max_pressure = self.solid_density * self.g * self.H
@@ -124,41 +128,24 @@ class dict_to_class:
         if self.advection_model == "average_size":
             self.diffusivity = self.alpha * self.free_fall_velocity * s_bar  # diffusivity (m^2/s)
         elif self.advection_model == "freefall":
-            self.diffusivity = self.alpha * np.sqrt(self.g * self.dy**3)
+            self.diffusivity = self.alpha * np.sqrt(2 * self.g * self.dy**3)
 
         safe = False
         stability = 0.5
         while not safe:
-            self.P_u_ref = stability
-            self.dt = self.P_u_ref * self.dy / self.free_fall_velocity
+            self.P_adv_ref = stability
+            self.dt = self.P_adv_ref * self.dy / self.free_fall_velocity
 
-            self.P_lr_ref = (
-                self.diffusivity * self.dt / self.dy**2
-            )  # ignoring factor of 2 because that assumes P=0.5
-            # self.P_lr_ref = self.alpha * self.P_u_ref
+            self.P_diff_ref = self.alpha * self.P_adv_ref
 
-            self.P_u_max = self.P_u_ref * (self.s_M / self.s_m)
-            self.P_lr_max = self.P_lr_ref * (self.s_M / self.s_m)
+            self.P_adv_max = self.P_adv_ref * (self.s_M / self.s_m)
+            self.P_diff_max = self.P_diff_ref * (self.s_M / self.s_m)
 
-            if self.motion_model == "d2q4_array":
-                if self.P_u_max <= 1 and self.P_lr_max <= self.P_stab:
-                    safe = True
-                else:
-                    stability *= 0.95
+            if self.P_adv_max + 2 * self.P_diff_max <= self.P_stab:
+                safe = True
             else:
-                if self.P_u_max + 2 * self.P_lr_max <= self.P_stab:
-                    safe = True
-                else:
-                    stability *= 0.95
+                stability *= 0.95
 
-        # print(f"P_u_ref : {self.P_u_ref}")
-        # print(f"P_u_max : {self.P_u_max}")
-        # print(f"P_lr_ref : {self.P_lr_ref}")
-        # print(f"P_lr_max : {self.P_lr_max}")
-
-        # if self.charge_discharge:
-        #     self.nt = cycles.set_nt(self)
-        # else:
         if self.t_f is None:
             self.nt = 0
         else:
