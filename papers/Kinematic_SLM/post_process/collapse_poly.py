@@ -29,7 +29,7 @@ y_off = 0  # -0.005
 
 cmap = size_colormap()
 
-fig = plt.figure(figsize=[3.31894680556, 1.9])
+fig = plt.figure(figsize=[3.31894680556, 1.8])
 grid = fig.subplots(2, 3)
 
 for i, val in enumerate(p.power_law_alpha):
@@ -50,9 +50,11 @@ for i, val in enumerate(p.power_law_alpha):
         CGSD = cumtrapz(GSD, x=bin_centers)
 
         grid[0, i].semilogx(1e3 * bin_edges[1:-1], CGSD, label=f"$\\alpha = {val}$", color="k")
+        grid[0, i].set_xticks([])
+        grid[0, i].set_yticks([])
         # grid[0, i].semilogx(bin_centers, GSD, label=f"$\\alpha = {val}$")
         # grid[0, i].set_xscale("log")
-        grid[0, i].set_xticks([1e3 * p.s_m, 1e3 * p.s_M])
+        # grid[0, i].set_xticks([1e3 * p.s_m, 1e3 * p.s_M])
         # grid[2 * i + 0].set_yscale("log")
 
         data = np.load(files[-1])
@@ -69,6 +71,10 @@ for i, val in enumerate(p.power_law_alpha):
             rasterized=True,
             norm=colors.LogNorm(vmin=1e3 * p.s_m, vmax=1e3 * p.s_M),
         )
+
+        grid[1, i].set_xticks([])
+        grid[1, i].set_yticks([])
+        grid[1, i].set_aspect("equal")
 
         # print(data[~np.isnan(data)].min(), data[~np.isnan(data)].max())
 
@@ -88,10 +94,15 @@ for i, val in enumerate(p.power_law_alpha):
     #     plt.yticks([])
     #     plt.axis("equal")
 
+grid[0, 0].set_xticks([1e3 * p.s_m, 1e3 * p.s_M])
+grid[0, 0].set_yticks([0, 1])
+grid[0, 0].set_xlabel(r"$s$ (mm)", labelpad=-3)
+grid[0, 0].set_ylabel(r"CGSD (-)")
+
 plt.sca(grid[1, 0])
-plt.xlabel("$x$ (m)", labelpad=1)
+plt.xlabel("$x$ (m)", labelpad=-3)
 plt.ylabel("$y$ (m)")  # , rotation="horizontal")  # ,labelpad=3)
-plt.xticks([-W / 2, 0, W / 2])
+plt.xticks([-W / 2, W / 2])
 plt.yticks([0, p.H])
 
 # plt.ylim([0, p.H])
@@ -113,5 +124,5 @@ plt.yticks([0, p.H])
 # cbar.ax.yaxis.set_label_coords(new_x, 0.5)
 
 
-plt.subplots_adjust(left=0.10, bottom=0.22, right=0.99, top=0.95, hspace=0.4)
+plt.subplots_adjust(left=0.12, bottom=0.18, right=0.99, top=0.95, hspace=0.8)
 plt.savefig(os.path.expanduser("~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/collapse_poly.pdf"))

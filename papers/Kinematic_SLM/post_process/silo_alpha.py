@@ -34,16 +34,16 @@ cmap.set_bad("black")
 
 imgs = ["rice_10.png", "lentils_10.png", "glass_beads_10.png"]
 
-fig = plt.figure(figsize=[3.31894680556, 3])
+fig = plt.figure(figsize=[3.31894680556, 2.8])
 grid = fig.subplots(2, 3)
 alphas = p.alpha
 for i, val in enumerate(alphas):
     p.alpha = val
     p.update_before_time_march(cycles)
 
-    t_plot = 0.02 * p.t_f
+    t_plot = 0.5 * p.t_f
     nt_plot = int(t_plot / p.dt)
-    dt = 10  # int(p.t_f / p.dt / 100)
+    dt = 500  # int(p.t_f / p.dt / 100)
 
     for j, t in enumerate(range(nt_plot - dt, nt_plot + dt)):
         this_u = np.load(f"output/silo_alpha/alpha_{val}/data/u_{str(t).zfill(6)}.npy")
@@ -66,7 +66,7 @@ for i, val in enumerate(alphas):
     im = grid[1, i].pcolormesh(
         x,
         y,
-        u_mag.T,
+        (u_mag / u_mag.max()).T,
         # vmin=1e3 * p.s_m,
         # vmax=1e3 * p.s_M,
         cmap=cmap,
@@ -92,9 +92,17 @@ plt.yticks([0, p.H])
 
 plt.sca(grid[1, 0])
 plt.xlabel("$x$ (m)", labelpad=1)
-plt.ylabel("$y$ (m)", labelpad=-7)
+plt.ylabel("$y$ (m)", labelpad=-14)
 plt.xticks([-W / 2, 0, W / 2], labels=[f"{-W/2:0.2f}", "0", f"{W/2:0.2f}"])
 plt.yticks([0, p.H], labels=["0", f"{p.H:0.2f}"])
+
+colorbar_ax = fig.add_axes([0.87, 0.13, 0.02, 0.97 - 0.13])
+cb = plt.colorbar(im, cax=colorbar_ax)
+cb.set_label(r"$|\mathbf{\hat{u}}|$ (-)", labelpad=-12, y=0.667)
+
+
+plt.text(-0.6, 0.5, "Experiment", ha="center", va="center", transform=grid[0, 0].transAxes, rotation=90)
+plt.text(-0.6, 0.5, "Simulation", ha="center", va="center", transform=grid[1, 0].transAxes, rotation=90)
 
 # plt.ylim([0, p.H])
 # plt.xlim([-W / 2, W / 2])
@@ -115,5 +123,5 @@ plt.yticks([0, p.H], labels=["0", f"{p.H:0.2f}"])
 # cbar.ax.yaxis.set_label_coords(new_x, 0.5)
 
 
-plt.subplots_adjust(left=0.10, bottom=0.13, right=0.99, top=0.99, hspace=0.2)
+plt.subplots_adjust(left=0.16, bottom=0.13, right=0.85, top=0.97, hspace=0.1, wspace=0.1)
 plt.savefig(os.path.expanduser("~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/silo_alpha.pdf"))
