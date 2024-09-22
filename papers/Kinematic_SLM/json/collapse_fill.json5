@@ -4,7 +4,7 @@
     // nx : 40, // width
     
     // paper version
-    nx : 201, // width
+    nx : 101, // width
 
     // geometry
     H : 1, // (m)
@@ -25,8 +25,8 @@
     IC_mode : "column",
     
     // saving
-    saves : 10,
-    t_f : 30,  // s
+    save_inc : 1000,
+    t_f : null,  // s
     plot : ['nu'],  //,'stable'],
     videos : ['nu'],
     save : ['nu'],

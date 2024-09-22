@@ -12,9 +12,10 @@ plt.style.use("papers/Kinematic_SLM/paper.mplstyle")
 with open("papers/Kinematic_SLM/json/collapse_fill.json5") as f:
     dict, p = load_file(f)
 
-W = p.H * (p.nx / p.ny)
-x = np.linspace(-W / 2, W / 2, p.nx)
 y = np.linspace(0, p.H, p.ny)
+p.dy = p.H / p.ny
+x = np.arange(-(p.nx - 0.5) / 2 * p.dy, (p.nx - 0.5) / 2 * p.dy, p.dy)  # force equal grid spacing
+W = x[-1] - x[0]
 p.dx = x[1] - x[0]
 
 L = W / 4.0  # length of dashed line

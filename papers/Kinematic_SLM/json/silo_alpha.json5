@@ -1,0 +1,40 @@
+{
+    // nice version
+    nx : 101, // width
+    // nx : 51,
+    // ny : 50, // height
+    aspect_ratio_y : 1.5662100457,  // ny = aspect_ratio * nx
+    // aspect_ratio_m : 1,    // nm = aspect_ratio * nx
+    nm : 100,
+
+    // geometry
+    H : 0.4698630137, // (m)
+    boundaries : ['central_outlet'],
+    // outlet_rate : 0.1,
+    P_stab : 0.05,
+
+    // material properties
+    repose_angle : 30, // (degrees)
+    gsd_mode : 'mono',
+    s_m : 0.003, // minimum particle size (m)
+    s_M : 0.003, // maximum particle size (m)
+    nu_cs : 0.5,
+    alpha : [1.0,3.0,10.0],
+    half_width : 1,
+    
+    // initial condition:
+    fill_ratio : 1.0,
+    nu_fill : 0.5,
+    IC_mode : "top",
+    
+    // saving
+    save_inc : 1,
+    t_f : 1,  // s
+    plot : ['nu','U_mag'],
+    videos : ['nu','U_mag'],
+    save : ['nu','velocity'],
+    mask_s_bar : false,
+
+    // parallel
+    max_workers : 3, // leave some cores on my poor little laptop
+}

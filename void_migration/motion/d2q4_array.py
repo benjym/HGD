@@ -39,13 +39,15 @@ def move_voids(
     np.random.shuffle(options)  # oh boy, this is a massive hack
     N_swap = np.zeros([p.nx, p.ny], dtype=int)
 
+    # swapped = np.zeros_like(s, dtype=bool)
+
     for axis, d in options:
         nu = operators.get_solid_fraction(s)
 
         solid = nu >= p.nu_cs
         Solid = np.repeat(solid[:, :, np.newaxis], p.nm, axis=2)
 
-        unstable = np.isnan(s) * ~Solid  # & ~Skip
+        unstable = np.isnan(s) * ~Solid  # & ~swapped  # & ~Skip
 
         dest = np.roll(s, d, axis=axis)
         s_bar = operators.get_average(s)
@@ -53,18 +55,6 @@ def move_voids(
         S_bar_dest = np.roll(S_bar, d, axis=axis)
 
         potential_free_surface = operators.empty_up(nu, p)
-
-        # dnu_dx, dnu_dy = np.gradient(nu)
-        # dnu_mag = np.sqrt(dnu_dx**2 + dnu_dy**2)
-        # potential_free_surface = dnu_mag > 0.25
-
-        # potential_free_surface = None
-
-        # import matplotlib.pyplot as plt
-
-        # plt.clf()
-        # plt.imshow(potential_free_surface.T)
-        # plt.savefig("potential_free_surface.png")
 
         if p.advection_model == "average_size":
             U_dest = np.sqrt(p.g * S_bar_dest)
@@ -157,6 +147,8 @@ def move_voids(
         last_swap[swap_indices[:, 0], swap_indices[:, 1], swap_indices[:, 2]] = (
             2 * axis - 1
         )  # 1 for up, -1 for left or right
+
+        # swapped[dest_indices[:, 0], dest_indices[:, 1], dest_indices[:, 2]] = True
 
     last_swap[np.isnan(s)] = np.nan
     chi = N_swap / p.nm

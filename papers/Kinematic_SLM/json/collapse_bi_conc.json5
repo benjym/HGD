@@ -6,10 +6,11 @@
     // nm : 50,  // number of simultaneous simulations
     
     // nice version
-    nx : 100, // width
+    nx : 101, // width
     // ny : 50, // height
     aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
-    aspect_ratio_m : 5,    // nm = aspect_ratio * nx
+    // aspect_ratio_m : 5,    // nm = aspect_ratio * nx
+    nm : 100,
 
     // geometry
     H : 1, // (m)
@@ -33,7 +34,7 @@
     t_f : 30,  // s
     plot : ['nu','s'],
     videos : ['nu','s'],
-    save : ['nu','s'],
+    save : ['nu','s_bar'],
     mask_s_bar : false,
 
     // parallel

@@ -1,0 +1,44 @@
+{
+    // resolution
+    nx : 51, // width
+    motion_model : 'd2q4_array',
+    
+    // geometry
+    H : 1, // (m)
+    aspect_ratio_y : 1,  // ny = aspect_ratio * nx
+    // aspect_ratio_m : 0.25,    // nm = aspect_ratio * nx
+    nm : 100,
+
+    // material properties
+    // repose_angle : [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90], // (degrees)
+    repose_angle : 30, // (degrees)
+    // repose_angle : [0,25,50,75,90], // (degrees)
+    gsd_mode : 'mono',
+    s_m : 0.01, // minimum particle size (m)
+    s_M : 0.01, // maximum particle size (m)
+    nu_cs : 0.5,
+    alpha : [0.3,1,3.0],
+    // P_stab : 0.5,
+    
+    // initial condition:
+    fill_ratio : 0.5,
+    nu_fill : [0.2,0.5,0.8],
+    IC_mode : "left_column",
+
+    // stress
+    calculate_stress : true, // should the stress be calculated
+    stress_mode : 'isotropic',
+    // stress_mode : 'anisotropic',
+    
+    // saving
+    saves : 100,   // how many saves to make
+    t_f : 5,  // s - cant use null because of repose_angle=0 :(
+    
+    plot : ['nu', 'stress'],
+    videos : ['nu','stress'],
+    save : ['nu'],
+    mask_s_bar : false,
+
+    // parallel
+    max_workers : 3, // leave some cores on my poor little laptop
+}

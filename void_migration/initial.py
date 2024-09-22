@@ -12,7 +12,8 @@ def IC(p):
         The array of grain sizes. Values of `NaN` are voids.
     """
     rng = np.random.default_rng()
-    pre_masked = False
+
+    # First step: Generate BOTH the grain size distribution and the void distribution
 
     # pick a grain size distribution
     if p.gsd_mode == "mono":
@@ -23,7 +24,7 @@ def IC(p):
                 s[i, j, fill] = p.s_m
         p.s_M = p.s_m
 
-    if p.gsd_mode == "half_half":
+    elif p.gsd_mode == "half_half":
         in_ny = int(np.ceil(p.ny * 0.4))  # the height can be controlled here if required
         s = np.nan * np.ones([p.nx, p.ny, p.nm])  # monodisperse
         for i in range(p.nx):
@@ -33,12 +34,8 @@ def IC(p):
             for k in range(in_ny // 2, in_ny):
                 fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
                 s[i, k, fill] = p.s_m
-        if len(p.cycles) > 0:  # p.charge_discharge:
-            pre_masked = False
-        else:
-            pre_masked = True
 
-    if p.gsd_mode == "four_layers":
+    elif p.gsd_mode == "four_layers":
         s = np.nan * np.ones([p.nx, p.ny, p.nm])  # monodisperse
         layers = 4
         d_pts = p.ny * 0.6
@@ -62,12 +59,8 @@ def IC(p):
             for m in y_ordinates[3]:
                 fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
                 s[i, m, fill] = p.s_m
-        if len(p.cycles) > 0:  # p.charge_discharge:
-            pre_masked = False
-        else:
-            pre_masked = True
 
-    if p.gsd_mode == "bi" or p.gsd_mode == "fbi":  # bidisperse
+    elif p.gsd_mode == "bi" or p.gsd_mode == "fbi":  # bidisperse
         if (p.nm * p.large_concentration * p.nu_fill) < 2:
             s = np.random.choice([p.s_m, p.s_M], size=[p.nx, p.ny, p.nm])
         else:
@@ -83,77 +76,79 @@ def IC(p):
                         remaining, size=int(p.nm * (1 - p.large_concentration) * p.nu_fill), replace=False
                     )
                     s[i, j, small] = p.s_m
-        if len(p.cycles) > 0:  # p.charge_discharge:
-            pre_masked = False
-        else:
-            pre_masked = True
 
-    elif p.gsd_mode == "poly":  # polydisperse
-        """
-        # s_0 = p.s_m / (1.0 - p.s_m)  # intermediate calculation
-        s_non_dim = np.random.rand(p.nm)
-        # s = (s + s_0) / (s_0 + 1.0)  # now between s_m and 1
-        this_s = (p.s_M - p.s_m) * s_non_dim + p.s_m
+    elif p.gsd_mode == "power_law":
+        # CGSD(d) = ( d**(3-alpha) - d_m**(3-alpha) ) / ( d_M**(3-alpha) - d_m**(3-alpha) )
+        # d = ( CGSD(d) * ( d_M**(3-alpha) - d_m**(3-alpha) ) + d_m**(3-alpha) )**(1/(3-alpha))
         s = np.nan * np.ones([p.nx, p.ny, p.nm])
-        # HACK: gsd least uniform in space, still need to account for voids
         for i in range(p.nx):
             for j in range(p.ny):
-                np.random.shuffle(this_s)
-                s[i, j, :] = this_s
-        """
+                fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
+                F = rng.uniform(low=0, high=1, size=len(fill))
+                s[i, j, fill] = (
+                    F * (p.s_M ** (3.0 - p.power_law_alpha) - p.s_m ** (3.0 - p.power_law_alpha))
+                    + p.s_m ** (3.0 - p.power_law_alpha)
+                ) ** (1.0 / (3.0 - p.power_law_alpha))
 
-        s = np.random.uniform(p.s_m, p.s_M, size=[p.nx, p.ny, p.nm])
+    elif p.gsd_mode == "uniform":  # polydisperse
+        s = rng.uniform(p.s_m, p.s_M, size=[p.nx, p.ny, p.nm])
 
-        mask = np.random.rand(p.nx, p.ny, p.nm) > p.nu_fill
-        s[mask] = np.nan
-        if len(p.cycles) > 0:  # p.charge_discharge:
-            pre_masked = False
-        else:
-            pre_masked = True
-
-    # where particles are in space
-    if not pre_masked:
-        if p.IC_mode == "random":  # voids everywhere randomly
-            mask = np.random.rand(p.nx, p.ny, p.nm) > p.nu_fill
-        elif p.IC_mode == "top":  # voids at the top
-            mask = np.zeros([p.nx, p.ny, p.nm], dtype=bool)
-            mask[:, int(p.fill_ratio * p.ny) :, :] = True
-        elif p.IC_mode == "full":  # completely full
-            mask = np.zeros_like(s, dtype=bool)
-        elif p.IC_mode == "column":  # just middle full to top
-            mask = np.ones([p.nx, p.ny, p.nm], dtype=bool)
-            mask[
-                p.nx // 2 - int(p.fill_ratio / 4 * p.nx) : p.nx // 2 + int(p.fill_ratio / 4 * p.nx), :, :
-            ] = False
-
-            mask[
-                :, -1, :
-            ] = True  # top row can't be filled for algorithmic reasons - could solve this if we need to
-
-        elif p.IC_mode == "empty":  # completely empty
-            mask = np.ones([p.nx, p.ny, p.nm], dtype=bool)
-
-        elif p.IC_mode == "left_column":  # just middle full to top
-            mask = np.ones([p.nx, p.ny, p.nm], dtype=bool)
-            mask[: int(p.fill_ratio * p.nx), :, :] = False
-
-            mask[
-                :, -1, :
-            ] = True  # top row can't be filled for algorithmic reasons - could solve this if we need to
-
+        mask = rng.uniform(size=[p.nx, p.ny, p.nm]) > p.nu_fill
         s[mask] = np.nan
 
-        if p.wall_motion:
-            nu = 1.0 - np.mean(np.isnan(s[:, :, :]), axis=2)
-            start_sim = np.min(np.argwhere(nu > 0), axis=0)[
-                0
-            ]  # gives the start position of column in x-direction
-            end_sim = np.max(np.argwhere(nu > 0), axis=0)[
-                0
-            ]  # gives the end position of column in x-direction
+    elif p.gsd_mode == "weibull":
+        # Using a weird parameterisation of the Weibull distribution to have d_50 as a parameter
+        # F(d) = 1−exp(−(d/d_50)^k)*ln(2))
+        # Rearranging for d: d = d_50 * (-ln(1-F)/ln(2))**(1/k)
+        s = np.nan * np.ones([p.nx, p.ny, p.nm])
+        for i in range(p.nx):
+            for j in range(p.ny):
+                fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
+                F = rng.uniform(low=0, high=1, size=len(fill))
+                s[i, j, fill] = p.d_50 * (-np.log(1 - F) / np.log(2)) ** (1 / p.k)
 
-            s[0 : start_sim - 1, :, :] = 0  # Depending upon these values, make changes in void_migration.py
-            s[end_sim + 2 :, :, :] = 0
+    # Second step: Mask out regions in space
+
+    if p.IC_mode == "random":  # voids everywhere randomly, this has been done above in the first step
+        # mask = np.random.rand(p.nx, p.ny, p.nm) > p.nu_fill
+        return s
+    elif p.IC_mode == "top":  # voids at the top
+        mask = np.zeros([p.nx, p.ny, p.nm], dtype=bool)
+        mask[:, int(p.fill_ratio * p.ny) :, :] = True
+    elif p.IC_mode == "full":  # completely full
+        return s
+    elif p.IC_mode == "column":  # just middle full to top
+        mask = np.ones([p.nx, p.ny, p.nm], dtype=bool)
+        mask[
+            p.nx // 2 - int(p.fill_ratio / 4 * p.nx) : p.nx // 2 + int(p.fill_ratio / 4 * p.nx), :, :
+        ] = False
+
+        mask[
+            :, -1, :
+        ] = True  # top row can't be filled for algorithmic reasons - could solve this if we need to
+
+    elif p.IC_mode == "empty":  # completely empty
+        mask = np.ones([p.nx, p.ny, p.nm], dtype=bool)
+
+    elif p.IC_mode == "left_column":  # just middle full to top
+        mask = np.ones([p.nx, p.ny, p.nm], dtype=bool)
+        mask[: int(p.fill_ratio * p.nx), :, :] = False
+
+        mask[
+            :, -1, :
+        ] = True  # top row can't be filled for algorithmic reasons - could solve this if we need to
+
+    s[mask] = np.nan
+
+    if p.wall_motion:
+        nu = 1.0 - np.mean(np.isnan(s[:, :, :]), axis=2)
+        start_sim = np.min(np.argwhere(nu > 0), axis=0)[
+            0
+        ]  # gives the start position of column in x-direction
+        end_sim = np.max(np.argwhere(nu > 0), axis=0)[0]  # gives the end position of column in x-direction
+
+        s[0 : start_sim - 1, :, :] = 0  # Depending upon these values, make changes in void_migration.py
+        s[end_sim + 2 :, :, :] = 0
 
     return s
 

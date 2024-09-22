@@ -76,6 +76,11 @@ inferno.set_bad("w", 0.0)
 inferno_r = cm.get_cmap("inferno_r")
 inferno_r.set_bad("w", 0.0)
 
+
+def size_colormap():
+    return orange_blue_cmap
+
+
 global fig, summary_fig, triple_fig
 fig = plt.figure(1)
 summary_fig = plt.figure(2)
@@ -274,6 +279,8 @@ def update(p, state, t, *args):
 
         if "s" in p.save:
             save_s(s, p, t)
+        if "s_bar" in p.save:
+            save_s_bar(s, p, t)
         if "nu" in p.save:
             save_nu(s, p, t)
         if "rel_nu" in p.save:
@@ -289,7 +296,7 @@ def update(p, state, t, *args):
         # if "temperature" in p.save:
         #     np.savetxt(p.folderName + "outlet_T.csv", np.array(outlet_T), delimiter=",")
         if "velocity" in p.save:
-            np.savetxt(p.folderName + "data/u.csv", u / np.sum(np.isnan(s), axis=2), delimiter=",")
+            save_velocity(u, v, p.folderName, t)
         if "charge_discharge" in p.save:
             c_d_saves(p, non_zero_nu_time, p_count, p_count_s, p_count_l)
         if "col_depth" in p.save:
@@ -628,7 +635,11 @@ def plot_s(s, p, t, *args):
 
 
 def save_s(s, p, t):
-    np.save(p.folderName + "data/s_" + str(t).zfill(6) + ".npy", operators.get_average(s))
+    np.save(p.folderName + "data/s_" + str(t).zfill(6) + ".npy", s)
+
+
+def save_s_bar(s, p, t):
+    np.save(p.folderName + "data/s_bar_" + str(t).zfill(6) + ".npy", operators.get_average(s))
 
 
 def plot_nu(s, p, t):
@@ -768,6 +779,11 @@ def plot_c(s, c, p, t):
 
 def save_c(c, folderName, t):
     np.save(folderName + "data/c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
+
+
+def save_velocity(u, v, folderName, t):
+    np.save(folderName + "data/u_" + str(t).zfill(6) + ".npy", u)
+    np.save(folderName + "data/v_" + str(t).zfill(6) + ".npy", v)
 
 
 def plot_outlet(outlet, output):

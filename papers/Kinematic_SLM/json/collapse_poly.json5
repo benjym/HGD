@@ -6,7 +6,8 @@
     // nm : 100,  // number of simultaneous simulations
     
     // nice version
-    nx : 101, // width
+    nx : 51,
+    // nx : 101, // width
     // ny : 50, // height
     aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
     // aspect_ratio_m : 5,    // nm = aspect_ratio * nx
@@ -17,12 +18,12 @@
 
     // material properties
     repose_angle : 30, // (degrees)
-    gsd_mode : 'bi',
+    gsd_mode : 'power_law',
     s_m : 0.001, // minimum particle size (m)
-    s_M : [0.002,0.003,0.005], // maximum particle size (m)
+    s_M : 0.01, // maximum particle size (m)
+    power_law_alpha : [-1,1,2.99],
     nu_cs : 0.5,
     alpha : 1,
-    large_concentration : 0.5,
     
     // initial condition:
     fill_ratio : 0.25,
@@ -34,6 +35,6 @@
     t_f : 30,  // s
     plot : ['nu','s'],
     videos : ['nu','s'],
-    save : ['nu','s_bar'],
+    save : ['nu','s'],
     mask_s_bar : false,
 }
