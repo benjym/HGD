@@ -1,11 +1,11 @@
 {
     // resolution
     nx : 101, // width
-    aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
-    aspect_ratio_m : 0.5,    // nm = aspect_ratio * nx
 
     // geometry
     H : 1, // (m)
+    aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
+    nm : 100,
 
     // material properties
     repose_angle : 30, // (degrees)
@@ -17,14 +17,18 @@
     
     // initial condition:
     fill_ratio : 0.25,
-    nu_fill : [0.1,0.5,0.9],
+    nu_fill : 0.5,
     IC_mode : "column",
     
     // saving
-    save_inc : 1000,
-    t_f : null,  // s
-    plot : ['nu'],  //,'stable'],
-    videos : ['nu'],
-    save : ['nu'],
-    mask_s_bar : false
+    save_inc : 1000,   // how many saves to make
+    t_f : null,
+    
+    plot : ['nu', 'stress'],
+    videos : ['nu','stress'],
+    save : ['nu', 's','stress', 'last_swap'],
+    mask_s_bar : false,
+
+    // parallel
+    max_workers : 1, // leave some cores on my poor little laptop
 }

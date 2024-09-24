@@ -12,13 +12,13 @@
     
     // material properties
     // alpha : [1.0,10.0,100.0],
-    alpha : 2.0,
+    alpha : 1.0,
     // alpha : [0.5,1.0,2.0],  
     // repose_angle : 30,  // friction angle, degrees
     outlet_width : 0.01,  // m
     sigma_charge : 0.1,  // relative width of charge zone
-    charge_rate : 0.0005,  // rate of charge zone filling (kg/s)
-    outlet_rate : 0.1,  // rate of outlet opening
+    charge_rate : 0.002,  // rate of charge zone filling (kg/s)
+    outlet_rate : 1.0,  // rate of outlet opening
     
 
     s_m : 45e-6, // minimum particle size (m)
@@ -45,7 +45,7 @@
     // vectorize : false
     view : 'nu',
 
-    motion_model : 'd2q4_SA_array', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
+    motion_model : 'd2q4_array_v2', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
     inertia : false,
     elutriation : false,
     advection_model : 'freefall', // 'average_size', 'freefall' or 'stress'

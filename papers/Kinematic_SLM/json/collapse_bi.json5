@@ -1,15 +1,7 @@
 {
     // resolution
-    // testing
-    // nx : 50, // width
-    // ny : 20, // height
-    // nm : 100,  // number of simultaneous simulations
-    
-    // nice version
     nx : 101, // width
-    // ny : 50, // height
     aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
-    // aspect_ratio_m : 5,    // nm = aspect_ratio * nx
     nm : 100,
 
     // geometry

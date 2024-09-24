@@ -1,6 +1,6 @@
 import numpy as np
 import warnings
-
+from void_migration import operators
 
 # Implementing Eq 36 and 37 from:
 # Models of stress fluctuations in granular media
@@ -35,30 +35,48 @@ import warnings
 # K = K_p*(K_a/K_p)^((a+1)/2)
 
 
-def calculate_stress(s, last_swap, p):
+def calculate_stress_fraction(last_swap, p):
     if p.stress_mode == "K_0":
         stress_fraction = np.sin(np.radians(p.repose_angle))
         stress_fraction = np.full([p.nx, p.ny], stress_fraction)
     elif p.stress_mode == "isotropic":
         stress_fraction = np.zeros([p.nx, p.ny])
+    elif p.stress_mode == "active":
+        K_a = (1 - np.sin(np.radians(p.repose_angle))) / (1 + np.sin(np.radians(p.repose_angle)))
+        stress_fraction = np.full([p.nx, p.ny], 1 - K_a)
+    elif p.stress_mode == "passive":
+        K_p = (1 + np.sin(np.radians(p.repose_angle))) / (1 - np.sin(np.radians(p.repose_angle)))
+        stress_fraction = np.full([p.nx, p.ny], 1 - K_p)
     elif p.stress_mode == "anisotropic":
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
             a = np.abs(
                 np.nanmean(last_swap, axis=2)
             )  # between 0 and 1, 0 for isotropic, 1 for fully anisotropic
-            K_p = (1 + np.sin(np.radians(p.repose_angle))) / (1 - np.sin(np.radians(p.repose_angle)))
-            K_a = 1 / K_p
-            K = K_p * (K_a / K_p) ** ((a + 1) / 2)
-            stress_fraction = 1 - K
+            K_a = (1 - np.sin(np.radians(p.repose_angle))) / (1 + np.sin(np.radians(p.repose_angle)))
+            # K = K_p * (K_a / K_p) ** ((a + 1) / 2)
+            K_iso = 1
+            K = K_iso * (K_a / K_iso) ** ((a + 1) / 2)
+            stress_fraction = np.full([p.nx, p.ny], 1 - K)
+    else:
+        raise ValueError("Unknown stress mode")
+
+    return stress_fraction
+
+
+def calculate_stress(s, last_swap, p):
+    stress_fraction = calculate_stress_fraction(last_swap, p)
 
     sigma = np.zeros([p.nx, p.ny, 2])  # sigma_xy, sigma_yy
     # NOTE: NOT CONSIDERING INCLINED GRAVITY
     weight_of_one_cell = p.solid_density * p.dx * p.dy * p.g
+
+    nu = operators.get_solid_fraction(s)
+
     for j in range(p.ny - 2, -1, -1):
         for i in range(p.nx):
-            if np.sum(~np.isnan(s[i, j, :])) > 0:
-                this_weight = np.sum(~np.isnan(s[i, j, :])) * weight_of_one_cell
+            if nu[i, j] > 0:
+                this_weight = nu[i, j] * weight_of_one_cell
                 up = sigma[i, j + 1]
                 if i == 0:
                     right_up = sigma[i + 1, j + 1]
@@ -111,30 +129,30 @@ def get_mu(sigma):
     return mu
 
 
-def get_sigma_xx(sigma, p):
-    # NOTE: only implemented isotropic case
-    K = 1.0 - np.sin(np.radians(p.repose_angle))
+def get_sigma_xx(sigma, p, last_swap=None):
+    stress_fraction = calculate_stress_fraction(last_swap, p)
+    K = 1.0 - stress_fraction
     sigma_xx = K * sigma[:, :, 1]
     return sigma_xx
 
 
-def get_pressure(sigma, p):
-    sigma_xx = get_sigma_xx(sigma, p)
+def get_pressure(sigma, p, last_swap=None):
+    sigma_xx = get_sigma_xx(sigma, p, last_swap)
     pressure = 0.5 * (sigma_xx + sigma[:, :, 1])
     return pressure
 
 
-def get_deviatoric(sigma, p):
+def get_deviatoric(sigma, p, last_swap=None):
     sigma_xy = sigma[:, :, 0]
     sigma_yy = sigma[:, :, 1]
-    sigma_xx = get_sigma_xx(sigma, p)
+    sigma_xx = get_sigma_xx(sigma, p, last_swap)
 
     return np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
 
 
-def get_friction_angle(sigma, p):
-    pressure = get_pressure(sigma, p)
-    deviatoric = get_deviatoric(sigma, p)
+def get_friction_angle(sigma, p, last_swap=None):
+    pressure = get_pressure(sigma, p, last_swap)
+    deviatoric = get_deviatoric(sigma, p, last_swap)
 
     friction_angle = np.degrees(np.arcsin(deviatoric / pressure))
 

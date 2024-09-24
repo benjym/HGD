@@ -289,6 +289,10 @@ def update(p, state, t, *args):
         #     save_u(s, u, v, p, t)
         if "permeability" in p.save:
             save_permeability(s, p, t)
+        if "stress" in p.save:
+            save_stress(s, sigma, last_swap, p, t)
+        if "last_swap" in p.save:
+            save_last_swap(last_swap, p, t)
         if "concentration" in p.save:
             save_c(c, p.folderName, t)
         if "outlet" in p.save:
@@ -779,6 +783,16 @@ def plot_c(s, c, p, t):
 
 def save_c(c, folderName, t):
     np.save(folderName + "data/c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
+
+
+def save_stress(s, sigma, last_swap, p, t):
+    if sigma is None:
+        sigma = stress.calculate_stress(s, last_swap, p)
+    np.save(p.folderName + "data/sigma_" + str(t).zfill(6) + ".npy", sigma)
+
+
+def save_last_swap(last_swap, p, t):
+    np.save(p.folderName + "data/last_swap_" + str(t).zfill(6) + ".npy", last_swap)
 
 
 def save_velocity(u, v, folderName, t):

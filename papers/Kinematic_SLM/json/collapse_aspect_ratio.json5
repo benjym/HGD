@@ -1,9 +1,6 @@
 {
     // resolution
-    // nx : 80, // width
-    // nx : 200, // width
-    nx : [51,101,201], // width
-    motion_model : 'd2q4_array',
+    nx : 101, // width
     
     // geometry
     H : 1, // (m)

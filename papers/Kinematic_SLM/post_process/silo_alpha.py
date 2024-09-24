@@ -29,7 +29,7 @@ p.dx = x[1] - x[0]
 
 cmap = colormaps["inferno"]
 cmap.set_under("black")
-cmap.set_over("black")
+cmap.set_over(cmap(0.99999))
 cmap.set_bad("black")
 
 imgs = ["rice_10.png", "lentils_10.png", "glass_beads_10.png"]
@@ -41,9 +41,10 @@ for i, val in enumerate(alphas):
     p.alpha = val
     p.update_before_time_march(cycles)
 
-    t_plot = 0.5 * p.t_f
+    t_plot = 0.8 * p.t_f
     nt_plot = int(t_plot / p.dt)
-    dt = 500  # int(p.t_f / p.dt / 100)
+    dt = int(p.t_f / p.dt / 5)
+    # dt = 10
 
     for j, t in enumerate(range(nt_plot - dt, nt_plot + dt)):
         this_u = np.load(f"output/silo_alpha/alpha_{val}/data/u_{str(t).zfill(6)}.npy")
@@ -63,15 +64,18 @@ for i, val in enumerate(alphas):
     im = grid[0, i].imshow(image)
     grid[0, i].axis("off")
 
+    cutoff_velocity = u_mag[p.nx // 2, 4]
+
     im = grid[1, i].pcolormesh(
         x,
         y,
-        (u_mag / u_mag.max()).T,
+        (u_mag / cutoff_velocity).T,
         # vmin=1e3 * p.s_m,
         # vmax=1e3 * p.s_M,
+        vmax=1,
         cmap=cmap,
         rasterized=True,
-        norm=colors.LogNorm(),
+        # norm=colors.LogNorm(),
     )
     grid[1, i].set_aspect("equal")
 
@@ -96,9 +100,10 @@ plt.ylabel("$y$ (m)", labelpad=-14)
 plt.xticks([-W / 2, 0, W / 2], labels=[f"{-W/2:0.2f}", "0", f"{W/2:0.2f}"])
 plt.yticks([0, p.H], labels=["0", f"{p.H:0.2f}"])
 
-colorbar_ax = fig.add_axes([0.87, 0.13, 0.02, 0.97 - 0.13])
-cb = plt.colorbar(im, cax=colorbar_ax)
-cb.set_label(r"$|\mathbf{\hat{u}}|$ (-)", labelpad=-12, y=0.667)
+colorbar_ax = fig.add_axes([0.87, 0.14, 0.02, 0.98 - 0.14])
+cb = plt.colorbar(im, cax=colorbar_ax)  # , extend='min')
+cb.set_label(r"$|\mathbf{\hat{u}}|$ (-)", labelpad=-7, y=0.75)
+cb.set_ticks([0, 0.5, 1])
 
 
 plt.text(-0.6, 0.5, "Experiment", ha="center", va="center", transform=grid[0, 0].transAxes, rotation=90)
@@ -123,5 +128,5 @@ plt.text(-0.6, 0.5, "Simulation", ha="center", va="center", transform=grid[1, 0]
 # cbar.ax.yaxis.set_label_coords(new_x, 0.5)
 
 
-plt.subplots_adjust(left=0.16, bottom=0.13, right=0.85, top=0.97, hspace=0.1, wspace=0.1)
+plt.subplots_adjust(left=0.16, bottom=0.14, right=0.85, top=0.98, hspace=0.1, wspace=0.1)
 plt.savefig(os.path.expanduser("~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/silo_alpha.pdf"))
