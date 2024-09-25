@@ -85,6 +85,16 @@ def charge(u, v, s, p, c, outlet):
     return u, v, s, c, outlet
 
 
+def top_left_inlet(u, v, s, p, c, outlet):
+    fill_mass = p.dx * p.dy / p.nm * p.solid_density
+    for i in range(p.half_width):
+        for k in range(p.nm):
+            if np.random.rand() < p.inlet_rate:
+                s[i, -1, k] = np.random.choice([p.s_m, p.s_M])
+                p.inlet += fill_mass
+    return u, v, s, c, outlet
+
+
 def central_outlet(u, v, s, p, c, outlet):
     fill_mass = p.dx * p.dy / p.nm * p.solid_density
 

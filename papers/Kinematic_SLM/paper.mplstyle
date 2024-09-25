@@ -19,7 +19,7 @@ lines.linewidth: 1
 lines.markersize: 5
 
 image.cmap: inferno
-savefig.dpi: 300
+savefig.dpi: 600
 #savefig.transparent: True
 savefig.format: pdf
 

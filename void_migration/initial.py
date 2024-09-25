@@ -106,6 +106,8 @@ def IC(p):
                 fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
                 F = rng.uniform(low=0, high=1, size=len(fill))
                 s[i, j, fill] = p.d_50 * (-np.log(1 - F) / np.log(2)) ** (1 / p.k)
+    else:
+        raise ValueError(f"Unrecognised gsd_mode: {p.gsd_mode}")
 
     # Second step: Mask out regions in space
 

@@ -1,11 +1,11 @@
 {
     // nice version
-    nx : 101, // width
-    aspect_ratio_y : 1.5662100457,  // ny = aspect_ratio * nx
-    nm : 1000,
+    nx : 200, // width
+    aspect_ratio_y : 2,  // ny = aspect_ratio * nx
+    nm : 100,
 
     // geometry
-    H : 0.4698630137, // (m)
+    H : 0.6, // (m)
     boundaries : ['central_outlet'],
 
     // material properties
@@ -24,7 +24,7 @@
     
     // saving
     save_inc : 1,
-    t_f : 2,  // s
+    t_f : 8,  // s
     plot : [],
     videos : [],
     save : ['nu','velocity'],

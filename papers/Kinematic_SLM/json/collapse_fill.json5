@@ -1,8 +1,9 @@
 {
     // resolution
-    nx : 101, // width
+    nx : 200, // width
     aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
-    aspect_ratio_m : 0.5,    // nm = aspect_ratio * nx
+    // aspect_ratio_m : 0.5,    // nm = aspect_ratio * nx
+    nm : 100,
 
     // geometry
     H : 1, // (m)

@@ -131,8 +131,8 @@ def move_voids(
         N_swap[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += 1
 
         delta = dest_indices_filtered - swap_indices_filtered
-        u[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += delta[:, 1]
-        v[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += delta[:, 0]
+        u[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += delta[:, 1] * p.dx / p.dt
+        v[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += delta[:, 0] * p.dx / p.dt
 
     last_swap[np.isnan(s)] = np.nan
     chi = N_swap / p.nm

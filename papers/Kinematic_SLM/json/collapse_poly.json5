@@ -1,6 +1,6 @@
 {
     // resolution
-    nx : 101,
+    nx : 200,
     aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
     nm : 100,
 
@@ -22,8 +22,8 @@
     IC_mode : "column",
     
     // saving
-    saves : 10,
-    t_f : 30,  // s
+    save_inc : 1000,
+    t_f : null,  // s
     plot : ['nu','s'],
     videos : ['nu','s'],
     save : ['nu','s'],

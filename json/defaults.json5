@@ -39,10 +39,9 @@
     calculate_temperature : false, // should the temperature be calculated
     T_init : 20, // initial temperature (C)
 
-
     // stress
     calculate_stress : false, // should the stress be calculated
-    stress_mode : 'isotropic', // 'isotropic' or 'anisotropic'
+    stress_mode : 'isotropic', // 'isotropic', 'active', 'passive', 'K_0' or 'anisotropic'
     solid_density : 2700, // density of the solid particles (kg/m^2)
     wall_friction_angle : 30, // friction coefficient between the walls and the particles
     

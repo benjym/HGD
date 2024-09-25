@@ -41,9 +41,9 @@ for i, val in enumerate(alphas):
     p.alpha = val
     p.update_before_time_march(cycles)
 
-    t_plot = 0.8 * p.t_f
+    t_plot = 0.75 * p.t_f
     nt_plot = int(t_plot / p.dt)
-    dt = int(p.t_f / p.dt / 5)
+    dt = int(p.t_f / p.dt / 4)
     # dt = 10
 
     for j, t in enumerate(range(nt_plot - dt, nt_plot + dt)):
@@ -77,6 +77,7 @@ for i, val in enumerate(alphas):
         rasterized=True,
         # norm=colors.LogNorm(),
     )
+    grid[1, i].set_ylim([0, 0.4698630137])  # match experimental conditions
     grid[1, i].set_aspect("equal")
 
     # except IndexError:

@@ -1,6 +1,6 @@
 {
     // resolution
-    nx : [51,101,201], // width
+    nx : 200, // width
     
     // geometry
     H : 1, // (m)
@@ -23,7 +23,7 @@
     
     // saving
     saves : 10,   // how many saves to make
-    t_f : 80,  // s - cant use null because of repose_angle=0 :(
+    t_f : 160,  // s - cant use null because of repose_angle=0 :(
     
     plot : ['nu', 'stress'],
     videos : ['nu','stress'],

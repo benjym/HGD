@@ -1,11 +1,11 @@
 {
     // resolution
-    nx : 101, // width
+    nx : 100, // width
     
     // geometry
     H : 1, // (m)
     aspect_ratio_y : 0.25,  // ny = aspect_ratio * nx
-    aspect_ratio_m : 0.25,    // nm = aspect_ratio * nx
+    nm : 100,
 
     // material properties
     repose_angle : 30, // (degrees)

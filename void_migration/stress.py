@@ -80,8 +80,6 @@ def calculate_stress(s, last_swap, p):
                 up = sigma[i, j + 1]
                 if i == 0:
                     right_up = sigma[i + 1, j + 1]
-                    # left_up = [0, 0] # walls carry no load!!
-                    # left_up = right_up  # FIXME: no gradient at boundary???
                     if p.wall_friction_angle == 0 or p.repose_angle == 0:
                         left_up = [0, 0]
                     else:
@@ -91,12 +89,10 @@ def calculate_stress(s, last_swap, p):
 
                 elif i == p.nx - 1:
                     left_up = sigma[i - 1, j + 1]
-                    # right_up = [0, 0]
-                    # right_up = left_up  # FIXME: no gradient at boundary???
                     if p.wall_friction_angle == 0 or p.repose_angle == 0:
                         right_up = [0, 0]
                     else:
-                        right_up = p.wall_friction_angle / p.repose_angle * left_up
+                        right_up = p.wall_friction_angle / p.repose_angle * left_up  # FIXME
                 else:
                     left_up = sigma[i - 1, j + 1]
                     right_up = sigma[i + 1, j + 1]
@@ -111,14 +107,54 @@ def calculate_stress(s, last_swap, p):
                     + 0.5 * (left_up[0] - right_up[0])
                 )
 
-    # import matplotlib.pyplot as plt
+    return sigma
 
-    # plt.figure(45, figsize=(10, 10))
-    # plt.clf()
-    # plt.ion()
-    # plt.imshow(a, origin="upper", cmap="bwr", vmin=-1, vmax=1)
-    # plt.colorbar()
-    # plt.pause(1e-3)
+
+def calculate_stress_NEW(s, last_swap, p):
+    stress_fraction = calculate_stress_fraction(last_swap, p)
+
+    sigma = np.zeros([p.nx, p.ny, 2])  # sigma_xy, sigma_yy
+    # NOTE: NOT CONSIDERING INCLINED GRAVITY
+    weight_of_one_cell = p.solid_density * p.dx * p.dy * p.g
+
+    nu = operators.get_solid_fraction(s)
+
+    for j in range(p.ny - 2, -1, -1):
+        for i in range(1, p.nx - 1):  # HACK - ignoring boundaries for now
+            if nu[i, j] > 0:
+                this_weight = nu[i, j] * weight_of_one_cell
+                sigma_here = sigma[i, j]
+                down = [i, j - 1]
+                down_left = sigma[i - 1, j - 1]
+                down_right = sigma[i + 1, j - 1]
+                frac_solid = ((nu[down] > 0) + (nu[down_left] > 0) + (nu[down_right] > 0)) / 3
+
+                if nu[down] > 0:
+                    sigma[down[0], down[1], 0] += stress_fraction * (sigma_here[0] + this_weight)
+                    sigma[down[0], down[1], 1] += 0
+                if nu[down_left] > 0:
+                    sigma[down_left[0], down_left[1], 0] += (
+                        (1 - stress_fraction) * (sigma_here[0] + this_weight) / 2.0
+                    )
+                    sigma[down_left[0], down_left[1], 1] += (
+                        (1 - stress_fraction) * (sigma_here[1] + this_weight) / 2.0
+                    )
+
+                if nu[down_right] > 0:
+                    sigma[down_right[0], down_right[1], 0] += (
+                        (1 - stress_fraction) * (sigma_here[0] + this_weight) / 2.0
+                    )
+                    sigma[down_right[0], down_right[1], 1] += ()
+
+                # sigma[i, j, 0] = 0.5 * (left_up[0] + right_up[0]) + 0.5 * (1 - stress_fraction[i, j]) * (
+                #     left_up[1] - right_up[1]
+                # )
+                # sigma[i, j, 1] = (
+                #     this_weight
+                #     + stress_fraction[i, j] * up[1]
+                #     + 0.5 * (1 - stress_fraction[i, j]) * (left_up[1] + right_up[1])
+                #     + 0.5 * (left_up[0] - right_up[0])
+                # )
 
     return sigma
 

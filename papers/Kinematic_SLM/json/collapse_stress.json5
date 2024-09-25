@@ -1,6 +1,6 @@
 {
     // resolution
-    nx : 101, // width
+    nx : 200, // width
 
     // geometry
     H : 1, // (m)
