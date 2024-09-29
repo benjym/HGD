@@ -13,7 +13,7 @@
     s_m : 0.01, // minimum particle size (m)
     s_M : 0.01, // maximum particle size (m)
     nu_cs : 0.5,
-    alpha : 1,
+    // alpha : 1,
     
     // initial condition:
     fill_ratio : 0.25,
@@ -21,11 +21,11 @@
     IC_mode : "column",
     
     // saving
-    save_inc : 1000,   // how many saves to make
+    save_inc : 100,   // how many saves to make
     t_f : null,
     
-    plot : ['nu', 'stress'],
-    videos : ['nu','stress'],
+    plot : ['nu', 'stress', 'anisotropy'],
+    videos : ['nu','stress', 'anisotropy'],
     save : ['nu', 's','stress', 'last_swap'],
     mask_s_bar : false,
 

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib import colormaps
 
 # import matplotlib.cm as cm
-import matplotlib.colors as colors
+# import matplotlib.colors as colors
 from void_migration.params import load_file
 
 # from void_migration.plotter import size_colormap
@@ -24,8 +24,11 @@ with open("papers/Kinematic_SLM/json/silo_alpha.json5") as f:
 y = np.linspace(0, p.H, p.ny)
 p.dy = p.H / p.ny
 x = np.arange(-(p.nx - 0.5) / 2 * p.dy, (p.nx - 0.5) / 2 * p.dy, p.dy)  # force equal grid spacing
-W = x[-1] - x[0]
+# W = x[-1] - x[0]
+W = p.H / p.aspect_ratio_y
 p.dx = x[1] - x[0]
+
+# H_max = 0.4698630137
 
 cmap = colormaps["inferno"]
 cmap.set_under("black")
@@ -44,17 +47,19 @@ for i, val in enumerate(alphas):
     t_plot = 0.75 * p.t_f
     nt_plot = int(t_plot / p.dt)
     dt = int(p.t_f / p.dt / 4)
-    # dt = 10
+    # dt = 500
 
     for j, t in enumerate(range(nt_plot - dt, nt_plot + dt)):
         this_u = np.load(f"output/silo_alpha/alpha_{val}/data/u_{str(t).zfill(6)}.npy")
         this_v = np.load(f"output/silo_alpha/alpha_{val}/data/v_{str(t).zfill(6)}.npy")
+
         if j == 0:
             u = this_u.copy()
             v = this_v.copy()
         else:
             u += this_u
             v += this_v
+
     u /= 2 * dt
     v /= 2 * dt
 
@@ -64,7 +69,8 @@ for i, val in enumerate(alphas):
     im = grid[0, i].imshow(image)
     grid[0, i].axis("off")
 
-    cutoff_velocity = u_mag[p.nx // 2, 4]
+    # cutoff_velocity = u_mag[p.nx // 2, 8]
+    cutoff_velocity = u_mag.max() / 8  # / (1.5 * val)
 
     im = grid[1, i].pcolormesh(
         x,
@@ -77,8 +83,11 @@ for i, val in enumerate(alphas):
         rasterized=True,
         # norm=colors.LogNorm(),
     )
-    grid[1, i].set_ylim([0, 0.4698630137])  # match experimental conditions
+    # grid[1, i].set_ylim([0, 0.4698630137])  # match experimental conditions
+    # plt.ylim(ymax=0.4698630137)
     grid[1, i].set_aspect("equal")
+    plt.sca(grid[1, i])
+    plt.ylim([0, 0.47])
 
     # except IndexError:
     #     print(f"Missing file for {val}")
@@ -99,10 +108,11 @@ plt.sca(grid[1, 0])
 plt.xlabel("$x$ (m)", labelpad=1)
 plt.ylabel("$y$ (m)", labelpad=-14)
 plt.xticks([-W / 2, 0, W / 2], labels=[f"{-W/2:0.2f}", "0", f"{W/2:0.2f}"])
-plt.yticks([0, p.H], labels=["0", f"{p.H:0.2f}"])
+plt.yticks([0, 0.47], labels=["0", f"{0.47:0.2f}"])
+plt.ylim([0, 0.47])
 
 colorbar_ax = fig.add_axes([0.87, 0.14, 0.02, 0.98 - 0.14])
-cb = plt.colorbar(im, cax=colorbar_ax)  # , extend='min')
+cb = plt.colorbar(im, cax=colorbar_ax, extend="max")
 cb.set_label(r"$|\mathbf{\hat{u}}|$ (-)", labelpad=-7, y=0.75)
 cb.set_ticks([0, 0.5, 1])
 

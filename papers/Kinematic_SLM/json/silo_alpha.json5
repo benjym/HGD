@@ -1,6 +1,6 @@
 {
     // nice version
-    nx : 200, // width
+    nx : 100, // width
     aspect_ratio_y : 2,  // ny = aspect_ratio * nx
     nm : 100,
 
@@ -9,12 +9,13 @@
     boundaries : ['central_outlet'],
 
     // material properties
-    repose_angle : 30, // (degrees)
+    repose_angle : 30, // (degrees)5
     gsd_mode : 'mono',
     s_m : 0.003, // minimum particle size (m)
     s_M : 0.003, // maximum particle size (m)
     nu_cs : 0.5,
-    alpha : [1.0,2.0,3.0],
+    // alpha : [1.0,2.0,3.0],
+    alpha : [2,3,4],
     half_width : 1,
     
     // initial condition:
@@ -24,7 +25,7 @@
     
     // saving
     save_inc : 1,
-    t_f : 8,  // s
+    t_f : 10,  // s
     plot : [],
     videos : [],
     save : ['nu','velocity'],

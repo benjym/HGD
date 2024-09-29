@@ -9,6 +9,8 @@ from void_migration import operators
 
 # Since tan(psi) = 1, we have that c_0^2 = 1 - stress_fraction
 
+# K = sigma_xx / sigma_yy
+
 # K_0 STRESS
 # c_0^2 = lateral earth pressure coefficient, K
 # Using Jaky's formula, K = 1 - sin(phi), where phi is the repose angle (actually effective angle of internal friction)
@@ -50,13 +52,14 @@ def calculate_stress_fraction(last_swap, p):
     elif p.stress_mode == "anisotropic":
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            a = np.abs(
-                np.nanmean(last_swap, axis=2)
-            )  # between 0 and 1, 0 for isotropic, 1 for fully anisotropic
+            a = np.nanmean(last_swap, axis=2)  # 1 for up, -1 for left or right, 0 for isotropic
+            a_scaled = np.abs((a + 1) / 2)  # between 0 and 1, 0 for isotropic, 1 for fully anisotropic
+
             K_a = (1 - np.sin(np.radians(p.repose_angle))) / (1 + np.sin(np.radians(p.repose_angle)))
             # K = K_p * (K_a / K_p) ** ((a + 1) / 2)
             K_iso = 1
-            K = K_iso * (K_a / K_iso) ** ((a + 1) / 2)
+            # K = K_iso * (K_a / K_iso) ** a_scaled
+            K = (K_a - K_iso) * a_scaled + 1
             stress_fraction = np.full([p.nx, p.ny], 1 - K)
     else:
         raise ValueError("Unknown stress mode")
@@ -65,6 +68,11 @@ def calculate_stress_fraction(last_swap, p):
 
 
 def calculate_stress(s, last_swap, p):
+    return calculate_stress_NEW(s, last_swap, p)
+    # return calculate_stress_OLD(s, last_swap, p)
+
+
+def calculate_stress_OLD(s, last_swap, p):
     stress_fraction = calculate_stress_fraction(last_swap, p)
 
     sigma = np.zeros([p.nx, p.ny, 2])  # sigma_xy, sigma_yy
@@ -115,7 +123,7 @@ def calculate_stress_NEW(s, last_swap, p):
 
     sigma = np.zeros([p.nx, p.ny, 2])  # sigma_xy, sigma_yy
     # NOTE: NOT CONSIDERING INCLINED GRAVITY
-    weight_of_one_cell = p.solid_density * p.dx * p.dy * p.g
+    weight_of_one_cell = p.solid_density * p.g * p.dx  # * p.dy
 
     nu = operators.get_solid_fraction(s)
 
@@ -125,26 +133,34 @@ def calculate_stress_NEW(s, last_swap, p):
                 this_weight = nu[i, j] * weight_of_one_cell
                 sigma_here = sigma[i, j]
                 down = [i, j - 1]
-                down_left = sigma[i - 1, j - 1]
-                down_right = sigma[i + 1, j - 1]
-                frac_solid = ((nu[down] > 0) + (nu[down_left] > 0) + (nu[down_right] > 0)) / 3
+                down_left = [i - 1, j - 1]
+                down_right = [i + 1, j - 1]
+                p_total = (
+                    stress_fraction[i, j] * (nu[*down] > 0)
+                    + (1 - stress_fraction[i, j]) / 2 * (nu[*down_left] > 0)
+                    + (1 - stress_fraction[i, j]) / 2.0 * (nu[*down_right] > 0)
+                )
+                if p_total > 0:
+                    with np.errstate(divide="ignore", invalid="ignore"):
+                        p_here = stress_fraction[i, j] / p_total
 
-                if nu[down] > 0:
-                    sigma[down[0], down[1], 0] += stress_fraction * (sigma_here[0] + this_weight)
-                    sigma[down[0], down[1], 1] += 0
-                if nu[down_left] > 0:
-                    sigma[down_left[0], down_left[1], 0] += (
-                        (1 - stress_fraction) * (sigma_here[0] + this_weight) / 2.0
-                    )
-                    sigma[down_left[0], down_left[1], 1] += (
-                        (1 - stress_fraction) * (sigma_here[1] + this_weight) / 2.0
-                    )
-
-                if nu[down_right] > 0:
-                    sigma[down_right[0], down_right[1], 0] += (
-                        (1 - stress_fraction) * (sigma_here[0] + this_weight) / 2.0
-                    )
-                    sigma[down_right[0], down_right[1], 1] += ()
+                    if nu[*down] > 0:
+                        # sigma[down[0], down[1], 0] += p_here * (sigma_here[0] + this_weight)
+                        sigma[down[0], down[1], 1] += p_here * (sigma_here[1] + this_weight)
+                    if nu[*down_left] > 0:
+                        sigma[down_left[0], down_left[1], 0] += (
+                            (1 - p_here) * (sigma_here[0] + this_weight) / 2.0
+                        )
+                        sigma[down_left[0], down_left[1], 1] += (
+                            (1 - p_here) * (sigma_here[1] + this_weight) / 2.0
+                        )
+                    if nu[*down_right] > 0:
+                        sigma[down_right[0], down_right[1], 0] += (
+                            (1 - p_here) * (sigma_here[0] + this_weight) / 2.0
+                        )
+                        sigma[down_right[0], down_right[1], 1] += (
+                            (1 - p_here) * (sigma_here[1] + this_weight) / 2.0
+                        )
 
                 # sigma[i, j, 0] = 0.5 * (left_up[0] + right_up[0]) + 0.5 * (1 - stress_fraction[i, j]) * (
                 #     left_up[1] - right_up[1]
@@ -190,6 +206,7 @@ def get_friction_angle(sigma, p, last_swap=None):
     pressure = get_pressure(sigma, p, last_swap)
     deviatoric = get_deviatoric(sigma, p, last_swap)
 
-    friction_angle = np.degrees(np.arcsin(deviatoric / pressure))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        friction_angle = np.degrees(np.arcsin(deviatoric / pressure))
 
     return friction_angle

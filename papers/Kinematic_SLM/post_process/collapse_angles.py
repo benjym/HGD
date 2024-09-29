@@ -18,7 +18,8 @@ p.dy = p.H / ny
 # W = p.H * (nx / ny)
 # x = np.linspace(-W / 2, W / 2, nx)
 x = np.arange(-(nx - 0.5) / 2 * p.dy, (nx - 0.5) / 2 * p.dy, p.dy)  # force equal grid spacing
-W = x[-1] - x[0]
+# W = x[-1] - x[0]
+W = p.H / p.aspect_ratio_y
 p.dx = x[1] - x[0]
 
 L = W / 6.0  # length of dashed line
@@ -79,7 +80,7 @@ for i, angle in enumerate(p.repose_angle):
 
             coefficients = np.polyfit(x_fit, top[fit_min_arg:fit_max_arg], 1)
 
-        ax[0].plot(x_fit, coefficients[0] * x_fit + coefficients[1], ls="--", lw=2, color=color)
+        # ax[0].plot(x_fit, coefficients[0] * x_fit + coefficients[1], ls="--", lw=2, color=color)
         ax[1].plot(angle, np.degrees(np.arctan(coefficients[0])), "k.")
 
         ax2.plot(p.delta_limit[i] / p.nu_cs, np.degrees(np.arctan(coefficients[0])), "k.")
@@ -107,7 +108,7 @@ scalar_mappable = cm.ScalarMappable(norm=norm, cmap="inferno")
 
 # Add colorbar to the plot
 cbar = plt.colorbar(scalar_mappable, ax=ax[0])
-cbar.set_label(r"$\varphi$ (degrees)")  # Label for the colorbar
+cbar.set_label(r"$\varphi$ ($^\circ$)")  # Label for the colorbar
 cbar.set_ticks([0, 1])  # Set ticks at ends
 cbar.set_ticklabels([p.repose_angle[0], p.repose_angle[-1]])  # Label the ticks
 # Move the colorbar label to the right
@@ -118,8 +119,8 @@ cbar.ax.yaxis.set_label_coords(new_x, 0.5)
 plt.sca(ax[1])
 # plt.plot([0, 45], [0, 45], "k--")
 plt.plot([0, 90], [0, 90], "k--")
-plt.xlabel(r"$\varphi$ (degrees)", labelpad=0)
-plt.ylabel("Measured angle of repose\n(degrees)")
+plt.xlabel(r"$\varphi$ ($^\circ$)", labelpad=0)
+plt.ylabel("Measured angle of repose\n($^\circ$)")
 # plt.xticks([0, 15, 30, 45])
 # plt.yticks([0, 15, 30, 45])
 plt.xticks([0, 30, 60, 90])

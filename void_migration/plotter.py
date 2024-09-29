@@ -266,6 +266,8 @@ def update(p, state, t, *args):
             plot_permeability(s, p, t)
         if "stable" in p.plot:
             plot_stable(s, p, t)
+        if "anisotropy" in p.plot:
+            plot_anisotropy(last_swap, p, t)
         if "h" in p.plot:
             plot_h(s, p, t)
         if "stress" in p.plot:
@@ -471,12 +473,27 @@ def plot_rel_mu(s, sigma, last_swap, p, t):
     plt.savefig(p.folderName + "rel_mu_" + str(t).zfill(6) + ".png")
 
 
+def plot_anisotropy(last_swap, p, t):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        a = np.nanmean(last_swap, axis=2)  # -1 for lef/right, 1 for up/down
+    plt.figure(fig)
+    plt.clf()
+    plt.pcolormesh(p.x, p.y, a.T, cmap=bwr, vmin=-1, vmax=1)
+    plt.axis("off")
+    plt.xlim(p.x[0], p.x[-1])
+    plt.ylim(p.y[0], p.y[-1])
+
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
+    plt.savefig(p.folderName + "anisotropy_" + str(t).zfill(6) + ".png")
+
+
 def plot_stress(s, sigma, last_swap, p, t):
     if sigma is None:
         sigma = stress.calculate_stress(s, last_swap, p)
-    pressure = stress.get_pressure(sigma, p)
-    deviatoric = stress.get_deviatoric(sigma, p)
-    mu = stress.get_mu(sigma)
+    pressure = stress.get_pressure(sigma, p, last_swap)
+    deviatoric = stress.get_deviatoric(sigma, p, last_swap)
+    fr = stress.get_friction_angle(sigma, p, last_swap)
 
     plt.figure(triple_fig)
     plt.clf()
@@ -502,7 +519,7 @@ def plot_stress(s, sigma, last_swap, p, t):
     # plt.colorbar()
 
     plt.subplot(313)
-    plt.pcolormesh(p.x, p.y, mu.T, vmin=0, vmax=2 * p.mu, cmap=bwr)
+    plt.pcolormesh(p.x, p.y, fr.T, vmin=0, vmax=2 * p.repose_angle, cmap=bwr)
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])

@@ -10,18 +10,15 @@
     H : 1, // (m)
     
     // material properties
-    // repose_angle : [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90], // (degrees)
-    // repose_angle : [0,10,20,30,40,50,60,70,80,90], // (degrees)
-    // repose_angle : [0,25,50,75,90], // (degrees)
     repose_angle : [30,70], // (degrees)
     gsd_mode : 'mono',
     s_m : 0.01, // minimum particle size (m)
     s_M : 0.01, // maximum particle size (m)
     // nu_cs : [0.3,0.5,0.7],
     nu_cs : 0.5,
-    alpha : 1,
+    alpha : 0.001,
     // alpha : [10,1,0.1,0.01,0.001],
-    P_stab : [1.0,0.1,0.01,0.001],
+    // P_stab : [1.0,0.1,0.01,0.001],
     
     // initial condition:
     fill_ratio : 0.25,
@@ -31,9 +28,9 @@
     // saving
     saves : 100,   // how many saves to make
     t_f : 150,  // s
-    plot : ['nu'],
-    videos : ['nu'],
-    save : ['nu'],
+    plot : ['nu','stress'],
+    videos : ['nu','stress'],
+    save : [],
     mask_s_bar : false,
 
     // parallel

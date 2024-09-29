@@ -50,6 +50,7 @@ def move_voids(
     S_bar = np.repeat(s_bar[:, :, np.newaxis], p.nm, axis=2)
 
     potential_free_surface = operators.empty_up(nu, p)
+    # potential_free_surface = None
 
     swap_indices = []
     dest_indices = []
@@ -81,19 +82,23 @@ def move_voids(
 
             P[:, -1, :] = 0  # no swapping up from top row
         elif axis == 0:  # horizontal
-            if p.advection_model == "average_size":
-                D = p.alpha * U_dest * S_bar_dest
-                P = D * (p.dt / p.dy**2) * (dest / S_bar_dest)
-            elif p.advection_model == "freefall":
-                P = p.alpha * (p.dt / p.dy) * U_dest * (dest / S_bar_dest)
+            # if p.advection_model == "average_size":
+            #     D = p.alpha * U_dest * S_bar_dest
+            #     P = D * (p.dt / p.dy**2) * (dest / S_bar_dest)
+            # elif p.advection_model == "freefall":
+            #     P = (
+            #         p.alpha * (p.dt / p.dy / p.dy) * U_dest * (dest / S_bar_dest)
+            #     )  # alpha has units of m, and is equal to the the variance (std dev^2) of the plume in the silo at y=0.5m
+            P = p.alpha * U_dest * dest * (p.dt / p.dy / p.dy)
 
             if d == 1:  # left
                 P[0, :, :] = 0  # no swapping left from leftmost column
             elif d == -1:  # right
                 P[-1, :, :] = 0  # no swapping right from rightmost column
 
-            slope_stable = operators.stable_slope_fast(s, d, p, potential_free_surface)
+            # slope_stable = operators.stable_slope_fast(s, d, p, potential_free_surface)
             # slope_stable = operators.stable_slope_gradient(s, d, p)
+            slope_stable = operators.stable_slope_stress(s, p, last_swap)
             P[slope_stable] = 0
 
         swap_possible = unstable * ~np.isnan(dest)
@@ -205,15 +210,20 @@ def prevent_overfilling(swap_indices, dest_indices, nu, potential_free_surface, 
     # For each unique location, compute the allowed number of swaps
     max_swaps_bulk = (p.nm * (p.nu_cs - nu[unique_locs[:, 0], unique_locs[:, 1]])).astype(int)
 
-    max_swaps_slope = ((delta_nu - p.delta_limit) * p.nm).astype(int)
-    max_swaps_slope = np.maximum(max_swaps_slope, 0)
+    if potential_free_surface is None:
+        max_swaps = max_swaps_bulk[inverse_indices]
+    else:
+        max_swaps_slope = ((delta_nu - p.delta_limit) * p.nm).astype(int)
+        max_swaps_slope = np.maximum(max_swaps_slope, 0)
 
-    # Check for potential free surface points
-    unique_potential = potential_free_surface[unique_locs[:, 0], unique_locs[:, 1]]
+        # Check for potential free surface points
+        unique_potential = potential_free_surface[unique_locs[:, 0], unique_locs[:, 1]]
 
-    max_swaps = np.where(unique_potential[inverse_indices], max_swaps_slope, max_swaps_bulk[inverse_indices])
+        max_swaps = np.where(
+            unique_potential[inverse_indices], max_swaps_slope, max_swaps_bulk[inverse_indices]
+        )
 
-    max_swaps = np.minimum(max_swaps, max_swaps_bulk[inverse_indices])
+        max_swaps = np.minimum(max_swaps, max_swaps_bulk[inverse_indices])
 
     # Find the first occurrence of each unique source location
     _, first_indices = np.unique(inverse_indices, return_index=True)

@@ -136,10 +136,11 @@ class dict_to_class:
             self.P_adv_ref = stability
             self.dt = self.P_adv_ref * self.dy / self.free_fall_velocity
 
-            self.P_diff_ref = self.alpha * self.P_adv_ref
+            # self.P_diff_ref = self.alpha * self.P_adv_ref
+            self.P_diff_max = self.alpha * self.s_M * self.free_fall_velocity * self.dt / self.dy / self.dy
 
             self.P_adv_max = self.P_adv_ref * (self.s_M / self.s_m)
-            self.P_diff_max = self.P_diff_ref * (self.s_M / self.s_m)
+            # self.P_diff_max = self.P_diff_ref * (self.s_M / self.s_m)
 
             if self.P_adv_max + 2 * self.P_diff_max <= self.P_stab:
                 safe = True

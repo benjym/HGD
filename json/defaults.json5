@@ -28,7 +28,7 @@
     large_concentration: 0.5, // concentration of large particles for bidisperse case
     s_m : 0.0005, // minimum particle size (m)
     nu_cs : 0.5, // critical state solid volume fraction
-    alpha : 1, // ratio of horizontal to vertical swapping probability
+    alpha : 4, // diffusivity parameter
     
     // initial condition
     fill_ratio : 0.25, // ratio of the domain that is filled with particles
@@ -41,8 +41,8 @@
 
     // stress
     calculate_stress : false, // should the stress be calculated
-    stress_mode : 'isotropic', // 'isotropic', 'active', 'passive', 'K_0' or 'anisotropic'
-    solid_density : 2700, // density of the solid particles (kg/m^2)
+    stress_mode : 'active', // 'isotropic', 'active', 'passive', 'K_0' or 'anisotropic'
+    solid_density : 2700, // density of the solid particles (kg/m^3/m)
     wall_friction_angle : 30, // friction coefficient between the walls and the particles
     
     // saving

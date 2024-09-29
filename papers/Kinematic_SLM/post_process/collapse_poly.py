@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # from matplotlib import colormaps
-# import matplotlib.cm as cm
+import matplotlib.cm as cm
 import matplotlib.colors as colors
 from void_migration.params import load_file
 from void_migration.plotter import size_colormap
@@ -20,7 +20,8 @@ with open("papers/Kinematic_SLM/json/collapse_poly.json5") as f:
 y = np.linspace(0, p.H, p.ny)
 p.dy = p.H / p.ny
 x = np.arange(-(p.nx - 0.5) / 2 * p.dy, (p.nx - 0.5) / 2 * p.dy, p.dy)  # force equal grid spacing
-W = x[-1] - x[0]
+# W = x[-1] - x[0]
+W = p.H / p.aspect_ratio_y
 p.dx = x[1] - x[0]
 
 L = W / 4.0  # length of dashed line
@@ -29,7 +30,7 @@ y_off = 0  # -0.005
 
 cmap = size_colormap()
 
-fig = plt.figure(figsize=[3.31894680556, 1.8])
+fig = plt.figure(figsize=[3.31894680556, 1.55])
 grid = fig.subplots(2, 3)
 
 for i, val in enumerate(p.power_law_alpha):
@@ -109,20 +110,21 @@ plt.yticks([0, p.H])
 # plt.xlim([-W / 2, W / 2])
 # plt.legend(loc=0)
 
-# # Create a ScalarMappable with the colormap you want to use
-# norm = colors.Normalize(vmin=0, vmax=1)  # Set the range for the colorbar
-# scalar_mappable = cm.ScalarMappable(norm=norm, cmap=cmap)
+# Create a ScalarMappable with the colormap you want to use
+norm = colors.Normalize(vmin=0, vmax=1)  # Set the range for the colorbar
+scalar_mappable = cm.ScalarMappable(norm=norm, cmap=cmap)
 
-# # Add colorbar to the plot
-# cax = fig.add_axes([0.86, 0.28, 0.02, 0.95 - 0.28])  # x,y, width, height
-# cbar = plt.colorbar(cb_ax, ax=ax[0], cax=cax)
-# cbar.set_label(r"$\bar{s}$ (mm)")  # Label for the colorbar
-# # cbar.set_ticks([0, 1])  # Set ticks at ends
-# # Move the colorbar label to the right
-# label_position = cbar.ax.get_position()
-# new_x = label_position.x0 + 3.5  # Adjust this value to move the label
-# cbar.ax.yaxis.set_label_coords(new_x, 0.5)
+# Add colorbar to the plot
+cax = fig.add_axes([0.83, 0.22, 0.02, (0.95 - 0.28 - 0.27) / 2.0])  # x,y, width, height
+cbar = plt.colorbar(im, ax=grid[1, 0], cax=cax)
+cbar.set_label(r"$\bar{s}$ (mm)")  # Label for the colorbar
+cbar.set_ticks([1e3 * p.s_m, 1e3 * p.s_M])  # Set ticks at ends
+cbar.ax.minorticks_off()
+# Move the colorbar label to the right
+label_position = cbar.ax.get_position()
+new_x = label_position.x0 + 5  # Adjust this value to move the label
+cbar.ax.yaxis.set_label_coords(new_x, 0.5)
 
 
-plt.subplots_adjust(left=0.12, bottom=0.18, right=0.99, top=0.95, hspace=0.8)
+plt.subplots_adjust(left=0.12, bottom=0.18, right=0.81, top=0.95, hspace=0.8)
 plt.savefig(os.path.expanduser("~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/collapse_poly.pdf"))

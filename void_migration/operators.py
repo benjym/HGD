@@ -1,6 +1,7 @@
 import warnings
 import numpy as np
 from scipy.ndimage import maximum_filter, minimum_filter
+from void_migration import stress
 
 
 def swap(src, dst, arrays, nu, p):
@@ -82,6 +83,28 @@ def empty_up(nu_here, p):
         # nu_min_dilated = maximu_filter(nu_min, size=3)
 
         return nu_min == 0  # & (nu_here > 0)
+
+
+def stable_slope_stress(s, p, last_swap):
+    """
+    Determines the stability of slopes based on the stress.
+
+    Parameters:
+    s (numpy.ndarray): A 3D array representing the solid fraction in the system.
+    p (object): An object containing the parameter `delta_limit` which is used to determine stability.
+    last_swap (numpy.ndarray): A 3D array representing the last swap in the system.
+
+    Returns:
+    numpy.ndarray: A 3D boolean array where `True` indicates stable slopes and `False` indicates unstable slopes.
+    """
+
+    sigma = stress.calculate_stress(s, last_swap, p)
+    friction_angle = stress.get_friction_angle(sigma, p, last_swap)
+
+    stable = friction_angle <= p.repose_angle
+
+    Stable = np.repeat(stable[:, :, np.newaxis], s.shape[2], axis=2)
+    return Stable
 
 
 def stable_slope_gradient(s, dir, p, debug=False):
