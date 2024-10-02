@@ -35,7 +35,14 @@ def move_voids(
         c: The updated concentration field
         T: The updated temperature field
     """
-    options = np.array([(1, -1), (0, -1), (0, 1)])  # up, left, right
+
+    options = [(1, -1)]  # , (0, -1), (0, 1)]  # up, left, right
+    for d in range(1, p.max_diff_swap_length + 1):
+        options.extend([(0, -d), (0, d)])
+
+    P_diff_weighting = (
+        p.max_diff_swap_length * (p.max_diff_swap_length + 1) * (2 * p.max_diff_swap_length + 1) / 6
+    )
     # np.random.shuffle(options)  # oh boy, this is a massive hack
     N_swap = np.zeros([p.nx, p.ny], dtype=int)
 
@@ -89,12 +96,12 @@ def move_voids(
             #     P = (
             #         p.alpha * (p.dt / p.dy / p.dy) * U_dest * (dest / S_bar_dest)
             #     )  # alpha has units of m, and is equal to the the variance (std dev^2) of the plume in the silo at y=0.5m
-            P = p.alpha * U_dest * dest * (p.dt / p.dy / p.dy)
+            P = p.alpha * U_dest * dest * (p.dt / p.dy / p.dy) * P_diff_weighting
 
-            if d == 1:  # left
-                P[0, :, :] = 0  # no swapping left from leftmost column
-            elif d == -1:  # right
-                P[-1, :, :] = 0  # no swapping right from rightmost column
+            if d > 0:  # left
+                P[:d, :, :] = 0  # no swapping left from leftmost column
+            else:  # right
+                P[d:, :, :] = 0  # no swapping right from rightmost column
 
             # slope_stable = operators.stable_slope_fast(s, d, p, potential_free_surface)
             # slope_stable = operators.stable_slope_gradient(s, d, p)

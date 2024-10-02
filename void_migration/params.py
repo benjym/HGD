@@ -65,6 +65,13 @@ class dict_to_class:
             else:
                 self.nm = int(self.nx * self.aspect_ratio_m)
 
+        if self.gsd_mode == "optimal":
+            self.y = np.linspace(0, self.H, self.ny)
+            self.dy = self.y[1] - self.y[0]
+            self.s_m = self.dy / self.alpha
+            self.s_M = self.dy / self.alpha
+            self.gsd_mode = "mono"
+
         if self.gsd_mode == "mono":
             if hasattr(self, "s_m") and hasattr(self, "s_M"):
                 if not self.s_m == self.s_M:
@@ -125,24 +132,43 @@ class dict_to_class:
                 2 * max_pressure / self.solid_density
             )  # confinement velocity (m/s)
 
-        if self.advection_model == "average_size":
-            self.diffusivity = self.alpha * self.free_fall_velocity * s_bar  # diffusivity (m^2/s)
-        elif self.advection_model == "freefall":
-            self.diffusivity = self.alpha * np.sqrt(2 * self.g * self.dy**3)
+        # if self.advection_model == "average_size":
+        #     self.diffusivity = self.alpha * self.free_fall_velocity * s_bar  # diffusivity (m^2/s)
+        # elif self.advection_model == "freefall":
+        #     self.diffusivity = self.alpha * np.sqrt(2 * self.g * self.dy**3)
 
         safe = False
         stability = 0.5
+        self.P_diff_weighting = 6 / (
+            self.max_diff_swap_length * (self.max_diff_swap_length + 1) * (2 * self.max_diff_swap_length + 1)
+        )
+
+        if self.max_diff_swap_length > 1:
+            print(f"Options for max swap length up to {self.max_diff_swap_length}")
+            for n in range(1, self.max_diff_swap_length + 1):
+                P_n = 6 / (n * (n + 1) * (2 * n + 1))
+                P_ratio = self.alpha * self.s_M * P_n / self.dy
+                print(f"n = {n}, n*P_diff/P_adv = {n*P_ratio}")
+
         while not safe:
             self.P_adv_ref = stability
             self.dt = self.P_adv_ref * self.dy / self.free_fall_velocity
 
             # self.P_diff_ref = self.alpha * self.P_adv_ref
-            self.P_diff_max = self.alpha * self.s_M * self.free_fall_velocity * self.dt / self.dy / self.dy
+            self.P_diff_max = (
+                self.alpha
+                * self.s_M
+                * self.free_fall_velocity
+                * self.dt
+                / self.dy
+                / self.dy
+                * self.P_diff_weighting
+            )
 
             self.P_adv_max = self.P_adv_ref * (self.s_M / self.s_m)
             # self.P_diff_max = self.P_diff_ref * (self.s_M / self.s_m)
 
-            if self.P_adv_max + 2 * self.P_diff_max <= self.P_stab:
+            if self.P_adv_max + (2 * self.max_diff_swap_length) * self.P_diff_max <= self.P_stab:
                 safe = True
             else:
                 stability *= 0.95

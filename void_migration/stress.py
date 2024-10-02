@@ -77,7 +77,7 @@ def calculate_stress_OLD(s, last_swap, p):
 
     sigma = np.zeros([p.nx, p.ny, 2])  # sigma_xy, sigma_yy
     # NOTE: NOT CONSIDERING INCLINED GRAVITY
-    weight_of_one_cell = p.solid_density * p.dx * p.dy * p.g
+    weight_of_one_cell = p.solid_density * p.dx * p.g  # * p.dy
 
     nu = operators.get_solid_fraction(s)
 
@@ -127,50 +127,61 @@ def calculate_stress_NEW(s, last_swap, p):
 
     nu = operators.get_solid_fraction(s)
 
-    for j in range(p.ny - 2, -1, -1):
+    for j in range(p.ny - 1, 0, -1):
         for i in range(1, p.nx - 1):  # HACK - ignoring boundaries for now
             if nu[i, j] > 0:
                 this_weight = nu[i, j] * weight_of_one_cell
                 sigma_here = sigma[i, j]
+                sigma_here[1] += this_weight
                 down = [i, j - 1]
                 down_left = [i - 1, j - 1]
                 down_right = [i + 1, j - 1]
+                down_has_mass = nu[*down] > 0
+                down_left_has_mass = nu[*down_left] > 0
+                down_right_has_mass = nu[*down_right] > 0
                 p_total = (
-                    stress_fraction[i, j] * (nu[*down] > 0)
-                    + (1 - stress_fraction[i, j]) / 2 * (nu[*down_left] > 0)
-                    + (1 - stress_fraction[i, j]) / 2.0 * (nu[*down_right] > 0)
+                    stress_fraction[i, j] * down_has_mass
+                    + (1 - stress_fraction[i, j]) / 2.0 * down_left_has_mass
+                    + (1 - stress_fraction[i, j]) / 2.0 * down_right_has_mass
                 )
+
+                num_lr = down_left_has_mass + down_right_has_mass
+                if num_lr == 0:
+                    lr_frac = 0.0
+                else:
+                    lr_frac = 1.0 / num_lr  # 0.5 if both, 1 if one
+
+                lr_frac = 0.5
+                p_total = 1.0
+
                 if p_total > 0:
                     with np.errstate(divide="ignore", invalid="ignore"):
-                        p_here = stress_fraction[i, j] / p_total
+                        p_here = (
+                            stress_fraction[i, j] / p_total
+                        )  # stress fraction going down the vertical leg
+                        p_there = (1 - p_here) / 2.0  # stress fraction going down the diagonal legs
 
-                    if nu[*down] > 0:
-                        # sigma[down[0], down[1], 0] += p_here * (sigma_here[0] + this_weight)
-                        sigma[down[0], down[1], 1] += p_here * (sigma_here[1] + this_weight)
-                    if nu[*down_left] > 0:
+                    if down_has_mass:
+                        # only vertical stress passed straight down
+                        sigma[down[0], down[1], 1] += p_here * sigma_here[1]
+                    if down_left_has_mass:
                         sigma[down_left[0], down_left[1], 0] += (
-                            (1 - p_here) * (sigma_here[0] + this_weight) / 2.0
+                            lr_frac * sigma_here[0]  # half of the shear force from the current cell
+                            - p_there * sigma_here[1]  # redirected part of the vertical force
                         )
                         sigma[down_left[0], down_left[1], 1] += (
-                            (1 - p_here) * (sigma_here[1] + this_weight) / 2.0
+                            -lr_frac * sigma_here[0]  # redirected part of the shear stress
+                            + p_there * sigma_here[1]
                         )
-                    if nu[*down_right] > 0:
+                    if down_right_has_mass:
                         sigma[down_right[0], down_right[1], 0] += (
-                            (1 - p_here) * (sigma_here[0] + this_weight) / 2.0
+                            lr_frac * sigma_here[0]  # half of the shear stress from the current cell
+                            + p_there * sigma_here[1]  # redirected part of the vertical force
                         )
                         sigma[down_right[0], down_right[1], 1] += (
-                            (1 - p_here) * (sigma_here[1] + this_weight) / 2.0
+                            lr_frac * sigma_here[0]  # half of the shear stress from the current cell
+                            + p_there * sigma_here[1]  # redirected part of the vertical force
                         )
-
-                # sigma[i, j, 0] = 0.5 * (left_up[0] + right_up[0]) + 0.5 * (1 - stress_fraction[i, j]) * (
-                #     left_up[1] - right_up[1]
-                # )
-                # sigma[i, j, 1] = (
-                #     this_weight
-                #     + stress_fraction[i, j] * up[1]
-                #     + 0.5 * (1 - stress_fraction[i, j]) * (left_up[1] + right_up[1])
-                #     + 0.5 * (left_up[0] - right_up[0])
-                # )
 
     return sigma
 

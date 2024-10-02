@@ -1,17 +1,17 @@
 {
     // resolution
-    nx : 200, // width
+    nx : 100, // width
 
     // geometry
     H : 1, // (m)
     aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
-    nm : 100,
+    nm : 200, //0,
 
     // material properties
     repose_angle : 30, // (degrees)
     gsd_mode : 'mono',
-    s_m : 0.01, // minimum particle size (m)
-    s_M : 0.01, // maximum particle size (m)
+    s_m : 0.001, // minimum particle size (m)
+    s_M : 0.001, // maximum particle size (m)
     nu_cs : 0.5,
     // alpha : 1,
     
@@ -21,7 +21,7 @@
     IC_mode : "column",
     
     // saving
-    save_inc : 100,   // how many saves to make
+    save_inc : 1000,   // how many saves to make
     t_f : null,
     
     plot : ['nu', 'stress', 'anisotropy'],

@@ -13,6 +13,8 @@ with open("papers/Kinematic_SLM/json/analytic.json5") as f:
 alphas = p.alpha
 aspects = p.aspect_ratio_m
 
+fig = plt.figure(figsize=[6, 2])
+
 for aspect in aspects:
     for alpha in alphas:
         p.alpha = alpha
@@ -27,13 +29,12 @@ for aspect in aspects:
 
         X, Y = np.meshgrid(p.x, p.y)
 
-        D = p.diffusivity
+        # D = p.diffusivity
         u = p.free_fall_velocity
+        D = u * p.s_m * p.alpha
 
         # at x=0 and y=0, the concentration is c = Q/(4*pi*D*u). We want this to be unity, so
-        Q = (
-            4 * np.pi * D * u
-        )  # NOTE: THIS DOESN'T SEEM TO WORK VERY WELL - ROUNDING ERRORS OR SOMETHING WEIRD?
+        Q = 4 * np.pi * D * u
         # Q = 1
 
         with np.errstate(divide="ignore", invalid="ignore"):
@@ -41,7 +42,7 @@ for aspect in aspects:
 
         c_0 = np.nanmax(c)
         c /= c_0
-        print(c_0)
+        # print(c_0)
 
         plt.clf()
         plt.subplot(1, 3, 1)
@@ -49,13 +50,18 @@ for aspect in aspects:
             X,
             Y,
             1 - c,
+            rasterized=True,
             # vmin=0,
             # vmax=1,
             #    norm=LogNorm(),
         )
+        ax = plt.gca()
+        ax.set_aspect("equal")
         plt.colorbar()
         plt.xlabel("x")
         plt.ylabel("y")
+        plt.yticks([0, p.H])
+        plt.xticks([-p.W / 2, 0, p.W / 2])
 
         # Now compare with simulation output
         f = f"output/analytic/aspect_ratio_m_{aspect}/alpha_{alpha}/data/"
@@ -64,19 +70,27 @@ for aspect in aspects:
             # y = np.loadtxt(f + "y.csv")
             nu = np.load(f + f"nu_{p.nt-1:06d}.npy")
 
+            bottom_half = nu[:, : p.ny // 2]
             print(f"Found alpha = {alpha}")
             plt.subplot(1, 3, 2)
             plt.pcolormesh(
                 p.x,
-                p.y,
-                nu.T,
-                vmin=0,
-                vmax=1,
+                p.y[: p.ny // 2],
+                bottom_half.T,
+                # vmin=0,
+                # vmax=1,
+                rasterized=True,
                 #    norm=LogNorm(),
             )
             plt.colorbar()
+            plt.xticks([])
+            plt.yticks([])
+            # plt.ylim([0,p.H/2.])
+            ax = plt.gca()
+            ax.set_aspect("equal")
 
             diff = np.abs(nu.T - 1 + c)
+
             plt.subplot(1, 3, 3)
             plt.pcolormesh(
                 p.x,
@@ -85,8 +99,13 @@ for aspect in aspects:
                 cmap="bwr",
                 vmin=-0.1,
                 vmax=0.1,
+                rasterized=True,
                 #    norm=LogNorm(),
             )
             plt.colorbar()
+            plt.xticks([])
+            plt.yticks([])
+            ax = plt.gca()
+            ax.set_aspect("equal")
 
-        plt.savefig(f"papers/Kinematic_SLM/other/analytic_solution_{alpha}_{aspect}.pdf")
+        plt.savefig(f"papers/Kinematic_SLM/other/analytic/analytic_solution_{alpha}_{aspect}.pdf")

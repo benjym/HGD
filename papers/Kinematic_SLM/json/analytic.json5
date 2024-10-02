@@ -5,28 +5,28 @@
     // geometry
     H : 1, // (m)
     aspect_ratio_y : 1,  // ny = aspect_ratio * nx
-    // aspect_ratio_m : 10,    // nm = aspect_ratio * nx
     aspect_ratio_m : [1,2,5,10,20,50,100],    // nm = aspect_ratio * nx
 
     // material properties
     repose_angle : 30, // (degrees)
     gsd_mode : 'mono',
-    s_m : 0.01, // minimum particle size (m)
-    s_M : 0.01, // maximum particle size (m)
-    nu_cs : 0.6,
-    alpha : [0.1,1,10],
+    s_m : 0.001, // minimum particle size (m)
+    s_M : 0.001, // maximum particle size (m)
+    nu_cs : 1.0,
+    alpha : [1,10],
     refill: true,
     boundaries: ["central_outlet"],
     half_width : 0,
+    outlet_rate : 0.01,
     
     // initial condition:
     fill_ratio : 0.8,
-    nu_fill : 0.6,
+    nu_fill : 1.0,
     IC_mode : "top",
     
     // saving
     saves : 5,
-    t_f : 10,  // s
+    t_f : 100,  // s
     plot : ['nu'],  //,'stable'],
     videos : ['nu'],
     save : ['nu'],
