@@ -2,7 +2,7 @@
     // resolution
     nx : 100,
     aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
-    nm : 1000,
+    nm : 100,
 
     // geometry
     H : 1, // (m)

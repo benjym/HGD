@@ -49,7 +49,7 @@ for i, val in enumerate(alphas):
     dt = int(p.t_f / p.dt / 4)
     # dt = 500
 
-    for j, t in enumerate(range(nt_plot - dt, nt_plot + dt)):
+    for j, t in enumerate(range(nt_plot - dt, nt_plot + dt, p.save_inc)):
         this_u = np.load(f"output/silo_alpha/alpha_{val}/data/u_{str(t).zfill(6)}.npy")
         this_v = np.load(f"output/silo_alpha/alpha_{val}/data/v_{str(t).zfill(6)}.npy")
 

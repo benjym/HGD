@@ -5,7 +5,7 @@
     // geometry
     H : 1, // (m)
     aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
-    nm : 200,
+    nm : 100,
 
     // material properties
     // repose_angle : [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90], // (degrees)

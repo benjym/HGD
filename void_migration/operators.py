@@ -101,7 +101,11 @@ def stable_slope_stress(s, p, last_swap):
     sigma = stress.calculate_stress(s, last_swap, p)
     friction_angle = stress.get_friction_angle(sigma, p, last_swap)
 
-    stable = friction_angle <= p.repose_angle
+    stable = friction_angle <= (p.repose_angle + 2.0)
+    # print('aaaaa')
+    # print(friction_angle)
+    # print(p.repose_angle)
+    # print(stable)
 
     Stable = np.repeat(stable[:, :, np.newaxis], s.shape[2], axis=2)
     return Stable

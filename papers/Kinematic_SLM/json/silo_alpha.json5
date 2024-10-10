@@ -2,7 +2,7 @@
     // nice version
     nx : 100, // width
     aspect_ratio_y : 2,  // ny = aspect_ratio * nx
-    nm : 1000,
+    nm : 100,
 
     // geometry
     H : 0.6, // (m)
@@ -24,7 +24,7 @@
     IC_mode : "top",
     
     // saving
-    save_inc : 1,
+    save_inc : 10,
     t_f : 10,  // s
     plot : [],
     videos : [],

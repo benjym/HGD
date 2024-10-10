@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 from numpy.typing import ArrayLike
 from void_migration import operators
@@ -56,8 +57,10 @@ def move_voids(
     s_bar = operators.get_average(s)
     S_bar = np.repeat(s_bar[:, :, np.newaxis], p.nm, axis=2)
 
-    potential_free_surface = operators.empty_up(nu, p)
-    # potential_free_surface = None
+    if p.slope_stability_model == "stress":
+        potential_free_surface = None
+    else:
+        potential_free_surface = operators.empty_up(nu, p)
 
     swap_indices = []
     dest_indices = []
@@ -83,19 +86,11 @@ def move_voids(
             s_inv_bar = operators.get_hyperbolic_average(s)
             S_inv_bar = np.repeat(s_inv_bar[:, :, np.newaxis], p.nm, axis=2)
             S_inv_bar_dest = np.roll(S_inv_bar, d, axis=axis)
-            # P = p.P_u_ref * (S_inv_bar_dest / dest)
+
             P = (p.dt / p.dy) * U_dest * (S_inv_bar_dest / dest)
-            # print(P[~np.isnan(P)].max())
 
             P[:, -1, :] = 0  # no swapping up from top row
         elif axis == 0:  # horizontal
-            # if p.advection_model == "average_size":
-            #     D = p.alpha * U_dest * S_bar_dest
-            #     P = D * (p.dt / p.dy**2) * (dest / S_bar_dest)
-            # elif p.advection_model == "freefall":
-            #     P = (
-            #         p.alpha * (p.dt / p.dy / p.dy) * U_dest * (dest / S_bar_dest)
-            #     )  # alpha has units of m, and is equal to the the variance (std dev^2) of the plume in the silo at y=0.5m
             P = p.alpha * U_dest * dest * (p.dt / p.dy / p.dy) * P_diff_weighting
 
             if d > 0:  # left
@@ -103,9 +98,14 @@ def move_voids(
             else:  # right
                 P[d:, :, :] = 0  # no swapping right from rightmost column
 
-            # slope_stable = operators.stable_slope_fast(s, d, p, potential_free_surface)
-            # slope_stable = operators.stable_slope_gradient(s, d, p)
-            slope_stable = operators.stable_slope_stress(s, p, last_swap)
+            if p.slope_stability_model == "gradient":
+                slope_stable = operators.stable_slope_fast(s, d, p, potential_free_surface)
+            elif p.slope_stability_model == "stress":
+                slope_stable = operators.stable_slope_stress(s, p, last_swap)
+            else:
+                sys.exit(f"Invalid slope stability model: {p.slope_stability_model}")
+
+            # Prevent swaps OUT FROM stable slope cells
             P[slope_stable] = 0
 
         swap_possible = unstable * ~np.isnan(dest)
@@ -116,10 +116,16 @@ def move_voids(
         this_dest_indices = this_swap_indices.copy()
         this_dest_indices[:, axis] -= d
 
+        # Prevent swaps INTO stable slope cells - this shouldnt be necessary
+        # if axis == 0:
+        #     stable_dest = slope_stable[this_dest_indices[:,0], this_dest_indices[:,1], this_dest_indices[:,2]]
+        #     this_swap_indices = this_swap_indices[~stable_dest,:]
+        #     this_dest_indices = this_dest_indices[~stable_dest,:]
+
         swap_indices.extend(this_swap_indices)
         dest_indices.extend(this_dest_indices)
 
-    # Prevent conflicts by filtering out swaps that would cause conflicts
+    # Prevent conflicts by filtering out swaps that would cause two voids to swap into the same cell
     swap_indices_conflict_free, dest_indices_conflict_free = prevent_conflicts(swap_indices, dest_indices)
 
     if len(swap_indices_conflict_free) > 0:

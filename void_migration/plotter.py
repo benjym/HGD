@@ -519,7 +519,7 @@ def plot_stress(s, sigma, last_swap, p, t):
     # plt.colorbar()
 
     plt.subplot(313)
-    plt.pcolormesh(p.x, p.y, fr.T, vmin=0, vmax=2 * p.repose_angle, cmap=bwr)
+    plt.pcolormesh(p.x, p.y, fr.T, vmin=0, vmax=2 * p.repose_angle, cmap="bwr")
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])

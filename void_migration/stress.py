@@ -41,6 +41,9 @@ def calculate_stress_fraction(last_swap, p):
     if p.stress_mode == "K_0":
         stress_fraction = np.sin(np.radians(p.repose_angle))
         stress_fraction = np.full([p.nx, p.ny], stress_fraction)
+    elif p.stress_mode == "no_lateral":
+        print("WARNING: Using no lateral stress")
+        stress_fraction = np.ones([p.nx, p.ny])
     elif p.stress_mode == "isotropic":
         stress_fraction = np.zeros([p.nx, p.ny])
     elif p.stress_mode == "active":
@@ -52,15 +55,28 @@ def calculate_stress_fraction(last_swap, p):
     elif p.stress_mode == "anisotropic":
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            a = np.nanmean(last_swap, axis=2)  # 1 for up, -1 for left or right, 0 for isotropic
-            a_scaled = np.abs((a + 1) / 2)  # between 0 and 1, 0 for isotropic, 1 for fully anisotropic
+            a = np.nanmean(
+                np.abs(last_swap), axis=2
+            )  # between 0 and 1, 0 for isotropic, 1 for fully anisotropic
 
             K_a = (1 - np.sin(np.radians(p.repose_angle))) / (1 + np.sin(np.radians(p.repose_angle)))
-            # K = K_p * (K_a / K_p) ** ((a + 1) / 2)
-            K_iso = 1
+            K_iso = 1.0
             # K = K_iso * (K_a / K_iso) ** a_scaled
-            K = (K_a - K_iso) * a_scaled + 1
-            stress_fraction = np.full([p.nx, p.ny], 1 - K)
+            K = (K_a - K_iso) * a + K_iso
+            stress_fraction = 1 - K
+            # import matplotlib.pyplot as plt
+            # plt.figure(77)
+            # plt.ion()
+            # plt.clf()
+            # plt.subplot(121)
+            # plt.imshow(a.T)
+            # plt.colorbar()
+
+            # plt.subplot(122)
+            # plt.imshow(K.T)
+            # plt.colorbar()
+            # plt.pause(0.01)
+
     else:
         raise ValueError("Unknown stress mode")
 
@@ -68,8 +84,8 @@ def calculate_stress_fraction(last_swap, p):
 
 
 def calculate_stress(s, last_swap, p):
-    return calculate_stress_NEW(s, last_swap, p)
-    # return calculate_stress_OLD(s, last_swap, p)
+    # return calculate_stress_NEW(s, last_swap, p)
+    return calculate_stress_OLD(s, last_swap, p)
 
 
 def calculate_stress_OLD(s, last_swap, p):
@@ -151,8 +167,8 @@ def calculate_stress_NEW(s, last_swap, p):
                 else:
                     lr_frac = 1.0 / num_lr  # 0.5 if both, 1 if one
 
-                lr_frac = 0.5
-                p_total = 1.0
+                # lr_frac = 0.5
+                # p_total = 1.0
 
                 if p_total > 0:
                     with np.errstate(divide="ignore", invalid="ignore"):
@@ -214,10 +230,16 @@ def get_deviatoric(sigma, p, last_swap=None):
 
 
 def get_friction_angle(sigma, p, last_swap=None):
-    pressure = get_pressure(sigma, p, last_swap)
-    deviatoric = get_deviatoric(sigma, p, last_swap)
+    # pressure = get_pressure(sigma, p, last_swap)
+    # deviatoric = get_deviatoric(sigma, p, last_swap)
+    sigma_xy = sigma[:, :, 0]
+    sigma_yy = sigma[:, :, 1]
+    sigma_xx = get_sigma_xx(sigma, p, last_swap)
+
+    sigma_m = (sigma_xx + sigma_yy) / 2.0
+    sigma_d = np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
 
     with np.errstate(divide="ignore", invalid="ignore"):
-        friction_angle = np.degrees(np.arcsin(deviatoric / pressure))
+        friction_angle = np.degrees(np.arcsin(sigma_d / sigma_m))
 
     return friction_angle
