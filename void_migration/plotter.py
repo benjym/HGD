@@ -720,8 +720,11 @@ def plot_u(s, u, v, p, t):
     # mask = mean(isnan(s),axis=2) > 0.95
     # u = ma.masked_where(mask,u/sum(isnan(s),axis=2)).T
     # v = ma.masked_where(mask,v/sum(isnan(s),axis=2)).T
-    u = u.T
-    v = v.T
+    # u = u.T
+    # v = v.T
+
+    u = np.nanmean(u, axis=2).T
+    v = np.nanmean(v, axis=2).T
 
     if p.lagrangian:
         u = np.amax(u) - u  # subtract mean horizontal flow
@@ -738,8 +741,9 @@ def plot_u(s, u, v, p, t):
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
+    if p.plot_colorbar:
+        plt.colorbar()
     plt.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0)
-    # plt.colorbar()
     plt.savefig(p.folderName + "u_" + str(t).zfill(6) + ".png")
 
     plt.clf()
@@ -752,6 +756,8 @@ def plot_u(s, u, v, p, t):
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
+    if p.plot_colorbar:
+        plt.colorbar()
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     plt.savefig(p.folderName + "v_" + str(t).zfill(6) + ".png")
 
@@ -767,6 +773,8 @@ def plot_u(s, u, v, p, t):
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
+    if p.plot_colorbar:
+        plt.colorbar()
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     if hasattr(p, "plot_colorbar"):
         plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)

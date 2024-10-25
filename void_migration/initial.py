@@ -114,7 +114,10 @@ def IC(p):
     if p.IC_mode == "random":  # voids everywhere randomly, this has been done above in the first step
         # mask = np.random.rand(p.nx, p.ny, p.nm) > p.nu_fill
         return s
-    elif p.IC_mode == "top":  # voids at the top
+    elif p.IC_mode == "top":  # material at the top
+        mask = np.zeros([p.nx, p.ny, p.nm], dtype=bool)
+        mask[:, : int((1 - p.fill_ratio) * p.ny), :] = True
+    elif p.IC_mode == "bottom":  # material at the bottom
         mask = np.zeros([p.nx, p.ny, p.nm], dtype=bool)
         mask[:, int(p.fill_ratio * p.ny) :, :] = True
     elif p.IC_mode == "full":  # completely full

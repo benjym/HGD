@@ -37,8 +37,8 @@ def init(p):
 
     s = initial.IC(p)  # non-dimensional size
 
-    u = np.zeros([p.nx, p.ny])
-    v = np.zeros([p.nx, p.ny])
+    u = np.zeros([p.nx, p.ny, p.nm])
+    v = np.zeros([p.nx, p.ny, p.nm])
     # p_count = np.zeros([p.nt])
     # p_count_s = np.zeros([p.nt])
     # p_count_l = np.zeros([p.nt])
@@ -132,9 +132,6 @@ def time_step(p, state, t):
 
     if p.stop_event is not None and p.stop_event.is_set():
         raise KeyboardInterrupt
-
-    u = np.zeros_like(u)
-    v = np.zeros_like(v)
 
     if p.calculate_temperature:
         T = thermal.update_temperature(s, T, p)

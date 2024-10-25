@@ -13,6 +13,20 @@ def swap(src, dst, arrays, nu, p):
     return [arrays, nu]
 
 
+def handle_collisions(u, v, s, Solid, p):
+    # u[Solid] = 0.
+    # v[Solid] = 0.
+    Solid_left = np.roll(Solid, -1, axis=0)
+    Solid_right = np.roll(Solid, 1, axis=0)
+    Solid_up = np.roll(Solid, -1, axis=1)
+    Solid_down = np.roll(Solid, 1, axis=1)
+    # u[Solid_dest] = 0.
+    dest_down = np.roll(s, 1, axis=1)
+    v[Solid_down * ~np.isnan(dest_down)] = 0.0
+
+    return u, v
+
+
 def get_solid_fraction(s: np.ndarray, loc: list | None = None) -> float:
     """Calculate solid fraction of a single physical in a 3D array.
 
@@ -85,7 +99,7 @@ def empty_up(nu_here, p):
         return nu_min == 0  # & (nu_here > 0)
 
 
-def stable_slope_stress(s, p, last_swap):
+def stable_slope_stress(s, p, last_swap, debug=False):
     """
     Determines the stability of slopes based on the stress.
 
@@ -99,13 +113,22 @@ def stable_slope_stress(s, p, last_swap):
     """
 
     sigma = stress.calculate_stress(s, last_swap, p)
-    friction_angle = stress.get_friction_angle(sigma, p, last_swap)
+    mobilised_friction_angle = stress.get_friction_angle(sigma, p, last_swap)
 
-    stable = friction_angle <= (p.repose_angle + 2.0)
-    # print('aaaaa')
-    # print(friction_angle)
-    # print(p.repose_angle)
-    # print(stable)
+    stable = mobilised_friction_angle < p.repose_angle
+
+    if debug and np.random.rand() < 0.01:
+        import matplotlib.pyplot as plt
+
+        plt.figure(98)
+        plt.ion()
+        plt.subplot(211)
+        plt.pcolormesh(p.x, p.y, mobilised_friction_angle.T)
+        plt.colorbar()
+        plt.subplot(212)
+        plt.pcolormesh(p.x, p.y, stable.T)
+        plt.colorbar()
+        plt.pause(1e-5)
 
     Stable = np.repeat(stable[:, :, np.newaxis], s.shape[2], axis=2)
     return Stable
@@ -151,13 +174,13 @@ def stable_slope_gradient(s, dir, p, debug=False):
     return Stable
 
 
-def stable_slope_fast(s, dir, p, potential_free_surface=None):
+def stable_slope_fast(s, d, p, potential_free_surface=None):
     """
     Determines the stability of slopes based on the solid fraction.
 
     Parameters:
     s (numpy.ndarray): A 3D array representing the solid fraction in the system.
-    dir (int): The direction in which to roll the array (shift axis).
+    d (int): The direction in which to roll the array (shift axis).
     p (object): An object containing the parameter `delta_limit` which is used to determine stability.
 
     Returns:
@@ -165,7 +188,7 @@ def stable_slope_fast(s, dir, p, potential_free_surface=None):
     """
 
     nu_here = get_solid_fraction(s)
-    nu_dest = np.roll(nu_here, dir, axis=0)
+    nu_dest = np.roll(nu_here, d, axis=0)
     delta_nu = nu_dest - nu_here
 
     # delta_nu = -dir*np.gradient(nu_here,axis=0)

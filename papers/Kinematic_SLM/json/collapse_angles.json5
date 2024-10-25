@@ -1,6 +1,7 @@
 {
     // resolution
-    nx : 100, // width
+    // nx : 100, // width
+    nx : 20,
     
     // geometry
     H : 1, // (m)
@@ -20,7 +21,7 @@
     fill_ratio : 0.25,
     nu_fill : 0.5,
     IC_mode : "column",
-    
+
     // saving
     save_inc : 1000,   // how many saves to make
     t_f : null,  // s - cant use null because of repose_angle=0 :(

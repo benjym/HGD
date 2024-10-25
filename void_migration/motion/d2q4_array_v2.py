@@ -65,6 +65,10 @@ def move_voids(
     swap_indices = []
     dest_indices = []
 
+    if not p.inertia:
+        u = np.zeros_like(u)
+        v = np.zeros_like(v)
+
     for axis, d in options:
         dest = np.roll(s, d, axis=axis)
         S_bar_dest = np.roll(S_bar, d, axis=axis)
@@ -82,6 +86,12 @@ def move_voids(
                 U, d, axis=axis
             )  # NEED TO TAKE DESTINATION VALUE BECAUSE PRESSURE IS ZERO AT OUTLET!!!
 
+        if p.inertia:
+            if axis == 1:  # vertical advection
+                U_dest += np.roll(v, d, axis=axis)
+                # U_dest += v
+                # print(np.nanmin(v/U_dest), np.nanmean(v/U_dest), np.nanmax(v/U_dest))
+
         if axis == 1:  # vertical
             s_inv_bar = operators.get_hyperbolic_average(s)
             S_inv_bar = np.repeat(s_inv_bar[:, :, np.newaxis], p.nm, axis=2)
@@ -92,6 +102,14 @@ def move_voids(
             P[:, -1, :] = 0  # no swapping up from top row
         elif axis == 0:  # horizontal
             P = p.alpha * U_dest * dest * (p.dt / p.dy / p.dy) * P_diff_weighting
+            if p.inertia:
+                # print('new time')
+                # print(np.nanmin(P), np.nanmean(P), np.nanmax(P))
+                U_valid = np.where(d * u > 0, d * u, 0)
+                inertial_term = (p.dt / p.dy) * np.roll(U_valid, d, axis=axis)
+                P += inertial_term
+
+                # print(np.nanmin(P), np.nanmean(P), np.nanmax(P))
 
             if d > 0:  # left
                 P[:d, :, :] = 0  # no swapping left from leftmost column
@@ -105,10 +123,17 @@ def move_voids(
             else:
                 sys.exit(f"Invalid slope stability model: {p.slope_stability_model}")
 
-            # Prevent swaps OUT FROM stable slope cells
-            P[slope_stable] = 0
+            if p.inertia:
+                u_avg = np.nanmean(u, axis=2, keepdims=True)
+                # stationary = np.repeat(u_avg[:, :, np.newaxis], p.nm, axis=2)
+                # only allow swaps into cells with zero velocity
+                slope_stable = np.logical_and(slope_stable, u_avg == 0)
 
-        swap_possible = unstable * ~np.isnan(dest)
+            # Prevent swaps OUT FROM stable slope cells
+            unstable = np.logical_or(unstable, ~slope_stable)
+            # P[slope_stable] = 0
+
+        swap_possible = np.logical_and(unstable, ~np.isnan(dest))
         P = np.where(swap_possible, P, 0)
         swap = np.random.rand(*P.shape) < P
 
@@ -116,7 +141,8 @@ def move_voids(
         this_dest_indices = this_swap_indices.copy()
         this_dest_indices[:, axis] -= d
 
-        # Prevent swaps INTO stable slope cells - this shouldnt be necessary
+        # Prevent swaps INTO stable slope cells - this shouldnt be necessary???
+        # What else stops all slopes from going to zero?
         # if axis == 0:
         #     stable_dest = slope_stable[this_dest_indices[:,0], this_dest_indices[:,1], this_dest_indices[:,2]]
         #     this_swap_indices = this_swap_indices[~stable_dest,:]
@@ -124,6 +150,11 @@ def move_voids(
 
         swap_indices.extend(this_swap_indices)
         dest_indices.extend(this_dest_indices)
+
+        if p.inertia:
+            no_swaps_possible = np.all(~swap_possible, axis=2)
+            u[no_swaps_possible] = 0
+            v[no_swaps_possible] = 0
 
     # Prevent conflicts by filtering out swaps that would cause two voids to swap into the same cell
     swap_indices_conflict_free, dest_indices_conflict_free = prevent_conflicts(swap_indices, dest_indices)
@@ -149,8 +180,23 @@ def move_voids(
         N_swap[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += 1
 
         delta = dest_indices_filtered - swap_indices_filtered
-        u[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += delta[:, 1] * p.dx / p.dt
-        v[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += delta[:, 0] * p.dx / p.dt
+
+        # np.add.at(u, (dest_indices_filtered[:, 0], dest_indices_filtered[:, 1]), delta[:, 0] * p.dx / p.dt / p.nm)
+        # np.add.at(v, (dest_indices_filtered[:, 0], dest_indices_filtered[:, 1]), delta[:, 1] * p.dx / p.dt / p.nm)
+
+        # Accumulate the velocities for the destination voids
+        u[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
+            u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]]
+            + delta[:, 0] * p.dx / p.dt
+        )
+        v[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
+            v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]]
+            + delta[:, 1] * p.dx / p.dt
+        )
+
+        # Zero out the velocities for the swapped voids
+        u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
+        v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
 
     last_swap[np.isnan(s)] = np.nan
     chi = N_swap / p.nm

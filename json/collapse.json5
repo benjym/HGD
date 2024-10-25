@@ -1,28 +1,31 @@
 {
     // resolution
-    nx : 50, // width
-    ny : 100, // height
+    nx : 40, // width
+    ny : 20, // height
     nm : 20,  // number of simultaneous simulations
 
     // geometry
-    H : 0.1, // (m)
-    theta : 0,
-    add_voids : "None",
+    H : 1, // (m)
+    P_stab : 0.01,
 
     // material properties
-    repose_angle : [0,30,45,75,90], // (degrees)
+    repose_angle : 30, // (degrees)
     gsd_mode : 'mono',
     s_m : 0.001, // minimum particle size (m)
     // s_M : 0.01, // maximum particle size (m)
     nu_cs : 0.5,
-    alpha : 1.0,
     
     // initial condition:
-    wall_motion : false,
     nu_fill : 0.25,
     IC_mode : "column",
+
+    inertia: [true, false],
+    // inertia: false,
     
+    plot : ['nu'],
+    videos : ['nu'],
+
     // saving
-    save_inc : 200,
-    t_f : 20,  // s
+    saves : 20,
+    t_f : 5,  // s
 }

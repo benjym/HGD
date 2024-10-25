@@ -52,6 +52,9 @@ def calculate_stress_fraction(last_swap, p):
     elif p.stress_mode == "passive":
         K_p = (1 + np.sin(np.radians(p.repose_angle))) / (1 - np.sin(np.radians(p.repose_angle)))
         stress_fraction = np.full([p.nx, p.ny], 1 - K_p)
+    elif p.stress_mode == "sandpile":
+        K = 1.0 / (1.0 + 2.0 * (np.tan(np.radians(p.repose_angle)) ** 2))
+        stress_fraction = np.full([p.nx, p.ny], 1 - K)
     elif p.stress_mode == "anisotropic":
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -152,9 +155,9 @@ def calculate_stress_NEW(s, last_swap, p):
                 down = [i, j - 1]
                 down_left = [i - 1, j - 1]
                 down_right = [i + 1, j - 1]
-                down_has_mass = nu[*down] > 0
-                down_left_has_mass = nu[*down_left] > 0
-                down_right_has_mass = nu[*down_right] > 0
+                down_has_mass = nu[down[0], down[1]] > 0
+                down_left_has_mass = nu[down_left[0], down_left[1]] > 0
+                down_right_has_mass = nu[down_right[0], down_right[1]] > 0
                 p_total = (
                     stress_fraction[i, j] * down_has_mass
                     + (1 - stress_fraction[i, j]) / 2.0 * down_left_has_mass
@@ -202,6 +205,73 @@ def calculate_stress_NEW(s, last_swap, p):
     return sigma
 
 
+def calculate_stress_array(s, last_swap, p):
+    stress_fraction = calculate_stress_fraction(last_swap, p)
+
+    sigma = np.zeros((p.nx, p.ny, 2))  # sigma_xy, sigma_yy
+    weight_of_one_cell = p.solid_density * p.dx * p.dy * p.g
+
+    # Compute n_cells and has_cell
+    n_cells = np.sum(~np.isnan(s[:, :-1, :]), axis=2)
+    has_cell = n_cells > 0
+    this_weight = n_cells * weight_of_one_cell
+
+    # Prepare arrays
+    up = sigma[:, 1:, :]  # sigma[i, j+1, :]
+    left_up = np.zeros((p.nx, p.ny - 1, 2))
+    right_up = np.zeros((p.nx, p.ny - 1, 2))
+
+    # Compute wall_scale
+    if p.wall_friction_angle == 0 or p.repose_angle == 0:
+        wall_scale = 0
+    else:
+        wall_scale = p.wall_friction_angle / p.repose_angle
+
+    # Compute left_up and right_up
+    left_up[1:, :, :] = sigma[:-1, 1:, :]
+    right_up[:-1, :, :] = sigma[1:, 1:, :]
+
+    # Left boundary (i=0)
+    if wall_scale == 0:
+        left_up[0, :, :] = 0
+    else:
+        left_up[0, :, :] = wall_scale * right_up[0, :, :]
+
+    # Right boundary (i = p.nx -1)
+    if wall_scale == 0:
+        right_up[-1, :, :] = 0
+    else:
+        right_up[-1, :, :] = wall_scale * left_up[-1, :, :]
+
+    # Compute stress_fraction for valid indices
+    stress_fraction_slice = stress_fraction[:, :-1]
+
+    # Compute sigma_x and sigma_y
+    sigma_x = np.zeros((p.nx, p.ny - 1))
+    sigma_y = np.zeros((p.nx, p.ny - 1))
+
+    # Apply mask
+    mask = has_cell
+
+    # Compute sigma_x and sigma_y only where mask is True
+    sf = stress_fraction_slice[mask]
+    lw = this_weight[mask]
+    up1 = up[:, :, 1][mask]
+    lup0 = left_up[:, :, 0][mask]
+    rup0 = right_up[:, :, 0][mask]
+    lup1 = left_up[:, :, 1][mask]
+    rup1 = right_up[:, :, 1][mask]
+
+    sigma_x[mask] = 0.5 * (lup0 + rup0) + 0.5 * (1 - sf) * (lup1 - rup1)
+    sigma_y[mask] = lw + sf * up1 + 0.5 * (1 - sf) * (lup1 + rup1) + 0.5 * (lup0 - rup0)
+
+    # Update sigma
+    sigma[:, :-1, 0][mask] = sigma_x[mask]
+    sigma[:, :-1, 1][mask] = sigma_y[mask]
+
+    return sigma
+
+
 def get_mu(sigma):
     with np.errstate(divide="ignore", invalid="ignore"):
         mu = np.nan_to_num(np.abs(sigma[:, :, 0]) / sigma[:, :, 1], nan=0.0, posinf=1e30, neginf=0.0)
@@ -237,9 +307,10 @@ def get_friction_angle(sigma, p, last_swap=None):
     sigma_xx = get_sigma_xx(sigma, p, last_swap)
 
     sigma_m = (sigma_xx + sigma_yy) / 2.0
-    sigma_d = np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
+    # sigma_d = np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
+    radius = np.sqrt(sigma_xy**2 + (sigma_xx - sigma_m) ** 2)  # radius of Mohr's circle
 
     with np.errstate(divide="ignore", invalid="ignore"):
-        friction_angle = np.degrees(np.arcsin(sigma_d / sigma_m))
+        friction_angle = np.degrees(np.arcsin(radius / sigma_m))
 
     return friction_angle
