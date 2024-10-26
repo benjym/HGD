@@ -65,6 +65,8 @@ def move_voids(
     swap_indices = []
     dest_indices = []
 
+    no_swaps_possible = np.ones([p.nx, p.ny, 2], dtype=bool)
+
     if not p.inertia:
         u = np.zeros_like(u)
         v = np.zeros_like(v)
@@ -80,8 +82,8 @@ def move_voids(
         elif p.advection_model == "stress":
             sigma = stress.calculate_stress(s, last_swap, p)
             pressure = stress.get_pressure(sigma, p)
-            u = np.sqrt(2 * pressure / p.solid_density)
-            U = np.repeat(u[:, :, np.newaxis], p.nm, axis=2)
+            u_local = np.sqrt(2 * pressure / p.solid_density)
+            U = np.repeat(u_local[:, :, np.newaxis], p.nm, axis=2)
             U_dest = np.roll(
                 U, d, axis=axis
             )  # NEED TO TAKE DESTINATION VALUE BECAUSE PRESSURE IS ZERO AT OUTLET!!!
@@ -103,13 +105,13 @@ def move_voids(
         elif axis == 0:  # horizontal
             P = p.alpha * U_dest * dest * (p.dt / p.dy / p.dy) * P_diff_weighting
             if p.inertia:
-                # print('new time')
-                # print(np.nanmin(P), np.nanmean(P), np.nanmax(P))
-                U_valid = np.where(d * u > 0, d * u, 0)
+                if d < 0:  # left
+                    U_valid = np.where(u < 0, u, 0)
+                else:  # right
+                    U_valid = np.where(u > 0, u, 0)
                 inertial_term = (p.dt / p.dy) * np.roll(U_valid, d, axis=axis)
+                # THIS IS BROKEN AND I DONT KNOW WHY? SIGN ISSUE?
                 P += inertial_term
-
-                # print(np.nanmin(P), np.nanmean(P), np.nanmax(P))
 
             if d > 0:  # left
                 P[:d, :, :] = 0  # no swapping left from leftmost column
@@ -117,16 +119,16 @@ def move_voids(
                 P[d:, :, :] = 0  # no swapping right from rightmost column
 
             if p.slope_stability_model == "gradient":
-                slope_stable = operators.stable_slope_fast(s, d, p, potential_free_surface)
+                slope_stable = operators.stable_slope_fast(s, d, p, chi, potential_free_surface)
             elif p.slope_stability_model == "stress":
                 slope_stable = operators.stable_slope_stress(s, p, last_swap)
             else:
                 sys.exit(f"Invalid slope stability model: {p.slope_stability_model}")
 
             if p.inertia:
-                u_avg = np.nanmean(u, axis=2, keepdims=True)
-                # stationary = np.repeat(u_avg[:, :, np.newaxis], p.nm, axis=2)
-                # only allow swaps into cells with zero velocity
+                U2 = u**2 + v**2
+                u_avg = np.nanmean(U2, axis=2, keepdims=True)
+                # redefine stability to only include cells with zero average velocity
                 slope_stable = np.logical_and(slope_stable, u_avg == 0)
 
             # Prevent swaps OUT FROM stable slope cells
@@ -152,9 +154,7 @@ def move_voids(
         dest_indices.extend(this_dest_indices)
 
         if p.inertia:
-            no_swaps_possible = np.all(~swap_possible, axis=2)
-            u[no_swaps_possible] = 0
-            v[no_swaps_possible] = 0
+            no_swaps_possible[:, :, axis] *= np.all(~swap_possible, axis=2)
 
     # Prevent conflicts by filtering out swaps that would cause two voids to swap into the same cell
     swap_indices_conflict_free, dest_indices_conflict_free = prevent_conflicts(swap_indices, dest_indices)
@@ -187,11 +187,11 @@ def move_voids(
         # Accumulate the velocities for the destination voids
         u[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
             u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]]
-            + delta[:, 0] * p.dx / p.dt
+            - delta[:, 0] * p.dx / p.dt
         )
         v[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
             v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]]
-            + delta[:, 1] * p.dx / p.dt
+            + delta[:, 1] * p.dy / p.dt
         )
 
         # Zero out the velocities for the swapped voids
@@ -199,7 +199,16 @@ def move_voids(
         v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
 
     last_swap[np.isnan(s)] = np.nan
-    chi = N_swap / p.nm
+    chi_decay = (
+        p.global_damping
+    )  # 0.99 # OMG why have I conflated these two things. Also exponential decay is a weird choice here
+    chi = chi_decay * chi + (1 - chi_decay) * (N_swap / p.nm)
+
+    if p.inertia:
+        # u[no_swaps_possible[:, :, 0]] = 0
+        # v[no_swaps_possible[:, :, 1]] = 0
+        u *= p.global_damping
+        v *= p.global_damping
 
     return u, v, s, c, T, chi, last_swap
 
@@ -272,7 +281,11 @@ def prevent_overfilling(swap_indices, dest_indices, nu, potential_free_surface, 
     if potential_free_surface is None:
         max_swaps = max_swaps_bulk[inverse_indices]
     else:
-        max_swaps_slope = ((delta_nu - p.delta_limit) * p.nm).astype(int)
+        if np.isscalar(p.delta_limit):
+            delta_limit = p.delta_limit
+        else:
+            delta_limit = p.delta_limit[unique_locs[:, 0], unique_locs[:, 1]][inverse_indices]
+        max_swaps_slope = ((delta_nu - delta_limit) * p.nm).astype(int)
         max_swaps_slope = np.maximum(max_swaps_slope, 0)
 
         # Check for potential free surface points

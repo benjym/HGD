@@ -142,7 +142,8 @@ def IC(p):
         mask[
             :, -1, :
         ] = True  # top row can't be filled for algorithmic reasons - could solve this if we need to
-
+    else:
+        raise ValueError(f"Unrecognised IC_mode: {p.IC_mode}")
     s[mask] = np.nan
 
     if p.wall_motion:

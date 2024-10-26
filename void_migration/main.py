@@ -49,7 +49,7 @@ def init(p):
     # last_swap is used to keep track of the last time a void was swapped
     # start off homoegeous and nan where s is voids
     last_swap = np.zeros_like(s)
-    chi = np.zeros_like(u)
+    chi = np.zeros([p.nx, p.ny])
     # last_swap[np.isnan(s)] = np.nan
     # chi = np.zeros([p.nx, p.ny, 2])
 
@@ -146,19 +146,11 @@ def time_step(p, state, t):
     if len(p.cycles) > 0:
         p = cycles.update(p, t, state)
 
-    u, v, s, c, T, chi, last_swap = p.move_voids(u, v, s, p, c=c, T=T, last_swap=last_swap)
+    u, v, s, c, T, chi, last_swap = p.move_voids(u, v, s, p, c=c, T=T, chi=chi, last_swap=last_swap)
 
     u, v, s, c, outlet = boundary.update(u, v, s, p, c, outlet, t)
 
-    if t % p.save_inc == 0:
-        plotter.update(p, state, t)
-
-    if chi.sum() == 0:
-        p.stopped_times += 1
-    else:
-        p.stopped_times = 0
-
-    return (
+    state = (
         s,
         u,
         v,
@@ -174,6 +166,16 @@ def time_step(p, state, t):
         outlet,
         # surface_profile,
     )
+
+    if t % p.save_inc == 0:
+        plotter.update(p, state, t)
+
+    if chi.sum() == 0:
+        p.stopped_times += 1
+    else:
+        p.stopped_times = 0
+
+    return state
 
 
 def time_march(p):

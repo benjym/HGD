@@ -55,6 +55,7 @@
     videos : ['nu','s'], // which variables to save videos of.
     save : [], // which variables to save. By default none.
     mask_s_bar : false, // should the images of s_bar be masked to hide areas of low density
+    plot_colorbar : false, // should the colorbar be plotted
 
     // parallel code
     max_workers : 5, // max number of workers to run simultaneously. Default value is actually set void_migration.py
@@ -62,6 +63,7 @@
     motion_model : 'd2q4_array_v2', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
     advection_model : 'freefall', // 'average_size', 'freefall' or 'stress'
     inertia : false, // should the inertia term be included
+    global_damping : 0.99, // damping factor for the global velocity field
 
     // cycles
     cycles : [], // list of dicts that define any cycles

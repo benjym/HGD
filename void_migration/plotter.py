@@ -233,6 +233,8 @@ def update(p, state, t, *args):
             colorbar = inferno_r
             vmin = 0
             vmax = 1
+        else:
+            raise ValueError(f"Unknown view '{p.view}'")
 
         buffer = array_to_png_buffer(to_plot, colorbar, vmin, vmax)
         p.queue.put(buffer)
@@ -266,6 +268,8 @@ def update(p, state, t, *args):
             plot_permeability(s, p, t)
         if "stable" in p.plot:
             plot_stable(s, p, t)
+        if "chi" in p.plot:
+            plot_chi(chi, p, t)
         if "anisotropy" in p.plot:
             plot_anisotropy(last_swap, p, t)
         if "h" in p.plot:
@@ -287,6 +291,9 @@ def update(p, state, t, *args):
             save_nu(s, p, t)
         if "rel_nu" in p.save:
             save_relative_nu(s, p, t)
+        if "chi" in p.save:
+            save_chi(chi, p, t)
+
         # if "U_mag" in p.save:
         #     save_u(s, u, v, p, t)
         if "permeability" in p.save:
@@ -352,6 +359,22 @@ def plot_gamma_dot(s, chi, p, t):
     plt.ylim(p.y[0], p.y[-1])
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     plt.savefig(p.folderName + "gamma_dot_" + str(t).zfill(6) + ".png")
+
+
+def plot_chi(chi, p, t):
+    plt.figure(fig, layout="constrained")
+    plt.clf()
+    plt.pcolormesh(p.x, p.y, chi.T)
+    plt.axis("off")
+    plt.xlim(p.x[0], p.x[-1])
+    plt.ylim(p.y[0], p.y[-1])
+    if p.plot_colorbar:
+        plt.colorbar(fraction=0.3)
+    plt.savefig(p.folderName + "chi_" + str(t).zfill(6) + ".png")
+
+
+def save_chi(chi, p, t):
+    np.save(p.folderName + "data/chi_" + str(t).zfill(6) + ".npy", chi)
 
 
 def plot_stable(s, p, t):
@@ -650,7 +673,7 @@ def plot_s(s, p, t, *args):
     plt.ylim(p.y[0], p.y[-1])
     ticks = np.linspace(p.s_m, p.s_M, 3, endpoint=True)
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    if hasattr(p, "plot_colorbar"):
+    if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01, ticks=ticks)
     plt.savefig(p.folderName + "s_" + str(t).zfill(6) + ".png")
 
@@ -680,7 +703,7 @@ def plot_nu(s, p, t):
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    if hasattr(p, "plot_colorbar"):
+    if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)
     plt.savefig(p.folderName + "nu_" + str(t).zfill(6) + ".png")
 
@@ -710,7 +733,7 @@ def plot_relative_nu(s, p, t):
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    if hasattr(p, "plot_colorbar"):
+    if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
     plt.savefig(p.folderName + "rel_nu_" + str(t).zfill(6) + ".png")
 
@@ -776,7 +799,7 @@ def plot_u(s, u, v, p, t):
     if p.plot_colorbar:
         plt.colorbar()
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    if hasattr(p, "plot_colorbar"):
+    if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
     plt.savefig(p.folderName + "U_mag_" + str(t).zfill(6) + ".png")
 
@@ -800,7 +823,7 @@ def plot_c(s, c, p, t):
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    if hasattr(p, "plot_colorbar"):
+    if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
         # np.save(p.folderName + "c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
     plt.savefig(p.folderName + "c_" + str(t).zfill(6) + ".png")

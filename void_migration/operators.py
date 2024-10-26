@@ -13,20 +13,6 @@ def swap(src, dst, arrays, nu, p):
     return [arrays, nu]
 
 
-def handle_collisions(u, v, s, Solid, p):
-    # u[Solid] = 0.
-    # v[Solid] = 0.
-    Solid_left = np.roll(Solid, -1, axis=0)
-    Solid_right = np.roll(Solid, 1, axis=0)
-    Solid_up = np.roll(Solid, -1, axis=1)
-    Solid_down = np.roll(Solid, 1, axis=1)
-    # u[Solid_dest] = 0.
-    dest_down = np.roll(s, 1, axis=1)
-    v[Solid_down * ~np.isnan(dest_down)] = 0.0
-
-    return u, v
-
-
 def get_solid_fraction(s: np.ndarray, loc: list | None = None) -> float:
     """Calculate solid fraction of a single physical in a 3D array.
 
@@ -88,7 +74,8 @@ def empty_up(nu_here, p):
     if p.mu == 0:
         return np.zeros_like(nu_here, dtype=bool)
     else:
-        L = np.ceil(p.nu_cs / p.delta_limit).astype(int)
+        delta_limit = np.amax(p.delta_limit)
+        L = np.ceil(p.nu_cs / delta_limit).astype(int)
         # kernel = np.array([[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]).T
         kernel = np.ones((2 * L + 1, 2 * L + 1))
         kernel[L, L] = 0
@@ -174,7 +161,7 @@ def stable_slope_gradient(s, dir, p, debug=False):
     return Stable
 
 
-def stable_slope_fast(s, d, p, potential_free_surface=None):
+def stable_slope_fast(s, d, p, chi=None, potential_free_surface=None):
     """
     Determines the stability of slopes based on the solid fraction.
 
@@ -192,13 +179,28 @@ def stable_slope_fast(s, d, p, potential_free_surface=None):
     delta_nu = nu_dest - nu_here
 
     # delta_nu = -dir*np.gradient(nu_here,axis=0)
+    if p.inertia:
+        get_delta_limit(p, chi)
+    else:
+        delta_limit = p.delta_limit
+
     if potential_free_surface is None:
-        stable = delta_nu <= p.delta_limit
+        stable = delta_nu <= delta_limit
     else:
         stable = (delta_nu <= p.delta_limit) & potential_free_surface
 
     Stable = np.repeat(stable[:, :, np.newaxis], s.shape[2], axis=2)
     return Stable
+
+
+def get_delta_limit(p, chi):
+    if chi is None:
+        chi = np.zeros([p.nx, p.ny])
+    mu = p.mu * (1 - chi * 300)
+    mu[mu < 0] = 0
+    with np.errstate(divide="ignore", invalid="ignore"):
+        inv_mu = np.nan_to_num(1.0 / mu, nan=0.0, posinf=1e30, neginf=0.0)
+    p.delta_limit = p.nu_cs / (inv_mu + 1)
 
 
 def stable_slope(s, i, j, dest, p):
