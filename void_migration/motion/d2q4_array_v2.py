@@ -65,7 +65,7 @@ def move_voids(
     swap_indices = []
     dest_indices = []
 
-    no_swaps_possible = np.ones([p.nx, p.ny, 2], dtype=bool)
+    # no_swaps_possible = np.ones([p.nx, p.ny, 2], dtype=bool)
 
     if not p.inertia:
         u = np.zeros_like(u)
@@ -153,8 +153,8 @@ def move_voids(
         swap_indices.extend(this_swap_indices)
         dest_indices.extend(this_dest_indices)
 
-        if p.inertia:
-            no_swaps_possible[:, :, axis] *= np.all(~swap_possible, axis=2)
+        # if p.inertia:
+        #     no_swaps_possible[:, :, axis] *= np.all(~swap_possible, axis=2)
 
     # Prevent conflicts by filtering out swaps that would cause two voids to swap into the same cell
     swap_indices_conflict_free, dest_indices_conflict_free = prevent_conflicts(swap_indices, dest_indices)
