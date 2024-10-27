@@ -87,10 +87,12 @@ def move_voids(
             U_dest = np.roll(
                 U, d, axis=axis
             )  # NEED TO TAKE DESTINATION VALUE BECAUSE PRESSURE IS ZERO AT OUTLET!!!
+        with np.errstate(divide="ignore", invalid="ignore"):
+            beta = np.exp(-p.P_stab * p.dt / (p.dx / U_dest))
 
         if p.inertia:
             if axis == 1:  # vertical advection
-                U_dest += np.roll(v, d, axis=axis)
+                U_dest += np.roll(v, d, axis=axis)  # FIXME - REMOVE SEGREGATION EFFECT
                 # U_dest += v
                 # print(np.nanmin(v/U_dest), np.nanmean(v/U_dest), np.nanmax(v/U_dest))
 
@@ -180,35 +182,41 @@ def move_voids(
         N_swap[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += 1
 
         delta = dest_indices_filtered - swap_indices_filtered
+        u_new = np.zeros_like(u)
+        v_new = np.zeros_like(v)
 
-        # np.add.at(u, (dest_indices_filtered[:, 0], dest_indices_filtered[:, 1]), delta[:, 0] * p.dx / p.dt / p.nm)
-        # np.add.at(v, (dest_indices_filtered[:, 0], dest_indices_filtered[:, 1]), delta[:, 1] * p.dx / p.dt / p.nm)
+        u_new[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
+            -delta[:, 0] * p.dx / p.dt
+        )
+        v_new[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
+            delta[:, 1] * p.dy / p.dt
+        )
+
+        u = beta * u + (1 - beta) * u_new
+        v = beta * v + (1 - beta) * v_new
 
         # Accumulate the velocities for the destination voids
-        u[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
-            u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]]
-            - delta[:, 0] * p.dx / p.dt
-        )
-        v[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
-            v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]]
-            + delta[:, 1] * p.dy / p.dt
-        )
+        # u[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
+        #     u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]]
+        #     - delta[:, 0] * p.dx / p.dt
+        # )
+        # v[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
+        #     v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]]
+        #     + delta[:, 1] * p.dy / p.dt
+        # )
 
         # Zero out the velocities for the swapped voids
-        u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
-        v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
+        # u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
+        # v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
 
     last_swap[np.isnan(s)] = np.nan
-    chi_decay = (
-        p.global_damping
-    )  # 0.99 # OMG why have I conflated these two things. Also exponential decay is a weird choice here
-    chi = chi_decay * chi + (1 - chi_decay) * (N_swap / p.nm)
+    chi = beta * chi + (1 - beta) * (N_swap / p.nm)
 
-    if p.inertia:
-        # u[no_swaps_possible[:, :, 0]] = 0
-        # v[no_swaps_possible[:, :, 1]] = 0
-        u *= p.global_damping
-        v *= p.global_damping
+    # if p.inertia:
+    #     # u[no_swaps_possible[:, :, 0]] = 0
+    #     # v[no_swaps_possible[:, :, 1]] = 0
+    #     u *= p.global_damping
+    #     v *= p.global_damping
 
     return u, v, s, c, T, chi, last_swap
 

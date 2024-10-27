@@ -21,10 +21,9 @@
 
     inertia: [true, false],
     // inertia: false,
-    global_damping : 0.99,
     
     plot : ['nu', 'U_mag', 'chi'],
-    videos : ['nu', 'U_mag'],
+    videos : ['nu', 'U_mag', 'chi'],
     plot_colorbar : true,
 
     // saving

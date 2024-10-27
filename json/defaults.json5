@@ -63,7 +63,6 @@
     motion_model : 'd2q4_array_v2', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
     advection_model : 'freefall', // 'average_size', 'freefall' or 'stress'
     inertia : false, // should the inertia term be included
-    global_damping : 0.99, // damping factor for the global velocity field
 
     // cycles
     cycles : [], // list of dicts that define any cycles

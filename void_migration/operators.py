@@ -196,7 +196,7 @@ def stable_slope_fast(s, d, p, chi=None, potential_free_surface=None):
 def get_delta_limit(p, chi):
     if chi is None:
         chi = np.zeros([p.nx, p.ny])
-    mu = p.mu * (1 - chi * 300)
+    mu = p.mu * (1 - chi * 300)  # HACK - 300 is a magic number
     mu[mu < 0] = 0
     with np.errstate(divide="ignore", invalid="ignore"):
         inv_mu = np.nan_to_num(1.0 / mu, nan=0.0, posinf=1e30, neginf=0.0)
