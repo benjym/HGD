@@ -765,7 +765,7 @@ def plot_u(s, u, v, p, t):
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
     if p.plot_colorbar:
-        plt.colorbar()
+        plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
     plt.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0)
     plt.savefig(p.folderName + "u_" + str(t).zfill(6) + ".png")
 
@@ -780,7 +780,7 @@ def plot_u(s, u, v, p, t):
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
     if p.plot_colorbar:
-        plt.colorbar()
+        plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     plt.savefig(p.folderName + "v_" + str(t).zfill(6) + ".png")
 

@@ -65,9 +65,10 @@ def move_voids(
     swap_indices = []
     dest_indices = []
 
-    # no_swaps_possible = np.ones([p.nx, p.ny, 2], dtype=bool)
+    u_new = np.zeros_like(u)
+    v_new = np.zeros_like(v)
 
-    if not p.inertia:
+    if p.inertia == "derived":
         u = np.zeros_like(u)
         v = np.zeros_like(v)
 
@@ -87,14 +88,9 @@ def move_voids(
             U_dest = np.roll(
                 U, d, axis=axis
             )  # NEED TO TAKE DESTINATION VALUE BECAUSE PRESSURE IS ZERO AT OUTLET!!!
+
         with np.errstate(divide="ignore", invalid="ignore"):
             beta = np.exp(-p.P_stab * p.dt / (p.dx / U_dest))
-
-        if p.inertia:
-            if axis == 1:  # vertical advection
-                U_dest += np.roll(v, d, axis=axis)  # FIXME - REMOVE SEGREGATION EFFECT
-                # U_dest += v
-                # print(np.nanmin(v/U_dest), np.nanmean(v/U_dest), np.nanmax(v/U_dest))
 
         if axis == 1:  # vertical
             s_inv_bar = operators.get_hyperbolic_average(s)
@@ -103,17 +99,19 @@ def move_voids(
 
             P = (p.dt / p.dy) * U_dest * (S_inv_bar_dest / dest)
 
+            if p.inertia is not False:
+                P += (p.dt / p.dy) * np.roll(v, d, axis=axis)
+
             P[:, -1, :] = 0  # no swapping up from top row
         elif axis == 0:  # horizontal
             P = p.alpha * U_dest * dest * (p.dt / p.dy / p.dy) * P_diff_weighting
-            if p.inertia:
+
+            if p.inertia is not False:
                 if d < 0:  # left
                     U_valid = np.where(u < 0, u, 0)
                 else:  # right
                     U_valid = np.where(u > 0, u, 0)
-                inertial_term = (p.dt / p.dy) * np.roll(U_valid, d, axis=axis)
-                # THIS IS BROKEN AND I DONT KNOW WHY? SIGN ISSUE?
-                P += inertial_term
+                P += (p.dt / p.dy) * np.roll(U_valid, d, axis=axis)
 
             if d > 0:  # left
                 P[:d, :, :] = 0  # no swapping left from leftmost column
@@ -127,11 +125,11 @@ def move_voids(
             else:
                 sys.exit(f"Invalid slope stability model: {p.slope_stability_model}")
 
-            if p.inertia:
-                U2 = u**2 + v**2
-                u_avg = np.nanmean(U2, axis=2, keepdims=True)
-                # redefine stability to only include cells with zero average velocity
-                slope_stable = np.logical_and(slope_stable, u_avg == 0)
+            # if p.inertia is not False:
+            #     U2 = u**2 + v**2
+            #     u_avg = np.nanmean(U2, axis=2, keepdims=True)
+            #     # redefine stability to only include cells with zero average velocity
+            #     slope_stable = np.logical_and(slope_stable, u_avg == 0)
 
             # Prevent swaps OUT FROM stable slope cells
             unstable = np.logical_or(unstable, ~slope_stable)
@@ -140,6 +138,12 @@ def move_voids(
         swap_possible = np.logical_and(unstable, ~np.isnan(dest))
         P = np.where(swap_possible, P, 0)
         swap = np.random.rand(*P.shape) < P
+
+        if p.inertia == "derived":
+            if axis == 0:
+                u += P * p.dx / p.dt
+            elif axis == 1:
+                v -= P * p.dy / p.dt
 
         this_swap_indices = np.argwhere(swap)
         this_dest_indices = this_swap_indices.copy()
@@ -154,9 +158,6 @@ def move_voids(
 
         swap_indices.extend(this_swap_indices)
         dest_indices.extend(this_dest_indices)
-
-        # if p.inertia:
-        #     no_swaps_possible[:, :, axis] *= np.all(~swap_possible, axis=2)
 
     # Prevent conflicts by filtering out swaps that would cause two voids to swap into the same cell
     swap_indices_conflict_free, dest_indices_conflict_free = prevent_conflicts(swap_indices, dest_indices)
@@ -179,44 +180,34 @@ def move_voids(
             2 * axis - 1
         )  # 1 for up, -1 for left or right
 
-        N_swap[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += 1
+        # N_swap[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += 1
+        np.add.at(N_swap, (swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]), 1)
 
-        delta = dest_indices_filtered - swap_indices_filtered
-        u_new = np.zeros_like(u)
-        v_new = np.zeros_like(v)
+        if p.inertia == "time_averaging" or p.inertia is False:
+            delta = dest_indices_filtered - swap_indices_filtered
 
-        u_new[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
-            -delta[:, 0] * p.dx / p.dt
-        )
-        v_new[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
-            delta[:, 1] * p.dy / p.dt
-        )
+            # Update the new velocities where the mass is
+            u_new[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
+                -delta[:, 0] * p.dx / p.dt
+            )
+            v_new[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
+                delta[:, 1] * p.dy / p.dt
+            )
 
+            # Zero out the velocities for the swapped voids
+            u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
+            v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
+
+    if p.inertia == "time_averaging":
         u = beta * u + (1 - beta) * u_new
         v = beta * v + (1 - beta) * v_new
 
-        # Accumulate the velocities for the destination voids
-        # u[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
-        #     u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]]
-        #     - delta[:, 0] * p.dx / p.dt
-        # )
-        # v[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
-        #     v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]]
-        #     + delta[:, 1] * p.dy / p.dt
-        # )
-
-        # Zero out the velocities for the swapped voids
-        # u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
-        # v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
-
     last_swap[np.isnan(s)] = np.nan
-    chi = beta * chi + (1 - beta) * (N_swap / p.nm)
 
-    # if p.inertia:
-    #     # u[no_swaps_possible[:, :, 0]] = 0
-    #     # v[no_swaps_possible[:, :, 1]] = 0
-    #     u *= p.global_damping
-    #     v *= p.global_damping
+    chi_new = (
+        N_swap / p.nm / p.P_stab
+    )  # NOTE: Should this be P_stab??? Should be one when everything swaps as fast as possible...
+    chi = beta * chi + (1 - beta) * chi_new
 
     return u, v, s, c, T, chi, last_swap
 
@@ -263,6 +254,22 @@ def prevent_conflicts(swap_indices, dest_indices):
 
 
 def prevent_overfilling(swap_indices, dest_indices, nu, potential_free_surface, p):
+    """
+    Prevents overfilling of destination locations by limiting the number of swaps.
+
+    Parameters:
+    swap_indices (ndarray): Array of indices representing the source locations for swaps.
+    dest_indices (ndarray): Array of indices representing the destination locations for swaps.
+    nu (ndarray): Array representing the current state of the system.
+    potential_free_surface (ndarray or None): Array indicating potential free surface points, or None if not applicable.
+    p (object): Parameter object containing the following attributes:
+        - nm (int): Scaling factor for the number of swaps.
+        - nu_cs (float): Critical value for nu.
+        - delta_limit (float or ndarray): Limit for the change in nu during swaps.
+
+    Returns:
+    tuple: A tuple containing the filtered swap_indices and dest_indices after applying the overfilling prevention logic.
+    """
     # Randomly permute the swaps
     perm = np.random.permutation(len(swap_indices))
     swap_indices = swap_indices[perm]

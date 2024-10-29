@@ -19,12 +19,11 @@
     nu_fill : 0.5,
     IC_mode : "left_column",
 
-    inertia: [true, false],
-    // inertia: false,
-    global_damping : 0.99,
+    inertia: ['derived', 'time_averaging', false],
+    // inertia: true,
     
     plot : ['nu', 'U_mag', 'chi'],
-    videos : ['nu', 'U_mag'],
+    videos : ['nu', 'U_mag', 'chi'],
     plot_colorbar : true,
 
     // saving

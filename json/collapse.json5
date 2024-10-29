@@ -1,12 +1,12 @@
 {
     // resolution
-    nx : 20, // width
+    nx : 40, // width
     ny : 20, // height
     nm : 20,  // number of simultaneous simulations
 
     // geometry
     H : 1, // (m)
-    P_stab : 0.1,
+    P_stab : 0.01,
 
     // material properties
     repose_angle : 30, // (degrees)
@@ -16,17 +16,16 @@
     nu_cs : 0.5,
     
     // initial condition:
-    nu_fill : 0.5,
-    IC_mode : "left_column",
+    nu_fill : 0.25,
+    IC_mode : "column",
 
     inertia: [true, false],
     // inertia: false,
     
-    plot : ['nu', 'U_mag', 'chi'],
-    videos : ['nu', 'U_mag', 'chi'],
-    plot_colorbar : true,
+    plot : ['nu'],
+    videos : ['nu'],
 
     // saving
     saves : 20,
-    t_f : 50,  // s
+    t_f : 5,  // s
 }
