@@ -1,0 +1,45 @@
+{
+    // resolution
+    nx : 50, // width
+
+    // geometry
+    H : 1, // (m)
+    aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
+    nm : 10, //0,
+
+    // material properties
+    // repose_angle : 20, // (degrees)
+    repose_angle : 30, // (degrees)
+    gsd_mode : 'mono',
+    s_m : 0.001, // minimum particle size (m)
+    s_M : 0.001, // maximum particle size (m)
+    nu_cs : 0.5,
+    // alpha : 1,
+    
+    // initial condition:
+    fill_ratio : 0.25,
+    nu_fill : 0.5,
+    IC_mode : "full",
+
+    stress_mode : 'active', //['isotropic','active','passive','K_0','anisotropic'],
+    slope_stability_model : 'gradient', //['stress','gradient'],
+
+    solid_density : 0, // (kg/m^3)
+    point_load : 20000, // (N)
+
+    nu_cs_mode : 'dynamic',
+    lambda_nu : 2,
+    nu_1 : 0.5,
+    
+    // saving
+    save_inc : 100,   // how many saves to make
+    t_f : null,
+    
+    plot : ['nu', 'stress', 'anisotropy'],
+    videos : ['nu','stress', 'anisotropy'],
+    save : ['nu', 's','stress', 'last_swap'],
+    // plot_colorbar : true,
+
+    // parallel
+    max_workers : 5, // leave some cores on my poor little laptop
+}
