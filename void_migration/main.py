@@ -130,6 +130,8 @@ def time_step(p, state, t):
         # surface_profile,
     ) = state
 
+    p.update_every_time_step(s)
+
     if p.stop_event is not None and p.stop_event.is_set():
         raise KeyboardInterrupt
 

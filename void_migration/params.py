@@ -3,6 +3,9 @@ import sys
 import json5
 import numpy as np
 
+# import operators
+import stress
+
 
 class dict_to_class:
     """
@@ -183,6 +186,16 @@ class dict_to_class:
                 sys.exit("Fatal error: nt = 0. Cannot use `saves` parameter.")
             else:
                 self.save_inc = int(self.nt / self.saves)
+
+    def update_every_time_step(self, s):
+        if self.nu_cs_mode == "dynamic":
+            # nu = operators.get_solid_fraction(s)
+            sigma = stress.calculate_stress(s, None, self)
+            pressure = stress.get_pressure(sigma, self)
+            self.nu_cs = self.nu_1 * (pressure / 1000) ** (1 / self.lambda_nu)  # in kPa!
+            self.nu_cs[np.isnan(self.nu_cs)] = self.nu_1
+            self.nu_cs[self.nu_cs < self.nu_1] = self.nu_1
+            # print(self.nu_cs.min(), self.nu_cs.max(), np.nanmin(pressure), np.nanmax(pressure))
 
     def process_charge_discharge_csv(self, array):
         self.cycles = []
