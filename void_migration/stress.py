@@ -88,7 +88,122 @@ def calculate_stress_fraction(last_swap, p):
 
 def calculate_stress(s, last_swap, p):
     # return calculate_stress_NEW(s, last_swap, p)
-    return calculate_stress_OLD(s, last_swap, p)
+    # return calculate_stress_OLD(s, last_swap, p)
+    return harr_substep(s, last_swap, p)
+    # return harr_implicit(s, last_swap, p)
+
+
+def harr_substep(s, last_swap, p):
+    stress_fraction = calculate_stress_fraction(last_swap, p)
+    K = 1 - stress_fraction
+
+    sigma = np.zeros([p.nx, p.ny, 2])  # sigma_xy, sigma_yy
+    # NOTE: NOT CONSIDERING INCLINED GRAVITY
+    weight_of_one_cell = p.solid_density * p.dx * p.g  # * p.dy
+
+    nu = operators.get_solid_fraction(s)
+
+    if hasattr(p, "point_load"):
+        sigma[p.nx // 2, p.ny - 1, 1] = p.point_load
+
+    for j in range(p.ny - 2, -1, -1):
+        this_weight = nu[:, j] * weight_of_one_cell
+
+        # F_{x, z} = F_{x, z+\Delta z} + w \Delta z
+        # + \frac{\Delta z}{\Delta x^2} D \left( F_{x+\Delta x, z+\Delta z} - 2F_{x, z+\Delta z} + F_{x-\Delta x, z+\Delta z} \right).
+        # K = 1
+        depth = p.dy * (p.ny - j - 1)
+        D = K[:, j] * depth
+
+        nsubsteps = np.ceil(np.amax(D) * p.dy / (0.5 * p.dx**2)).astype(int)  # CFL=0.5
+
+        for m in range(nsubsteps):
+            if m == 0:
+                up = sigma[:, j + 1, 1]
+            else:
+                up = sigma_inc
+            right_up = np.roll(up, 1, axis=0)
+            left_up = np.roll(up, -1, axis=0)
+
+            sigma_inc = (
+                this_weight / nsubsteps
+                + up
+                + (p.dy / nsubsteps) / (p.dx**2) * D * (left_up - 2 * up + right_up)
+            )
+            sigma_inc[nu[:, j] == 0] = 0
+
+        sigma[:, j, 1] = sigma_inc
+
+    return sigma
+
+
+def harr_implicit(s, last_swap, p):
+    sigma = np.zeros((p.nx, p.ny, 2))
+    weight_of_one_cell = p.solid_density * p.dx * p.g  # * p.dy
+    nu = operators.get_solid_fraction(s)
+    w = nu * weight_of_one_cell
+
+    if hasattr(p, "point_load"):
+        sigma[p.nx // 2, p.ny - 1, 1] = p.point_load
+
+    # Loop over rows (z-direction, top to bottom)
+    for j in range(p.ny - 2, -1, -1):
+        K = 1
+        depth = p.dy * (p.ny - j - 1)
+        D = K * depth
+
+        # Tridiagonal coefficients
+        alpha = -D * p.dy / p.dx**2
+        beta = 1 + 2 * D * p.dy / p.dx**2
+
+        # Extract known values from the row above (z+1)
+        rhs = sigma[:, j + 1, 1] + w[:, j]  # * p.dy
+
+        # Tridiagonal matrix
+        a = np.full(p.nx, alpha)  # Subdiagonal
+        b = np.full(p.nx, beta)  # Main diagonal
+        c = np.full(p.nx, alpha)  # Superdiagonal
+
+        # Periodic boundary conditions
+        a[0] = c[-1] = alpha
+        c[0] = a[-1] = alpha
+
+        # Solve the tridiagonal system
+        F_new = solve_tridiagonal(a, b, c, rhs)  # Replace with your solver
+
+        # Update sigma for the current row
+        sigma[:, j, 1] = F_new
+
+    return sigma
+
+
+def solve_tridiagonal(a, b, c, d):
+    """
+    Solves a tridiagonal system using the Thomas algorithm.
+    a: subdiagonal (length n-1)
+    b: main diagonal (length n)
+    c: superdiagonal (length n-1)
+    d: right-hand side (length n)
+    """
+    n = len(d)
+    c_prime = np.zeros(n - 1)
+    d_prime = np.zeros(n)
+
+    # Forward elimination
+    c_prime[0] = c[0] / b[0]
+    d_prime[0] = d[0] / b[0]
+    for i in range(1, n):
+        denom = b[i] - a[i - 1] * c_prime[i - 1]
+        c_prime[i - 1] = c[i - 1] / denom
+        d_prime[i] = (d[i] - a[i - 1] * d_prime[i - 1]) / denom
+
+    # Back substitution
+    x = np.zeros(n)
+    x[-1] = d_prime[-1]
+    for i in range(n - 2, -1, -1):
+        x[i] = d_prime[i] - c_prime[i] * x[i + 1]
+
+    return x
 
 
 def calculate_stress_OLD(s, last_swap, p):

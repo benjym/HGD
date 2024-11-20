@@ -532,21 +532,24 @@ def plot_stress(s, sigma, last_swap, p, t):
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
-    # plt.colorbar()
+    if p.plot_colorbar:
+        plt.colorbar(shrink=0.7, location="top", pad=0.05)
 
     plt.subplot(312)
     plt.pcolormesh(p.x, p.y, deviatoric.T, vmin=0, vmax=deviatoric.max())
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
-    # plt.colorbar()
+    if p.plot_colorbar:
+        plt.colorbar(shrink=0.8, location="top", pad=0.01)
 
     plt.subplot(313)
     plt.pcolormesh(p.x, p.y, fr.T, vmin=0, vmax=2 * p.repose_angle, cmap="bwr")
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
-    # plt.colorbar()
+    if p.plot_colorbar:
+        plt.colorbar(shrink=0.8, location="top", pad=0.01)
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
     plt.savefig(p.folderName + "stress_" + str(t).zfill(6) + ".png")
@@ -796,8 +799,6 @@ def plot_u(s, u, v, p, t):
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
-    if p.plot_colorbar:
-        plt.colorbar()
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
