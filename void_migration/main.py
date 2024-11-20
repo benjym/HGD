@@ -177,6 +177,8 @@ def time_step(p, state, t):
     else:
         p.stopped_times = 0
 
+    p.t += p.dt
+
     return state
 
 

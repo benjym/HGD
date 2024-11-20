@@ -75,7 +75,10 @@ def empty_up(nu_here, p):
         return np.zeros_like(nu_here, dtype=bool)
     else:
         delta_limit = np.amax(p.delta_limit)
-        L = np.ceil(p.nu_cs / delta_limit).astype(int)
+        if p.nu_cs_mode == "constant":
+            L = np.ceil(p.nu_cs / delta_limit).astype(int)
+        else:
+            L = np.ceil(p.nu_1 / delta_limit).astype(int)
         # kernel = np.array([[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]).T
         kernel = np.ones((2 * L + 1, 2 * L + 1))
         kernel[L, L] = 0

@@ -3,9 +3,9 @@
     nx : 50, // width
 
     // geometry
-    H : 1, // (m)
-    aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
-    nm : 10, //0,
+    H : 0.2, // (m)
+    aspect_ratio_y : 1,  // ny = aspect_ratio * nx
+    nm : 100, //0,
 
     // material properties
     // repose_angle : 20, // (degrees)
@@ -17,27 +17,29 @@
     // alpha : 1,
     
     // initial condition:
-    fill_ratio : 0.25,
-    nu_fill : 0.5,
-    IC_mode : "full",
+    fill_ratio : 0.95,
+    nu_fill : [0.5,0.6,0.7],
+    // nu_fill : 0.5,
+    IC_mode : "bottom",
 
+    inertia: "time_averaging",
     stress_mode : 'active', //['isotropic','active','passive','K_0','anisotropic'],
     slope_stability_model : 'gradient', //['stress','gradient'],
 
     solid_density : 0, // (kg/m^3)
-    point_load : 20000, // (N)
+    point_load : 2000, // (N)
 
     nu_cs_mode : 'dynamic',
-    lambda_nu : 2,
+    lambda_nu : 0.2,
     nu_1 : 0.5,
     
     // saving
-    save_inc : 100,   // how many saves to make
-    t_f : null,
+    saves : 100,   // how many saves to make
+    t_f : 20,
     
-    plot : ['nu', 'stress', 'anisotropy'],
-    videos : ['nu','stress', 'anisotropy'],
-    save : ['nu', 's','stress', 'last_swap'],
+    plot : ['nu', 'stress', 'U_mag'],
+    videos : ['nu','stress', 'U_mag'],
+    save : [],
     // plot_colorbar : true,
 
     // parallel

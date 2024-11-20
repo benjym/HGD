@@ -104,7 +104,12 @@ def harr_substep(s, last_swap, p):
     nu = operators.get_solid_fraction(s)
 
     if hasattr(p, "point_load"):
-        sigma[p.nx // 2, p.ny - 1, 1] = p.point_load
+        empty_at_middle = nu[p.nx // 2, :] == 0
+        top = np.where(empty_at_middle)[0]
+        if len(top) > 0:
+            top = top[0]
+        else:
+            top = p.ny
 
     for j in range(p.ny - 2, -1, -1):
         this_weight = nu[:, j] * weight_of_one_cell
@@ -112,10 +117,11 @@ def harr_substep(s, last_swap, p):
         # F_{x, z} = F_{x, z+\Delta z} + w \Delta z
         # + \frac{\Delta z}{\Delta x^2} D \left( F_{x+\Delta x, z+\Delta z} - 2F_{x, z+\Delta z} + F_{x-\Delta x, z+\Delta z} \right).
         # K = 1
-        depth = p.dy * (p.ny - j - 1)
+        depth = p.dy * (top - j + 1.5)  # half a cell below the cell center
         D = K[:, j] * depth
 
         nsubsteps = np.ceil(np.amax(D) * p.dy / (0.5 * p.dx**2)).astype(int)  # CFL=0.5
+        nsubsteps = max(nsubsteps, 1)  # at least one substep
 
         for m in range(nsubsteps):
             if m == 0:
@@ -133,6 +139,13 @@ def harr_substep(s, last_swap, p):
             sigma_inc[nu[:, j] == 0] = 0
 
         sigma[:, j, 1] = sigma_inc
+
+        if j == top:
+            sigma[p.nx // 2, top, 1] = p.point_load * p.t
+
+    dsigma_dx, dsigma_dy = np.gradient(sigma[:, :, 1], p.dx, p.dy)
+    Depth = (top + 2) * p.dy - p.Y
+    sigma[:, :, 0] = -K * Depth * dsigma_dx  # HACK: THIS IS MISSING THE SECOND DERIVATIVE TERM
 
     return sigma
 
