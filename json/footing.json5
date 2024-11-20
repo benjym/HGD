@@ -5,7 +5,7 @@
     // geometry
     H : 0.2, // (m)
     aspect_ratio_y : 1,  // ny = aspect_ratio * nx
-    nm : 100, //0,
+    nm : 50, //0,
 
     // material properties
     // repose_angle : 20, // (degrees)
@@ -26,11 +26,12 @@
     stress_mode : 'active', //['isotropic','active','passive','K_0','anisotropic'],
     slope_stability_model : 'gradient', //['stress','gradient'],
 
-    solid_density : 0, // (kg/m^3)
-    point_load : 2000, // (N)
+    solid_density : 2700, // (kg/m^3)
+    point_load : 10000, // (N)
+    pad_width : 0.05, // (m)
 
     nu_cs_mode : 'dynamic',
-    lambda_nu : 0.2,
+    lambda_nu : 12,
     nu_1 : 0.5,
     
     // saving

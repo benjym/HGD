@@ -141,7 +141,8 @@ def harr_substep(s, last_swap, p):
         sigma[:, j, 1] = sigma_inc
 
         if j == top:
-            sigma[p.nx // 2, top, 1] = p.point_load * p.t
+            half_pad_width = int(p.pad_width / p.dx) // 2
+            sigma[p.nx // 2 - half_pad_width : p.nx // 2 + half_pad_width + 1, top, 1] = p.point_load * p.t
 
     dsigma_dx, dsigma_dy = np.gradient(sigma[:, :, 1], p.dx, p.dy)
     Depth = (top + 2) * p.dy - p.Y

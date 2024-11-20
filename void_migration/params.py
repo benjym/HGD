@@ -192,8 +192,10 @@ class dict_to_class:
             # nu = operators.get_solid_fraction(s)
             sigma = stress.calculate_stress(s, None, self)
             pressure = stress.get_pressure(sigma, self)
-            self.nu_cs = self.nu_1 * (pressure / 1000) ** (1 / self.lambda_nu)  # in kPa!
+            pressure_kPa = pressure / 1000
+            self.nu_cs = self.nu_1 * pressure_kPa ** (1 / self.lambda_nu)  # in kPa!
             self.nu_cs[np.isnan(self.nu_cs)] = self.nu_1
+            # self.nu_cs[self.nu_cs == 0] = self.nu_1
             self.nu_cs[self.nu_cs < self.nu_1] = self.nu_1
             # print(self.nu_cs.min(), self.nu_cs.max(), np.nanmin(pressure), np.nanmax(pressure))
 
