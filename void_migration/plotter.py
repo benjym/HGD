@@ -276,8 +276,12 @@ def update(p, state, t, *args):
             plot_h(s, p, t)
         if "stress" in p.plot:
             plot_stress(s, sigma, last_swap, p, t)
+        if "sigma_xx" in p.plot:
+            plot_sigma_xx(s, sigma, last_swap, p, t)
         if "sigma_yy" in p.plot:
             plot_sigma_yy(s, sigma, last_swap, p, t)
+        if "sigma_xy" in p.plot:
+            plot_sigma_xy(s, sigma, last_swap, p, t)
         if "pressure" in p.plot:
             plot_pressure(s, sigma, last_swap, p, t)
         if "deviatoric" in p.plot:
@@ -438,8 +442,9 @@ def plot_s_bar(y, s_bar, nu_time, p):
 def plot_sigma_xx(s, sigma, last_swap, p, t):
     if sigma is None:
         sigma = stress.calculate_stress(s, last_swap, p)
-    sigma_xx = stress.get_sigma_xx(sigma, p)
-    sigma_xx = np.ma.masked_where(sigma_xx == 0.0, sigma_xx)
+    # sigma_xx = stress.get_sigma_xx(sigma, p)
+    # sigma_xx = np.ma.masked_where(sigma_xx == 0.0, sigma_xx)
+    sigma_xx = np.ma.masked_where(sigma[:, :, 2] == 0.0, sigma[:, :, 2])
     plt.figure(fig)
     plt.clf()
     plt.pcolormesh(p.x, p.y, sigma_xx.T)
