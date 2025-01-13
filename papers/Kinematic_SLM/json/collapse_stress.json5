@@ -1,6 +1,6 @@
 {
     // resolution
-    nx : 50, // width
+    nx : 100, // width
 
     // geometry
     H : 1, // (m)
@@ -8,8 +8,8 @@
     nm : 100, //0,
 
     // material properties
-    // repose_angle : 20, // (degrees)
-    repose_angle : [0,10,20,30,40,50,60,70,80,90], // (degrees)
+    repose_angle : 30, // (degrees)
+    // repose_angle : [0,10,20,30,40,50,60,70,80,90], // (degrees)
     gsd_mode : 'mono',
     s_m : 0.001, // minimum particle size (m)
     s_M : 0.001, // maximum particle size (m)
@@ -21,11 +21,11 @@
     nu_fill : 0.5,
     IC_mode : "column",
 
-    stress_mode : 'sandpile', //['isotropic','active','passive','K_0','anisotropic'],
-    slope_stability_model : 'stress', //['stress','gradient'],
+    stress_mode : 'K_0', //['isotropic','active','passive','K_0','anisotropic'],
+    slope_stability_model : 'gradient', //['stress','gradient'],
     
     // saving
-    save_inc : 100,   // how many saves to make
+    save_inc : 1000,   // how many saves to make
     t_f : null,
     
     plot : ['nu', 'stress', 'anisotropy'],

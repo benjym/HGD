@@ -68,6 +68,12 @@ bwr = cm.get_cmap("bwr")
 bwr.set_bad("k", 1.0)
 bwr.set_under("k")
 bwr.set_over("k")
+
+bwr2 = cm.get_cmap("bwr")
+bwr2.set_bad("k", 1.0)
+bwr2.set_under("b")
+bwr2.set_over("r")
+
 colors = [(1, 0, 0), (0, 0, 1)]
 cmap_name = "my_list"
 cmap = LinearSegmentedColormap.from_list(cmap_name, colors, N=2)
@@ -282,6 +288,8 @@ def update(p, state, t, *args):
             plot_pressure(s, sigma, last_swap, p, t)
         if "deviatoric" in p.plot:
             plot_deviatoric(s, sigma, last_swap, p, t)
+        if "footing" in p.plot:
+            plot_footing(p)
 
         if "s" in p.save:
             save_s(s, p, t)
@@ -293,6 +301,8 @@ def update(p, state, t, *args):
             save_relative_nu(s, p, t)
         if "chi" in p.save:
             save_chi(chi, p, t)
+        if "footing" in p.save:
+            save_footing(s, p, t)
 
         # if "U_mag" in p.save:
         #     save_u(s, u, v, p, t)
@@ -544,7 +554,7 @@ def plot_stress(s, sigma, last_swap, p, t):
         plt.colorbar(shrink=0.8, location="top", pad=0.01)
 
     plt.subplot(313)
-    plt.pcolormesh(p.x, p.y, fr.T, vmin=0, vmax=2 * p.repose_angle, cmap="bwr")
+    plt.pcolormesh(p.x, p.y, fr.T, vmin=0, vmax=2 * p.repose_angle, cmap=bwr2)
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
@@ -845,8 +855,8 @@ def save_last_swap(last_swap, p, t):
 
 
 def save_velocity(u, v, folderName, t):
-    np.save(folderName + "data/u_" + str(t).zfill(6) + ".npy", u)
-    np.save(folderName + "data/v_" + str(t).zfill(6) + ".npy", v)
+    np.save(folderName + "data/u_" + str(t).zfill(6) + ".npy", np.mean(u, axis=2))
+    np.save(folderName + "data/v_" + str(t).zfill(6) + ".npy", np.mean(v, axis=2))
 
 
 def plot_outlet(outlet, output):
@@ -862,6 +872,48 @@ def plot_outlet(outlet, output):
         plt.savefig(output + "outflow.png")
     else:
         plt.savefig(output, format="png")
+
+
+def save_footing(s, p, t, debug=True):
+    if t == 0:
+        with open(p.folderName + "data/footing.csv", "w") as f:
+            f.write("time,depth,load\n")
+    with open(p.folderName + "data/footing.csv", "a") as f:
+        nu = operators.get_solid_fraction(s)
+
+        nu_slice = nu[p.nx // 2, :]
+        empty_ish = nu_slice < p.nu_1
+        y1_index = np.where(empty_ish)[0][0]  # INDEX
+        y1 = p.y[y1_index]
+        slope = p.dy / (nu_slice[y1_index - 1] - nu_slice[y1_index])
+        top = y1 + slope * (p.nu_1 / 2.0 - nu_slice[y1_index])
+
+        depth = p.H - top
+        current_load = p.point_load * p.t
+        f.write(f"{t},{depth},{current_load}\n")
+
+    if debug:
+        plt.figure(fig)
+        plt.clf()
+        plt.pcolormesh(p.x, p.y, nu.T, cmap=inferno, vmin=0, vmax=1)
+        plt.plot([p.x[p.nx // 2]], [top], "go")
+        plt.savefig(p.folderName + "footing_" + str(t).zfill(6) + ".png")
+
+
+def plot_footing(p):
+    if os.path.exists(p.folderName + "data/footing.csv"):
+        data = np.loadtxt(p.folderName + "data/footing.csv", delimiter=",", skiprows=1)
+
+        if len(data.shape) < 2:
+            return
+
+        plt.figure(summary_fig, layout="constrained")
+        plt.clf()
+        depth = data[:, 1] - data[0, 1]
+        plt.plot(depth, data[:, 2], "k.")
+        plt.xlabel("Depth, m")
+        plt.ylabel("Load, N")
+        plt.savefig(p.folderName + "footing.png")
 
 
 def plot_profile(x, nu_time_x, p):

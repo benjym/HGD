@@ -1,36 +1,48 @@
 {
     // nice version
-    nx : 100, // width
+    // nx : [21,51,101], // width
     aspect_ratio_y : 2,  // ny = aspect_ratio * nx
-    nm : 100,
+    // nm : [100,1000,10000,50000],
+    nx : [50], // width
+    nm : [100,1000],
 
     // geometry
-    H : 0.6, // (m)
+    // width of experiment is 0.13 m. height below is fictional to give headroom. top of image is at H=0.2069m
+    H : 0.26, // (m)
     boundaries : ['central_outlet'],
 
     // material properties
     repose_angle : 30, // (degrees)5
     gsd_mode : 'mono',
-    s_m : 0.003, // minimum particle size (m)
-    s_M : 0.003, // maximum particle size (m)
+    s_m : 0.0023, // minimum particle size (m)
+    s_M : 0.0023, // maximum particle size (m)
     nu_cs : 0.5,
     // alpha : [1.0,2.0,3.0],
-    alpha : [1,2,3,4,5,6,7,8],
-    half_width : 1,
+    // alpha : [1,2,3,4,5,6,7,8],
+    alpha : 0.942, // measured from velocity field of silo experiment
+    half_width : 0,
+    // outlet_rate : 0.01,
+    outlet_nu : 0.0,
+    refill: false,
+    // inertia: "derived",
+    // inertia : "time_averaging",
+    inertia : false,
     
     // initial condition:
     fill_ratio : 1.0,
     nu_fill : 0.5,
-    IC_mode : "top",
+    IC_mode : "bottom",
     
     // saving
-    save_inc : 10,
-    t_f : 10,  // s
-    plot : [],
+    save_inc : 1,
+    t_f : 20,  // s
+    plot : ['U_mag'],
     videos : [],
     save : ['nu','velocity'],
     mask_s_bar : false,
 
     // parallel
-    max_workers : 4, // leave some cores on my poor little laptop
+    max_workers : 5, // leave some cores on my poor little laptop
+
+    // show_optimal_resolution : true,
 }

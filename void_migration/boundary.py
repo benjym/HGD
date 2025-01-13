@@ -99,28 +99,33 @@ def central_outlet(u, v, s, p, c, outlet):
     fill_mass = p.dx * p.dy / p.nm * p.solid_density
 
     for i in range(p.nx // 2 - p.half_width, p.nx // 2 + p.half_width + 1):
-        for k in range(p.nm):
-            if not np.isnan(s[i, 0, k]):
-                if np.random.rand() < p.outlet_rate:
-                    if p.refill:
-                        target_column = np.random.choice(p.nx)
-                        nu_up = np.roll(1 - np.mean(np.isnan(s[target_column, :, :]), axis=1), -1)
-                        solid = ~np.isnan(s[target_column, :, k])
-                        liquid_up = nu_up + 1 / p.nm <= p.nu_cs
+        this_nu = 1 - np.mean(np.isnan(s[i, 0, :]))
+        num_to_empty = int((this_nu - p.outlet_nu) * p.nm)
+        if num_to_empty > 0:
+            to_empty = np.random.choice(np.nonzero(~np.isnan(s[i, 0, :]))[0], num_to_empty, replace=False)
+            for k in to_empty:
+                if p.refill:
+                    target_column = np.random.choice(p.nx)
+                    nu_up = np.roll(1 - np.mean(np.isnan(s[target_column, :, :]), axis=1), -1)
+                    solid = ~np.isnan(s[target_column, :, k])
+                    liquid_up = nu_up + 1 / p.nm <= p.nu_cs
 
-                        solid_indices = np.nonzero(solid & liquid_up)[0]
-                        if len(solid_indices) > 0:
-                            topmost_solid = solid_indices[-1]
-                            if topmost_solid < p.ny - 1:
-                                s[target_column, topmost_solid + 1, k], s[i, 0, k] = (
-                                    s[i, 0, k],
-                                    s[target_column, topmost_solid + 1, k],
-                                )
-                            else:
-                                print("WARNING: No room to refill")
-                    else:
-                        s[i, 0, k] = np.nan
-                    p.outlet += fill_mass
+                    solid_indices = np.nonzero(solid & liquid_up)[0]
+                    if len(solid_indices) > 0:
+                        topmost_solid = solid_indices[-1]
+                        if topmost_solid < p.ny - 1:
+                            available_voids = np.nonzero(np.isnan(s[target_column, topmost_solid + 1, :]))[0]
+                            this_void = np.random.choice(available_voids)
+                            print(s[target_column, topmost_solid + 1, this_void], s[i, 0, k])
+                            s[target_column, topmost_solid + 1, this_void], s[i, 0, k] = (
+                                s[i, 0, k],
+                                s[target_column, topmost_solid + 1, this_void],
+                            )
+                        else:
+                            print("WARNING: No room to refill")
+                else:
+                    s[i, 0, k] = np.nan
+                p.outlet += fill_mass
 
     return u, v, s, c, outlet
 

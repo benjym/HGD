@@ -59,7 +59,7 @@
 
     // density pressure model
     nu_cs_mode : 'constant', // 'dynamic' or 'constant'
-    lambda_nu : 0.2, // rate of change of nu_cs
+    lambda_nu : 10, // rate of change of nu_cs
     nu_1 : 0.5, // value of nu_cs at (or below) 1 kPa
     point_load : false,
     pad_width : 0.05, // width of the pad (m)

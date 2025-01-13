@@ -13,6 +13,8 @@ plt.style.use("papers/Kinematic_SLM/paper.mplstyle")
 with open("papers/Kinematic_SLM/json/collapse_stress.json5") as f:
     dict, p = load_file(f)
 
+p.update_before_time_march(None)
+
 y = np.linspace(0, p.H, p.ny)
 p.dy = p.H / p.ny
 x = np.arange(-(p.nx - 0.5) / 2 * p.dy, (p.nx - 0.5) / 2 * p.dy, p.dy)  # force equal grid spacing
@@ -26,8 +28,6 @@ y_off = 0  # -0.005
 
 cmap = colormaps["inferno"]
 cmap.set_bad("w", 0.0)
-
-max_angle = 60
 
 fig = plt.figure(figsize=[3.31894680556, 2.6], constrained_layout=True)
 ax = fig.subplots(3, 2)
@@ -68,6 +68,11 @@ for i in [0, 1]:
     sigma_xy = np.ma.masked_where(mask, sigma_xy)
     sigma_yy = np.ma.masked_where(mask, sigma_yy)
 
+    print(sigma_xx.min(), sigma_xx.max())
+    print(sigma_yy.min(), sigma_yy.max())
+    print(sigma_xy.min(), sigma_xy.max())
+    sigma_max = 3
+
     im = ax[0, i].pcolormesh(
         x,
         y,
@@ -75,12 +80,12 @@ for i in [0, 1]:
         1e-3 * sigma_xx.T,
         cmap=cmap,
         vmin=0,
-        vmax=4,
+        vmax=sigma_max,
         # vmax=max_angle,
         rasterized=True,
     )
     if i == 1:
-        cb = plt.colorbar(im, aspect=10, ticks=[0, 4])
+        cb = plt.colorbar(im, aspect=10, ticks=[0, sigma_max])
         cb.set_label(r"$\sigma_{xx}$ (kPa)", labelpad=labelpad)
 
     im = ax[1, i].pcolormesh(
@@ -90,12 +95,12 @@ for i in [0, 1]:
         1e-3 * sigma_yy.T,
         cmap=cmap,
         vmin=0,
-        vmax=4,
+        vmax=sigma_max,
         # vmax=max_angle,
         rasterized=True,
     )
     if i == 1:
-        cb = plt.colorbar(im, aspect=10, ticks=[0, 4])
+        cb = plt.colorbar(im, aspect=10, ticks=[0, sigma_max])
         cb.set_label(r"$\sigma_{yy}$ (kPa)", labelpad=labelpad)
 
     im = ax[2, i].pcolormesh(
@@ -103,8 +108,8 @@ for i in [0, 1]:
         y,
         1e-3 * sigma_xy.T,
         # cmap=cmap,
-        vmin=-1.5,
-        vmax=1.5,
+        vmin=-2,
+        vmax=2,
         # friction_angle.T,
         cmap="bwr",
         # vmin=p.repose_angle - 5,
@@ -115,7 +120,7 @@ for i in [0, 1]:
         cb = plt.colorbar(
             im,
             aspect=10,
-            ticks=[-1.5, 0, 1.5],
+            ticks=[-2, 0, 2],
         )
         cb.set_label(r"$\sigma_{xy}$ (kPa)", labelpad=labelpad)
     # cb.set_ticks([0, p.repose_angle, 2 * p.repose_angle])

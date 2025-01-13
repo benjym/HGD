@@ -74,11 +74,13 @@ def empty_up(nu_here, p):
     if p.mu == 0:
         return np.zeros_like(nu_here, dtype=bool)
     else:
-        delta_limit = np.amax(p.delta_limit)
-        if p.nu_cs_mode == "constant":
-            L = np.ceil(p.nu_cs / delta_limit).astype(int)
-        else:
-            L = np.ceil(p.nu_1 / delta_limit).astype(int)
+        # HACK: RANDOMLY PICKED MAX AND MIN BELOW. NO IDEA WHAT THEY SHOULD BE. WILL BE REDUNDANT WITH THE STRESS BASED FAILURE CRITERION
+        delta_limit_max = np.amax(p.delta_limit)
+        # if p.nu_cs_mode == "constant":
+        nu_cs_min = np.amin(p.nu_cs)
+        L = np.ceil(nu_cs_min / delta_limit_max).astype(int)
+        # else:
+        # L = np.ceil(p.nu_1 / delta_limit).astype(int)
         # kernel = np.array([[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]).T
         kernel = np.ones((2 * L + 1, 2 * L + 1))
         kernel[L, L] = 0
@@ -105,11 +107,12 @@ def stable_slope_stress(s, p, last_swap, debug=False):
     sigma = stress.calculate_stress(s, last_swap, p)
     mobilised_friction_angle = stress.get_friction_angle(sigma, p, last_swap)
 
-    stable = mobilised_friction_angle < p.repose_angle
+    stable = mobilised_friction_angle <= p.repose_angle
 
     if debug and np.random.rand() < 0.01:
         import matplotlib.pyplot as plt
 
+        plt.close("all")
         plt.figure(98)
         plt.ion()
         plt.subplot(211)

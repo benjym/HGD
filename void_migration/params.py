@@ -4,7 +4,7 @@ import json5
 import numpy as np
 
 # import operators
-import stress
+from void_migration import stress
 
 
 class dict_to_class:
@@ -124,7 +124,7 @@ class dict_to_class:
         # self.t_p = self.s_m / np.sqrt(self.g * self.H)  # smallest confinement timescale (at bottom) (s)
         s_bar = (self.s_m + self.s_M) / 2.0  # mean diameter (m)
         if self.advection_model == "average_size":
-            self.free_fall_velocity = np.sqrt(self.g * s_bar)  # typical speed to fall one mean diameter (s)
+            self.free_fall_velocity = np.sqrt(self.g * s_bar)  # typical speed to fall one mean diameter (m/s)
         elif self.advection_model == "freefall":
             self.free_fall_velocity = np.sqrt(
                 self.g * self.dy
@@ -195,9 +195,9 @@ class dict_to_class:
             pressure_kPa = pressure / 1000
             self.nu_cs = self.nu_1 * pressure_kPa ** (1 / self.lambda_nu)  # in kPa!
             self.nu_cs[np.isnan(self.nu_cs)] = self.nu_1
-            # self.nu_cs[self.nu_cs == 0] = self.nu_1
             self.nu_cs[self.nu_cs < self.nu_1] = self.nu_1
-            # print(self.nu_cs.min(), self.nu_cs.max(), np.nanmin(pressure), np.nanmax(pressure))
+        else:
+            self.nu_cs = np.full([self.nx, self.ny], self.nu_1)
 
     def process_charge_discharge_csv(self, array):
         self.cycles = []
