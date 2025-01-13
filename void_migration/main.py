@@ -130,7 +130,7 @@ def time_step(p, state, t):
         # surface_profile,
     ) = state
 
-    p.update_every_time_step(s)
+    p.update_every_time_step(state)
 
     if p.stop_event is not None and p.stop_event.is_set():
         raise KeyboardInterrupt
@@ -150,8 +150,6 @@ def time_step(p, state, t):
 
     u, v, s, c, T, chi, last_swap = p.move_voids(u, v, s, p, c=c, T=T, chi=chi, last_swap=last_swap)
 
-    u, v, s, c, outlet = boundary.update(u, v, s, p, c, outlet, t)
-
     state = (
         s,
         u,
@@ -168,6 +166,8 @@ def time_step(p, state, t):
         outlet,
         # surface_profile,
     )
+
+    state = boundary.update(p, state)
 
     if t % p.save_inc == 0:
         plotter.update(p, state, t)

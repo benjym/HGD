@@ -24,5 +24,7 @@ savefig.dpi: 600
 savefig.format: pdf
 
 # GM columnwidth is 238.96417pt = 3.31894680556in
+# CMAME columnwidth is 252.0pt = 3.5in
 # default aspect ratio is golden ratio (1.618)
-figure.figsize: 3.31894680556, 2.051265022
+# figure.figsize: 3.31894680556, 2.051265022
+figure.figsize: 3.5 2.1631644005

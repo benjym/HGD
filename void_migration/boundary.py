@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def update(u, v, s, p, c, outlet, t):
+def update(p, state):
     """
     Add voids to the system. This function is called at each time step.
     Loop through all functions defined here and call them if they are in the list of boundary methods.
@@ -11,13 +11,14 @@ def update(u, v, s, p, c, outlet, t):
 
     for method in p.boundaries:
         if method in boundary_methods:
-            u, v, s, c, outlet = globals()[method](u, v, s, p, c, outlet)
+            state = globals()[method](*state)
 
     if p.close_voids:
-        u, v, s = close_voids(u, v, s)
+        state = close_voids(*state)
 
     if p.wall_motion:
-        if t % p.save_wall == 0:
+        if p.t % p.save_wall == 0:
+            s = state[0]
             s_mean = np.nanmean(s, axis=2)
 
             start_sim = np.min(np.argwhere(s_mean > 0), axis=0)[
@@ -31,10 +32,12 @@ def update(u, v, s, p, c, outlet, t):
                 # s[start_sim-2:start_sim-1,:,:] = np.nan
                 s[end_sim + 2 : end_sim + 3, :, :] = np.nan
 
-    return u, v, s, c, outlet
+            state[0] = s
+
+    return state
 
 
-def charge(u, v, s, p, c, outlet):
+def charge(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     fill_mass = p.dx * p.dy / p.nm * p.solid_density
     to_fill = []
     for i in range(p.nx):
@@ -82,20 +85,20 @@ def charge(u, v, s, p, c, outlet):
         else:
             s[i, j, k] = fill_sizes
 
-    return u, v, s, c, outlet
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 
-def top_left_inlet(u, v, s, p, c, outlet):
+def top_left_inlet(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     fill_mass = p.dx * p.dy / p.nm * p.solid_density
     for i in range(p.half_width):
         for k in range(p.nm):
             if np.random.rand() < p.inlet_rate:
                 s[i, -1, k] = np.random.choice([p.s_m, p.s_M])
                 p.inlet += fill_mass
-    return u, v, s, c, outlet
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 
-def central_outlet(u, v, s, p, c, outlet):
+def central_outlet(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     fill_mass = p.dx * p.dy / p.nm * p.solid_density
 
     for i in range(p.nx // 2 - p.half_width, p.nx // 2 + p.half_width + 1):
@@ -127,10 +130,10 @@ def central_outlet(u, v, s, p, c, outlet):
                     s[i, 0, k] = np.nan
                 p.outlet += fill_mass
 
-    return u, v, s, c, outlet
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 
-def right_outlet(u, v, s, p, c, outlet):
+def right_outlet(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     for i in range(p.nx - p.half_width * 2, p.nx):
         for k in range(p.nm):
             if not np.isnan(s[i, 0, k]):
@@ -152,7 +155,7 @@ def right_outlet(u, v, s, p, c, outlet):
                     else:
                         s[i, 0, k] = np.nan
                     outlet[-1] += 1
-    return u, v, s, c, outlet
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
 
     # elif temp_mode == "temperature":  # Remove at central outlet
     #     for i in range(nx // 2 - half_width, nx // 2 + half_width + 1):
@@ -183,7 +186,7 @@ def right_outlet(u, v, s, p, c, outlet):
     #                 outlet[-1] += 1
 
 
-def multiple_outlets(u, v, s, p, c, outlet):
+def multiple_outlets(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     for l, source_pt in enumerate(p.source_pts):
         for i in range(source_pt - p.half_width, source_pt + p.half_width + 1):
             for k in range(p.nm):
@@ -200,7 +203,7 @@ def multiple_outlets(u, v, s, p, c, outlet):
     return u, v, s, c, outlet
 
 
-def slope(u, v, s, p, c, outlet):
+def slope(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     for i in range(p.nx):
         for k in range(p.nm):
             if not np.isnan(s[i, 0, k]):
@@ -217,10 +220,30 @@ def slope(u, v, s, p, c, outlet):
                 #     if np.isnan(s[i, -1, k]):
                 #         v[i, :] += 1  # np.isnan(s[i,:,k])
                 #         s[i, :, k] = np.roll(s[i, :, k], 1)
-    return u, v, s, c, outlet
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 
-def vibrate_first(u, v, s, p, c, outlet):
+def vibrate(u, v, s, p, c, chi, outlet):
+    for i in range(p.nx):
+        for k in range(p.nm):
+            if not np.isnan(s[i, 0, k]):
+                if (
+                    np.random.rand() < p.void_production_rate * p.dt / p.dy
+                    and np.sum(np.isnan(s[i, :, k])) > 0
+                ):
+                    # possible_sites = np.isnan(s[i, :, k]) * (nu[i, :] < p.nu_cs)
+                    nu = 1.0 - np.mean(np.isnan(s), axis=2)
+                    possible_sites = nu[i, :] < p.nu_cs
+                    print(possible_sites)
+                    if np.sum(possible_sites) > 0:
+                        # if sum(np.isnan(s[i, : first_void + 1, k]))
+                        first_void = possible_sites.nonzero()[0][0]
+                        v[i, : first_void + 1] += np.isnan(s[i, : first_void + 1, k])
+                        s[i, : first_void + 1, k] = np.roll(s[i, : first_void + 1, k], 1)
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
+
+
+def vibrate_first(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     # for i in range(5,nx-5):
 
     for i in range(p.nx):
@@ -242,7 +265,7 @@ def vibrate_first(u, v, s, p, c, outlet):
     return u, v, s, c, outlet
 
 
-def vibrate_random(u, v, s, p, c, outlet):
+def vibrate_random(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     # for i in range(5,nx-5):
     for i in range(p.nx):
         for k in range(p.nm):
@@ -255,10 +278,10 @@ def vibrate_random(u, v, s, p, c, outlet):
                     target_void = np.random.choice(nan_indices)
                     v[i, : target_void + 1] += np.isnan(s[i, : target_void + 1, k])
                     s[i, : target_void + 1, k] = np.roll(s[i, : target_void + 1, k], 1)
-    return u, v, s, c, outlet
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 
-def vibro_top(u, v, s, p, c, outlet):
+def vibro_top(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     for i in range(p.nx):
         for k in range(p.nm):
             if not np.isnan(s[i, 0, k]):
@@ -268,15 +291,15 @@ def vibro_top(u, v, s, p, c, outlet):
                 ):
                     v[i, :] += np.isnan(s[i, :, k])
                     s[i, :, k] = np.roll(s[i, :, k], 1)
-    return u, v, s, c, outlet
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 
-def pour(u, v, s, p, c, outlet):
+def pour(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     s[p.nx // 2 - p.half_width : p.nx // 2 + p.half_width + 1, -1, :] = 1.0
-    return u, v, s, c, outlet
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 
-def wall(u, v, s, p, c, outlet):
+def wall(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     for i in range(0, p.half_width):
         for k in range(p.nm):
             # if np.random.rand() < 0.1:
@@ -293,7 +316,9 @@ def wall(u, v, s, p, c, outlet):
                 outlet[-1] += 1
 
 
-def place_on_top(u, v, s, p, c, outlet):  # place cells on top, centre starting at base
+def place_on_top(
+    p, s, u, v, c, T, last_swap, chi, sigma, outlet
+):  # place cells on top, centre starting at base
     if p.gsd_mode == "bi":  # bidisperse
         if p.silo_width == "half":
             x_points = np.arange(0, p.half_width)
@@ -413,7 +438,7 @@ def place_on_top(u, v, s, p, c, outlet):  # place cells on top, centre starting 
                             if ~np.isnan(s[x_points[i], a + 1, k]):
                                 c[x_points[i], a + 1, k] = p.current_cycle
 
-    return u, v, s, c, outlet
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 
 # def generate_voids(u, v, s):  # Moving voids create voids
@@ -432,7 +457,7 @@ def place_on_top(u, v, s, p, c, outlet):  # place cells on top, centre starting 
 #     return u, v, s
 
 
-def close_voids(u, v, s, p):
+def close_voids(s, u, v, c, T, last_swap, chi, sigma, outlet):
     """
     Not implemented. Do not use.
     """
@@ -444,4 +469,4 @@ def close_voids(u, v, s, p):
                     # if np.random.rand() < 5e-2 * dt / dy:  # FIXME
                     #     v[i, j:] -= 1
                     #     s[i, j:, k] = np.roll(s[i, j:, k], -1)
-    return u, v, s
+    return s, u, v, c, T, last_swap, chi, sigma, outlet

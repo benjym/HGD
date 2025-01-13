@@ -1,7 +1,7 @@
 {
-    nx : 21,
-    ny : 101,
-    nm : 1,  // number of simultaneous simulations
+    nx : 20,
+    ny : 20,
+    nm : 20,  // number of simultaneous simulations
     cyclic_BC : false,
     theta : 0.0,  // angle of gravity - keep set to zero
     mu : [0.1,0.2,0.5,1.0,2.0],  // friction angle????????

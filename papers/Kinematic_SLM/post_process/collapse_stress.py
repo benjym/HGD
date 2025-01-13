@@ -6,7 +6,7 @@ from matplotlib import colormaps
 import matplotlib.cm as cm
 import matplotlib.colors as colors
 from void_migration.params import load_file
-from void_migration import stress, operators
+from void_migration import stress, operators, params
 
 plt.style.use("papers/Kinematic_SLM/paper.mplstyle")
 
@@ -59,7 +59,7 @@ for i in [0, 1]:
     pressure = stress.get_pressure(sigma, p, last_swap_i)
     deviatoric = stress.get_deviatoric(sigma, p, last_swap_i)
     friction_angle = stress.get_friction_angle(sigma, p, last_swap_i)
-    sigma_xx = stress.get_sigma_xx(sigma, p, last_swap_i)
+    sigma_xx = sigma[:, :, 2]
     sigma_xy = sigma[:, :, 0]
     sigma_yy = sigma[:, :, 1]
 
@@ -141,4 +141,6 @@ plt.yticks([0, p.H])
 
 
 # plt.subplots_adjust(left=0.05, bottom=0.18, right=0.86, top=0.97, hspace=0.25, wspace=0.05)
-plt.savefig(os.path.expanduser("~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/collapse_stress.pdf"))
+plt.savefig(
+    os.path.expanduser("~/Dropbox/Apps/Overleaf/Heterarchical Granular Dynamics/im/collapse_stress.pdf")
+)

@@ -295,11 +295,11 @@ def prevent_overfilling(swap_indices, dest_indices, nu, potential_free_surface, 
 
     # For each unique location, compute the allowed number of swaps
     if np.isscalar(p.nu_cs):
-        max_swaps_bulk = p.nm * (p.nu_cs - nu[unique_locs[:, 0], unique_locs[:, 1]]).astype(int)
+        max_swaps_bulk = p.nm * (p.nu_cs - nu[unique_locs[:, 0], unique_locs[:, 1]])
     else:
-        max_swaps_bulk = (
-            p.nm * (p.nu_cs[unique_locs[:, 0], unique_locs[:, 1]] - nu[unique_locs[:, 0], unique_locs[:, 1]])
-        ).astype(int)
+        max_swaps_bulk = p.nm * (
+            p.nu_cs[unique_locs[:, 0], unique_locs[:, 1]] - nu[unique_locs[:, 0], unique_locs[:, 1]]
+        )
 
     if potential_free_surface is None:
         max_swaps = max_swaps_bulk[inverse_indices]

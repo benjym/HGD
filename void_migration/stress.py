@@ -94,22 +94,18 @@ def calculate_stress(s, last_swap, p):
 
 
 def harr_substep(s, last_swap, p):
-    stress_fraction = calculate_stress_fraction(last_swap, p)
-    K = 1 - stress_fraction
+    # stress_fraction = calculate_stress_fraction(last_swap, p)
+    # K = 1 - stress_fraction
 
-    sigma = np.zeros([p.nx, p.ny, 2])  # sigma_xy, sigma_yy
+    K = np.full([p.nx, p.ny], 1.0 / 3.0)  # elastic solution equivalent
+
+    sigma = np.zeros([p.nx, p.ny, 3])  # sigma_xy, sigma_yy, sigma_xx
     # NOTE: NOT CONSIDERING INCLINED GRAVITY
     weight_of_one_cell = p.solid_density * p.dx * p.g  # * p.dy
 
     nu = operators.get_solid_fraction(s)
 
-    if hasattr(p, "point_load"):
-        empty_at_middle = nu[p.nx // 2, :] == 0
-        top = np.where(empty_at_middle)[0]
-        if len(top) > 0:
-            top = top[0]
-        else:
-            top = p.ny
+    top = get_top(nu, p)
 
     for j in range(p.ny - 2, -1, -1):
         this_weight = nu[:, j] * weight_of_one_cell
@@ -144,10 +140,14 @@ def harr_substep(s, last_swap, p):
             half_pad_width = int(p.pad_width / p.dx) // 2
             sigma[p.nx // 2 - half_pad_width : p.nx // 2 + half_pad_width + 1, top, 1] = p.point_load * p.t
 
-    dsigma_dx, dsigma_dy = np.gradient(sigma[:, :, 1], p.dx, p.dy)
+    # sigma_xy = - D_sigma * d/dx (sigma_yy)
+    dsigma_dx, _ = np.gradient(sigma[:, :, 1], p.dx, p.dy)
     Depth = (top + 2) * p.dy - p.Y
     sigma[:, :, 0] = -K * Depth * dsigma_dx  # HACK: THIS IS MISSING THE SECOND DERIVATIVE TERM
 
+    # sigma_xx = d/dy ( D_sigma * sigma_yy)
+    _, d_Dsigma_dy = np.gradient(K * Depth * sigma[:, :, 1], p.dx, p.dy)
+    sigma[:, :, 2] = -d_Dsigma_dy  # HACK: WHERE DOES THE MINUS SIGN COME FROM? IS dy NEGATIVE??
     return sigma
 
 
@@ -408,22 +408,26 @@ def get_mu(sigma):
 
 
 def get_sigma_xx(sigma, p, last_swap=None):
-    stress_fraction = calculate_stress_fraction(last_swap, p)
-    K = 1.0 - stress_fraction
-    sigma_xx = K * sigma[:, :, 1]
-    return sigma_xx
+    # stress_fraction = calculate_stress_fraction(last_swap, p)
+    # K = 1.0 - stress_fraction
+    # sigma_xx = K * sigma[:, :, 1]
+
+    # sigma_xx = d/dx ( D_sigma * sigma_yy)
+    # D_sigma = depth/3
+    # return sigma_xx
+    return NotImplementedError("This method is no longer used")
 
 
 def get_pressure(sigma, p, last_swap=None):
-    sigma_xx = get_sigma_xx(sigma, p, last_swap)
-    pressure = 0.5 * (sigma_xx + sigma[:, :, 1])
+    # sigma_xx = get_sigma_xx(sigma, p, last_swap)
+    pressure = 0.5 * (sigma[:, :, 2] + sigma[:, :, 1])
     return pressure
 
 
 def get_deviatoric(sigma, p, last_swap=None):
     sigma_xy = sigma[:, :, 0]
     sigma_yy = sigma[:, :, 1]
-    sigma_xx = get_sigma_xx(sigma, p, last_swap)
+    sigma_xx = sigma[:, :, 2]
 
     return np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
 
@@ -433,7 +437,7 @@ def get_friction_angle(sigma, p, last_swap=None):
     # deviatoric = get_deviatoric(sigma, p, last_swap)
     sigma_xy = sigma[:, :, 0]
     sigma_yy = sigma[:, :, 1]
-    sigma_xx = get_sigma_xx(sigma, p, last_swap)
+    sigma_xx = sigma[:, :, 2]
 
     sigma_m = (sigma_xx + sigma_yy) / 2.0
     # sigma_d = np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
@@ -443,3 +447,17 @@ def get_friction_angle(sigma, p, last_swap=None):
         friction_angle = np.degrees(np.arcsin(radius / sigma_m))
 
     return friction_angle
+
+
+def get_top(nu, p):
+    if hasattr(p, "point_load"):
+        empty_at_middle = nu[p.nx // 2, :] == 0
+        top = np.where(empty_at_middle)[0]
+        if len(top) > 0:
+            top = top[0]
+        else:
+            top = p.ny
+    else:
+        top = p.ny
+
+    return top

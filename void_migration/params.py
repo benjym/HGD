@@ -4,7 +4,7 @@ import json5
 import numpy as np
 
 # import operators
-from void_migration import stress
+import void_migration.stress
 
 
 class dict_to_class:
@@ -187,13 +187,27 @@ class dict_to_class:
             else:
                 self.save_inc = int(self.nt / self.saves)
 
-    def update_every_time_step(self, s):
+    def update_every_time_step(self, state):
+        (
+            s,
+            u,
+            v,
+            c,
+            T,
+            last_swap,
+            chi,
+            sigma,
+            outlet,
+        ) = state
+
         if self.nu_cs_mode == "dynamic":
             # nu = operators.get_solid_fraction(s)
             sigma = stress.calculate_stress(s, None, self)
             pressure = stress.get_pressure(sigma, self)
             pressure_kPa = pressure / 1000
-            self.nu_cs = self.nu_1 * pressure_kPa ** (1 / self.lambda_nu)  # in kPa!
+            nu_static = self.nu_1 * pressure_kPa ** (1 / self.lambda_nu)  # in kPa!
+            # self.nu_cs = nu_static - chi * nu_static  # FIXME --- this is totally made up
+            self.nu_cs = nu_static
             self.nu_cs[np.isnan(self.nu_cs)] = self.nu_1
             self.nu_cs[self.nu_cs < self.nu_1] = self.nu_1
         else:
