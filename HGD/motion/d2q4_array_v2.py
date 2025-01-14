@@ -1,8 +1,8 @@
 import sys
 import numpy as np
 from numpy.typing import ArrayLike
-from void_migration import operators
-import stress
+from HGD import operators
+from HGD import stress
 
 
 # @njit

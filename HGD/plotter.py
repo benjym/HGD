@@ -8,8 +8,8 @@ from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.cm as cm
 
 from PIL import Image
-from void_migration import operators
-from void_migration import stress
+from HGD import operators
+from HGD import stress
 
 # _video_encoding = ["-c:v", "libx265", "-preset", "fast", "-crf", "28", "-tag:v", "hvc1"] # nice small file sizes
 _video_encoding = [

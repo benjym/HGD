@@ -4,7 +4,7 @@ import json5
 import numpy as np
 
 # import operators
-import void_migration.stress
+from HGD import stress
 
 
 class dict_to_class:

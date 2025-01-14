@@ -2,7 +2,7 @@
 dist/
 site/
 __pycache__/
-void_migration.egg-info/
+HGD.egg-info/
 output/
 .venv/
 build/

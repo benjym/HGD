@@ -1,6 +1,6 @@
 import numpy as np
 import warnings
-from void_migration import operators
+from HGD import operators
 
 # Implementing Eq 36 and 37 from:
 # Models of stress fluctuations in granular media

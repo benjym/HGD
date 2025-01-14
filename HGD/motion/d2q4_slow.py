@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.typing import ArrayLike
-from void_migration import operators
+from HGD import operators
 
 
 def move_voids(

@@ -1,31 +1,25 @@
 # Reference
 
 ## Main functions
-::: void_migration.main
+::: HGD.main
 
 ## Operators
-::: void_migration.operators
+::: HGD.operators
 
 ## Boundary conditions
-::: void_migration.boundary
+::: HGD.boundary
 
 ## Initial conditions
-::: void_migration.initial
+::: HGD.initial
 
 ## Output
-::: void_migration.plotter
+::: HGD.plotter
 
 ## Parameters
-::: void_migration.params
+::: HGD.params
 
 ## Stresses
-::: void_migration.stress
+::: HGD.stress
 
 ## Thermal
-::: void_migration.thermal
-
-## GUI
-::: void_migration.gui
-
-## Cycles
-::: void_migration.cycles
+::: HGD.thermal

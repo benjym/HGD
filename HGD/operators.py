@@ -1,7 +1,7 @@
 import warnings
 import numpy as np
 from scipy.ndimage import maximum_filter, minimum_filter
-from void_migration import stress
+from HGD import stress
 
 
 def swap(src, dst, arrays, nu, p):

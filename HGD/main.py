@@ -1,13 +1,3 @@
-#!/usr/bin/python
-
-__doc__ = """
-void_migration.py
-
-This script simulates the migration of voids in a granular material.
-"""
-__author__ = "Benjy Marks, Shivakumar Athani, Jiahuan Li"
-__version__ = "0.4"
-
 import sys
 import numpy as np
 import concurrent.futures
@@ -16,17 +6,16 @@ from itertools import product
 import importlib
 
 # from numba import jit, njit
-from void_migration import params
-from void_migration import plotter
-from void_migration import thermal
-from void_migration import cycles
-from void_migration import initial
-from void_migration import stress
-from void_migration import boundary
+from HGD import params
+from HGD import plotter
+from HGD import thermal
+from HGD import initial
+from HGD import stress
+from HGD import boundary
 
 
-def init(p):
-    p.move_voids = importlib.import_module(f"void_migration.motion.{p.motion_model}").move_voids
+def init(p, cycles=None):
+    p.move_voids = importlib.import_module(f"HGD.motion.{p.motion_model}").move_voids
 
     plotter.set_plot_size(p)
 
