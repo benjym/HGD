@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.typing import ArrayLike
+
 # from scipy.ndimage import maximum_filter
 # from HGD import params
 from HGD import operators
