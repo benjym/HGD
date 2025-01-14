@@ -1,5 +1,5 @@
 [project]
-name = "void_migration"
+name = "HGD"
 version = "0.6"
 requires-python = ">=3.9"
 authors = [
@@ -7,7 +7,7 @@ authors = [
   {name = "Shivakumar Athani", email = "shivakumar.athani@sydney.edu.au"},
   {name = "Jiahuan Li", email = "jiahuan.li@sydney.edu.au"}
 ]
-description = "A heterarchical stochastic solver for the motion, segregation, mixing and crushing of granular media"
+description = "A heterarchical granular dynamics solver for the motion, segregation, mixing and crushing of granular media"
 readme = "README.md"
 license = {file = "LICENSE.txt"}
 keywords = ["granular", "void", "migration", "heterarchical", "stochastic"]
@@ -25,9 +25,6 @@ dependencies = [
     "markdown-include",
     "mkdocs-include-markdown-plugin",
     "pre-commit",
-    "kivy",
-    "kivymd",
-    "pyinstaller",
 ]
 
 [build-system]
@@ -39,4 +36,4 @@ line-length = 110
 target-version = ['py311']
 
 [tool.setuptools]
-packages = ["void_migration"]
+packages = ["HGD"]
