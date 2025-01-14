@@ -1,5 +1,5 @@
 import unittest
-from void_migration import operators, params
+from HGD import operators, params
 import numpy as np
 
 

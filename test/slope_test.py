@@ -6,8 +6,7 @@ from matplotlib import colormaps
 
 # import matplotlib.cm as cm
 # import matplotlib.colors as colors
-import void_migration.cycles as cycles
-from void_migration.params import load_file, dict_to_class, update_before_time_march
+from HGD.params import load_file, dict_to_class, update_before_time_march
 
 plt.style.use("papers/Kinematic_SLM/post_process/paper.mplstyle")
 
@@ -40,7 +39,7 @@ for j, b in enumerate(getattr(p, var2)):
         dict_copy[var2] = b
         this_p = dict_to_class(dict_copy)
         this_p.set_defaults()
-        this_p = update_before_time_march(this_p, cycles)
+        this_p = update_before_time_march(this_p, None)
 
         try:
             # init = f"output/test_slope/repose_angle_{angle}/P_stab_{P_stab}/data/nu_000000.npy"
