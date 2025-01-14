@@ -10,5 +10,5 @@ jobs:
       - uses: psf/black@stable
         with:
           options: "--check --verbose"
-          src: "./void_migration"
+          src: "./HGD"
           version: "22.10.0"
