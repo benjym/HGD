@@ -15,6 +15,7 @@
     cyclic_BC : false, // true if cyclic BCs are used horizontally
     refill : false, // should the particles come back in the top if they leave the bottom
     outlet_rate : 1.0, // proportion of each timestep that the outlet is open
+    outlet_nu : 0, // solid fraction of the particles in the outlet
     wall_motion : false, // should the walls move
     
     // void migration model parameters

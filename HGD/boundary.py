@@ -11,7 +11,7 @@ def update(p, state):
 
     for method in p.boundaries:
         if method in boundary_methods:
-            state = globals()[method](*state)
+            state = globals()[method](p, *state)
 
     if p.close_voids:
         state = close_voids(*state)
@@ -223,7 +223,7 @@ def slope(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 
-def vibrate(u, v, s, p, c, chi, outlet):
+def vibrate(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     for i in range(p.nx):
         for k in range(p.nm):
             if not np.isnan(s[i, 0, k]):
