@@ -8,10 +8,9 @@ from matplotlib import colormaps
 
 # import matplotlib.cm as cm
 import matplotlib.colors as colors
-from void_migration.params import load_file
+from HGD.params import load_file
 
 # from void_migration.plotter import size_colormap
-from void_migration import cycles
 
 # from mpl_toolkits.axes_grid1 import Grid
 # from scipy.integrate import cumtrapz
@@ -55,9 +54,9 @@ for nx in [50]:
         cmap.set_over(cmap(0.99999))
         cmap.set_bad("black")
 
-        fig = plt.figure(figsize=[3.31894680556, 4.0])
+        fig = plt.figure(figsize=[3.5, 4.1])
         grid = fig.subplots(2, 2)
-        p.update_before_time_march(cycles)
+        p.update_before_time_march(None)
 
         t_plot = 0.55 * p.t_f
         delta = 0.45
@@ -252,12 +251,14 @@ for nx in [50]:
         # plt.text(-0.45, 0.5, "Experiment", ha="center", va="center", transform=grid[0, 0].transAxes, rotation=90)
         # plt.text(-0.45, 0.5, "Simulation", ha="center", va="center", transform=grid[1, 0].transAxes, rotation=90)
 
-        plt.text(0.5, 1.1, "(a)", ha="center", va="center", transform=grid[0, 0].transAxes)
-        plt.text(0.5, 1.1, "(b)", ha="center", va="center", transform=grid[0, 1].transAxes)
+        plt.text(0.5, 1.1, "(a) Exp data", ha="center", va="center", transform=grid[0, 0].transAxes)
+        plt.text(0.5, 1.1, "(b) HGD model", ha="center", va="center", transform=grid[0, 1].transAxes)
         plt.text(0.5, 1.1, "(c)", ha="center", va="center", transform=grid[1, 0].transAxes)
         plt.text(0.5, 1.1, "(d)", ha="center", va="center", transform=grid[1, 1].transAxes)
 
         plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top, hspace=hspace, wspace=0.5)
         plt.savefig(
-            os.path.expanduser(f"~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/silo_alpha_single_{nx}_{nm}.pdf")
+            os.path.expanduser(
+                f"~/Dropbox/Apps/Overleaf/Heterarchical Granular Dynamics/im/silo_alpha_single_{nx}_{nm}.pdf"
+            )
         )

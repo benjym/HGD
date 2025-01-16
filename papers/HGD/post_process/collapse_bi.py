@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 from matplotlib import colormaps
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-from void_migration.params import load_file
-from void_migration.plotter import size_colormap
+from HGD.params import load_file
+from HGD.plotter import size_colormap
 from mpl_toolkits.axes_grid1 import AxesGrid
 
-plt.style.use("papers/Kinematic_SLM/paper.mplstyle")
+plt.style.use("papers/HGD/paper.mplstyle")
 
-with open("papers/Kinematic_SLM/json/collapse_bi.json5") as f:
+with open("papers/HGD/json/collapse_bi.json5") as f:
     dict, p = load_file(f)
 
 y = np.linspace(0, p.H, p.ny)
@@ -30,7 +30,7 @@ y_off = 0  # -0.005
 # cmap.set_bad("w", 0.0)
 cmap = size_colormap()
 
-fig = plt.figure(figsize=[3.31894680556, 1.9])
+fig = plt.figure(figsize=[3.5, 2.1])
 # ax = fig.subplots(2, 3)
 grid = AxesGrid(
     fig,
@@ -110,5 +110,5 @@ plt.yticks([0, p.H])
 # cbar.ax.yaxis.set_label_coords(new_x, 0.5)
 
 
-plt.subplots_adjust(left=0.10, bottom=0.22, right=0.99, top=0.95, hspace=0.4)
-plt.savefig(os.path.expanduser("~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/collapse_bi.pdf"))
+plt.subplots_adjust(left=0.11, bottom=0.20, right=0.99, top=0.95, hspace=0.4)
+plt.savefig(os.path.expanduser("~/Dropbox/Apps/Overleaf/Heterarchical Granular Dynamics/im/collapse_bi.pdf"))

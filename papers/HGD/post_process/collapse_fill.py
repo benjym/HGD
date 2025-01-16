@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 from matplotlib import colormaps
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-from void_migration.params import load_file
+from HGD.params import load_file
 
-plt.style.use("papers/Kinematic_SLM/paper.mplstyle")
+plt.style.use("papers/HGD/paper.mplstyle")
 
-with open("papers/Kinematic_SLM/json/collapse_fill.json5") as f:
+with open("papers/HGD/json/collapse_fill.json5") as f:
     dict, p = load_file(f)
 
 y = np.linspace(0, p.H, p.ny)
@@ -82,4 +82,6 @@ cbar.ax.yaxis.set_label_coords(new_x, 0.5)
 
 
 plt.subplots_adjust(left=0.12, bottom=0.28, right=0.9, top=0.95, hspace=0.4)
-plt.savefig(os.path.expanduser("~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/collapse_fill.pdf"))
+plt.savefig(
+    os.path.expanduser("~/Dropbox/Apps/Overleaf/Heterarchical Granular Dynamics/im/collapse_fill.pdf")
+)

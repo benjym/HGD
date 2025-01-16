@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 from matplotlib import colormaps
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-from void_migration.params import load_file
+from HGD.params import load_file
 
-plt.style.use("papers/Kinematic_SLM/paper.mplstyle")
+plt.style.use("papers/HGD/paper.mplstyle")
 
-with open("papers/Kinematic_SLM/json/collapse_angles.json5") as f:
+with open("papers/HGD/json/collapse_angles.json5") as f:
     dict, p = load_file(f)
 
 nx = p.nx
@@ -28,10 +28,10 @@ y_off = 0  # -0.005
 
 cmap = colormaps["inferno"]
 
-fig = plt.figure(figsize=[3.31894680556, 3])
+fig = plt.figure(figsize=[3.5, 3.1])
 ax = fig.subplots(2, 1)
 
-fig2 = plt.figure(figsize=[3.31894680556, 3])
+fig2 = plt.figure(figsize=[3.5, 3.1])
 ax2 = fig2.subplots(1, 1)
 
 for i, angle in enumerate(p.repose_angle):
@@ -132,7 +132,11 @@ plt.xlim([0, 90])
 plt.ylim([0, 90])
 
 plt.subplots_adjust(left=0.2, bottom=0.15, right=0.97, top=0.97, hspace=0.4)
-plt.savefig(os.path.expanduser(f"~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/collapse_angle_nx_{nx}.pdf"))
+plt.savefig(
+    os.path.expanduser(
+        f"~/Dropbox/Apps/Overleaf/Heterarchical Granular Dynamics/im/collapse_angle_nx_{nx}.pdf"
+    )
+)
 
 plt.sca(ax2)
 phi = np.linspace(0, 90, 100)
@@ -144,6 +148,8 @@ plt.xlabel(r"$\Delta\nu/\nu_{cs}$")
 plt.ylabel("Measured angle of repose\n(degrees)")
 plt.subplots_adjust(left=0.2, bottom=0.15, right=0.97, top=0.97, hspace=0.4)
 plt.savefig(
-    os.path.expanduser(f"~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/collapse_angle_delta_limit_nx_{nx}.pdf")
+    os.path.expanduser(
+        f"~/Dropbox/Apps/Overleaf/Heterarchical Granular Dynamics/im/collapse_angle_delta_limit_nx_{nx}.pdf"
+    )
 )
 # plt.show()

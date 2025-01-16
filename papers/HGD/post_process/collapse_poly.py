@@ -6,15 +6,15 @@ import matplotlib.pyplot as plt
 # from matplotlib import colormaps
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-from void_migration.params import load_file
-from void_migration.plotter import size_colormap
+from HGD.params import load_file
+from HGD.plotter import size_colormap
 
 # from mpl_toolkits.axes_grid1 import Grid
 from scipy.integrate import cumtrapz
 
-plt.style.use("papers/Kinematic_SLM/paper.mplstyle")
+plt.style.use("papers/HGD/paper.mplstyle")
 
-with open("papers/Kinematic_SLM/json/collapse_poly.json5") as f:
+with open("papers/HGD/json/collapse_poly.json5") as f:
     dict, p = load_file(f)
 
 y = np.linspace(0, p.H, p.ny)
@@ -30,7 +30,7 @@ y_off = 0  # -0.005
 
 cmap = size_colormap()
 
-fig = plt.figure(figsize=[3.31894680556, 1.55])
+fig = plt.figure(figsize=[3.5, 1.65])
 grid = fig.subplots(2, 3)
 
 for i, val in enumerate(p.power_law_alpha):
@@ -127,4 +127,6 @@ cbar.ax.yaxis.set_label_coords(new_x, 0.5)
 
 
 plt.subplots_adjust(left=0.12, bottom=0.18, right=0.81, top=0.95, hspace=0.8)
-plt.savefig(os.path.expanduser("~/Dropbox/Apps/Overleaf/Kinematic_SLM/im/collapse_poly.pdf"))
+plt.savefig(
+    os.path.expanduser("~/Dropbox/Apps/Overleaf/Heterarchical Granular Dynamics/im/collapse_poly.pdf")
+)

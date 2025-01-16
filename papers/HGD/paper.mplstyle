@@ -27,4 +27,4 @@ savefig.format: pdf
 # CMAME columnwidth is 252.0pt = 3.5in
 # default aspect ratio is golden ratio (1.618)
 # figure.figsize: 3.31894680556, 2.051265022
-figure.figsize: 3.5 2.1631644005
+figure.figsize: 3.5, 2.1631644005

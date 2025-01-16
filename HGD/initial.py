@@ -142,6 +142,17 @@ def IC(p):
         mask[
             :, -1, :
         ] = True  # top row can't be filled for algorithmic reasons - could solve this if we need to
+
+    # create a wedge at the angle of repose
+    elif p.IC_mode == "wedge":
+        mask = np.ones([p.nx, p.ny, p.nm], dtype=bool)
+        H = p.W / 2 * np.tan(np.radians(p.repose_angle))  # height of the wedge
+
+        for i in range(p.nx):
+            for j in range(p.ny):
+                if p.y[j] - H < -np.abs(p.x[i]) * np.tan(np.radians(p.repose_angle)):
+                    mask[i, j, :] = False
+
     else:
         raise ValueError(f"Unrecognised IC_mode: {p.IC_mode}")
     s[mask] = np.nan

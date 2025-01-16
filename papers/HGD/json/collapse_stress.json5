@@ -3,22 +3,24 @@
     nx : 100, // width
 
     // geometry
-    H : 1, // (m)
+    H : 0.5715, // (m)
     aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
     nm : 100, //0,
 
     // material properties
-    repose_angle : 30, // (degrees)
+    repose_angle : 32.5, // (degrees)
     // repose_angle : [0,10,20,30,40,50,60,70,80,90], // (degrees)
     gsd_mode : 'mono',
     s_m : 0.001, // minimum particle size (m)
     s_M : 0.001, // maximum particle size (m)
-    nu_cs : 0.5,
+    nu_cs : 0.61,
     
     // initial condition:
-    fill_ratio : 0.25,
-    nu_fill : 0.5,
-    IC_mode : "column",
+    // fill_ratio : 0.25,
+    nu_fill : 0.61,
+    // IC_mode : "column",
+    IC_mode : "wedge",
+    solid_density : 2700, // kg/m^3
 
     // stress_mode : 'sandpile', //['isotropic','active','passive','K_0','anisotropic'],
     // slope_stability_model : 'gradient', //['stress','gradient'],

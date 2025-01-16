@@ -1,6 +1,6 @@
 import numpy as np
 import warnings
-from HGD import operators
+from void_migration import operators
 
 # Implementing Eq 36 and 37 from:
 # Models of stress fluctuations in granular media
@@ -96,8 +96,10 @@ def calculate_stress(s, last_swap, p):
 def harr_substep(s, last_swap, p):
     # stress_fraction = calculate_stress_fraction(last_swap, p)
     # K = 1 - stress_fraction
-
-    K = np.full([p.nx, p.ny], 1.0 / 3.0)  # elastic solution equivalent
+    # p.D_0 = 1/3
+    if not hasattr(p, "D_0"):
+        p.D_0 = 1 / 3
+    K = np.full([p.nx, p.ny], p.D_0)  # elastic solution equivalent
 
     sigma = np.zeros([p.nx, p.ny, 3])  # sigma_xy, sigma_yy, sigma_xx
     # NOTE: NOT CONSIDERING INCLINED GRAVITY
