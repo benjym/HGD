@@ -77,20 +77,23 @@ def move_voids(
         S_bar_dest = np.roll(S_bar, d, axis=axis)
 
         if p.advection_model == "average_size":
+            u_here = np.sqrt(p.g * s_bar)
             U_dest = np.sqrt(p.g * S_bar_dest)
         elif p.advection_model == "freefall":
-            U_dest = np.sqrt(p.g * p.dy)
+            u_here = U_dest = np.sqrt(p.g * p.dy)
         elif p.advection_model == "stress":
             sigma = stress.calculate_stress(s, last_swap, p)
-            pressure = stress.get_pressure(sigma, p)
-            u_local = np.sqrt(2 * pressure / p.solid_density)
-            U = np.repeat(u_local[:, :, np.newaxis], p.nm, axis=2)
+            pressure = np.abs(
+                stress.get_pressure(sigma, p)
+            )  # HACK: PRESSURE SHOULD BE POSITIVE BUT I HAVE ISSUES WITH THE STRESS MODEL
+            u_here = np.sqrt(2 * pressure / p.solid_density)
+            U = np.repeat(u_here[:, :, np.newaxis], p.nm, axis=2)
             U_dest = np.roll(
                 U, d, axis=axis
             )  # NEED TO TAKE DESTINATION VALUE BECAUSE PRESSURE IS ZERO AT OUTLET!!!
 
         with np.errstate(divide="ignore", invalid="ignore"):
-            beta = np.exp(-p.P_stab * p.dt / (p.dx / U_dest))
+            beta = np.exp(-p.P_stab * p.dt / (p.dx / u_here))
 
         if axis == 1:  # vertical
             s_inv_bar = operators.get_hyperbolic_average(s)

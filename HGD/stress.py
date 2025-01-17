@@ -94,11 +94,8 @@ def calculate_stress(s, last_swap, p):
 
 
 def harr_substep(s, last_swap, p):
-    # stress_fraction = calculate_stress_fraction(last_swap, p)
-    # K = 1 - stress_fraction
-    # p.D_0 = 1/3
     if not hasattr(p, "D_0"):
-        p.D_0 = 1 / 3
+        p.D_0 = 1 / 10
     K = np.full([p.nx, p.ny], p.D_0)  # elastic solution equivalent
 
     sigma = np.zeros([p.nx, p.ny, 3])  # sigma_xy, sigma_yy, sigma_xx
@@ -115,7 +112,7 @@ def harr_substep(s, last_swap, p):
         # F_{x, z} = F_{x, z+\Delta z} + w \Delta z
         # + \frac{\Delta z}{\Delta x^2} D \left( F_{x+\Delta x, z+\Delta z} - 2F_{x, z+\Delta z} + F_{x-\Delta x, z+\Delta z} \right).
         # K = 1
-        depth = p.dy * (top - j + 1.5)  # half a cell below the cell center
+        depth = get_depth(p.y[j], nu, p)
         D = K[:, j] * depth
 
         nsubsteps = np.ceil(np.amax(D) * p.dy / (0.5 * p.dx**2)).astype(int)  # CFL=0.5
@@ -138,18 +135,19 @@ def harr_substep(s, last_swap, p):
 
         sigma[:, j, 1] = sigma_inc
 
-        if j == top:
+        if p.y[j] == top:
             half_pad_width = int(p.pad_width / p.dx) // 2
-            sigma[p.nx // 2 - half_pad_width : p.nx // 2 + half_pad_width + 1, top, 1] = p.point_load * p.t
+            sigma[p.nx // 2 - half_pad_width : p.nx // 2 + half_pad_width + 1, j, 1] = p.point_load * p.t
+
+    Depth = get_depth(p.Y, nu, p)
 
     # sigma_xy = - D_sigma * d/dx (sigma_yy)
     dsigma_dx, _ = np.gradient(sigma[:, :, 1], p.dx, p.dy)
-    Depth = (top + 2) * p.dy - p.Y
-    sigma[:, :, 0] = -K * Depth * dsigma_dx  # HACK: THIS IS MISSING THE SECOND DERIVATIVE TERM
+    sigma[:, :, 0] = -K * Depth * dsigma_dx
 
     # sigma_xx = d/dy ( D_sigma * sigma_yy)
     _, d_Dsigma_dy = np.gradient(K * Depth * sigma[:, :, 1], p.dx, p.dy)
-    sigma[:, :, 2] = -d_Dsigma_dy  # HACK: WHERE DOES THE MINUS SIGN COME FROM? IS dy NEGATIVE??
+    sigma[:, :, 2] = -d_Dsigma_dy
     return sigma
 
 
@@ -165,7 +163,7 @@ def harr_implicit(s, last_swap, p):
     # Loop over rows (z-direction, top to bottom)
     for j in range(p.ny - 2, -1, -1):
         K = 1
-        depth = p.dy * (p.ny - j - 1)
+        depth = get_depth(p.y[j], nu, p)
         D = K * depth
 
         # Tridiagonal coefficients
@@ -452,14 +450,17 @@ def get_friction_angle(sigma, p, last_swap=None):
 
 
 def get_top(nu, p):
-    if hasattr(p, "point_load"):
-        empty_at_middle = nu[p.nx // 2, :] == 0
-        top = np.where(empty_at_middle)[0]
-        if len(top) > 0:
-            top = top[0]
-        else:
-            top = p.ny
+    empty_at_middle = nu[p.nx // 2, :] == 0
+    top = np.where(empty_at_middle)[0]
+    if len(top) > 0:
+        top_idx = top[0]
     else:
-        top = p.ny
+        top_idx = p.ny - 1
 
+    top = p.y[top_idx]
     return top
+
+
+def get_depth(y, nu, p):
+    top = get_top(nu, p)
+    return y - top
