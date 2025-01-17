@@ -171,12 +171,12 @@ def time_step(p, state, t):
     return state
 
 
-def time_march(p):
+def time_march(p, cycles=None):
     """
     Run the actual simulation(s) as defined in the input json file `p`.
     """
 
-    state = init(p)
+    state = init(p, cycles)
     if p.t_f is not None:
         for t in tqdm(range(1, p.nt), leave=False, desc="Time", position=p.concurrent_index + 1):
             state = time_step(
