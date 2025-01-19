@@ -39,9 +39,6 @@ def is_ffmpeg_installed():
         return False
 
 
-# silence = subprocess.DEVNULL
-# silence = None
-
 cdict = {
     "red": ((0.0, 1.0, 1.0), (0.25, 1.0, 1.0), (0.5, 1.0, 1.0), (0.75, 0.902, 0.902), (1.0, 0.0, 0.0)),
     "green": (
@@ -173,7 +170,7 @@ def check_folders_exist(p):
             os.makedirs(p.folderName + "data/")
 
 
-def update(p, state, t, *args):
+def update(p, state, *args):
     (
         s,
         u,
@@ -253,77 +250,77 @@ def update(p, state, t, *args):
     else:
         if "s" in p.plot:
             if hasattr(p, "charge_discharge"):
-                plot_s(s, p, t, *args)
+                plot_s(s, p, *args)
             else:
-                plot_s(s, p, t)
+                plot_s(s, p)
         if "nu" in p.plot:
-            plot_nu(s, p, t)
+            plot_nu(s, p)
         if "rel_nu" in p.plot:
-            plot_relative_nu(s, p, t)
+            plot_relative_nu(s, p)
         if "U_mag" in p.plot:
-            plot_u(s, u, v, p, t)
+            plot_u(s, u, v, p)
         if "gamma_dot" in p.plot:
-            plot_gamma_dot(s, chi, p, t)
+            plot_gamma_dot(s, chi, p)
         if "c" in p.plot:
-            plot_c(s, c, p, t)
+            plot_c(s, c, p)
         if "temperature" in p.plot:
-            plot_T(s, T, p, t)
+            plot_T(s, T, p)
         # if "density_profile" in p.plot:
         #     plot_profile(x, nu_time_x, p)
         if "permeability" in p.plot:
-            plot_permeability(s, p, t)
+            plot_permeability(s, p)
         if "stable" in p.plot:
-            plot_stable(s, p, t)
+            plot_stable(s, p)
         if "chi" in p.plot:
-            plot_chi(chi, p, t)
+            plot_chi(chi, p)
         if "anisotropy" in p.plot:
-            plot_anisotropy(last_swap, p, t)
+            plot_anisotropy(last_swap, p)
         if "h" in p.plot:
-            plot_h(s, p, t)
+            plot_h(s, p)
         if "stress" in p.plot:
-            plot_stress(s, sigma, last_swap, p, t)
+            plot_stress(s, sigma, last_swap, p)
         if "sigma_xx" in p.plot:
-            plot_sigma_xx(s, sigma, last_swap, p, t)
+            plot_sigma_xx(s, sigma, last_swap, p)
         if "sigma_yy" in p.plot:
-            plot_sigma_yy(s, sigma, last_swap, p, t)
+            plot_sigma_yy(s, sigma, last_swap, p)
         if "sigma_xy" in p.plot:
-            plot_sigma_xy(s, sigma, last_swap, p, t)
+            plot_sigma_xy(s, sigma, last_swap, p)
         if "pressure" in p.plot:
-            plot_pressure(s, sigma, last_swap, p, t)
+            plot_pressure(s, sigma, last_swap, p)
         if "deviatoric" in p.plot:
-            plot_deviatoric(s, sigma, last_swap, p, t)
+            plot_deviatoric(s, sigma, last_swap, p)
         if "footing" in p.plot:
             plot_footing(p)
 
         if "s" in p.save:
-            save_s(s, p, t)
+            save_s(s, p)
         if "s_bar" in p.save:
-            save_s_bar(s, p, t)
+            save_s_bar(s, p)
         if "nu" in p.save:
-            save_nu(s, p, t)
+            save_nu(s, p)
         if "rel_nu" in p.save:
-            save_relative_nu(s, p, t)
+            save_relative_nu(s, p)
         if "chi" in p.save:
-            save_chi(chi, p, t)
+            save_chi(chi, p)
         if "footing" in p.save:
-            save_footing(s, p, t)
+            save_footing(s, p)
 
         # if "U_mag" in p.save:
-        #     save_u(s, u, v, p, t)
+        #     save_u(s, u, v, p)
         if "permeability" in p.save:
-            save_permeability(s, p, t)
+            save_permeability(s, p)
         if "stress" in p.save:
-            save_stress(s, sigma, last_swap, p, t)
+            save_stress(s, sigma, last_swap, p)
         if "last_swap" in p.save:
-            save_last_swap(last_swap, p, t)
+            save_last_swap(last_swap, p)
         if "concentration" in p.save:
-            save_c(c, p.folderName, t)
+            save_c(c, p)
         if "outlet" in p.save:
             np.savetxt(p.folderName + "data/outlet.csv", np.array(outlet), delimiter=",")
         # if "temperature" in p.save:
         #     np.savetxt(p.folderName + "outlet_T.csv", np.array(outlet_T), delimiter=",")
         if "velocity" in p.save:
-            save_velocity(u, v, p.folderName, t)
+            save_velocity(u, v, p)
         if "charge_discharge" in p.save:
             c_d_saves(p, non_zero_nu_time, p_count, p_count_s, p_count_l)
         if "col_depth" in p.save:
@@ -356,7 +353,7 @@ def plot_u_time(y, U, nu_time, p):
     np.save(p.folderName + "data/nu.npy", np.mean(nu_time[p.nt // 2 :], axis=0))
 
 
-def plot_gamma_dot(s, chi, p, t):
+def plot_gamma_dot(s, chi, p):
     solid_fraction = operators.get_solid_fraction(s)
     s_bar = operators.get_average(s)
     if chi is None:
@@ -372,10 +369,10 @@ def plot_gamma_dot(s, chi, p, t):
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    plt.savefig(p.folderName + "gamma_dot_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "gamma_dot_" + str(p.tstep).zfill(6) + ".png")
 
 
-def plot_chi(chi, p, t):
+def plot_chi(chi, p):
     plt.figure(fig, layout="constrained")
     plt.clf()
     plt.pcolormesh(p.x, p.y, chi.T)
@@ -384,14 +381,14 @@ def plot_chi(chi, p, t):
     plt.ylim(p.y[0], p.y[-1])
     if p.plot_colorbar:
         plt.colorbar(fraction=0.3)
-    plt.savefig(p.folderName + "chi_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "chi_" + str(p.tstep).zfill(6) + ".png")
 
 
-def save_chi(chi, p, t):
-    np.save(p.folderName + "data/chi_" + str(t).zfill(6) + ".npy", chi)
+def save_chi(chi, p):
+    np.save(p.folderName + "data/chi_" + str(p.tstep).zfill(6) + ".npy", chi)
 
 
-def plot_stable(s, p, t):
+def plot_stable(s, p):
     plt.figure(fig)
 
     slope = np.zeros([p.nx, p.ny, 2])
@@ -420,7 +417,7 @@ def plot_stable(s, p, t):
         plt.xlim(p.x[0], p.x[-1])
         plt.ylim(p.y[0], p.y[-1])
         plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-        plt.savefig(p.folderName + f[1] + f"_{t}.png")
+        plt.savefig(p.folderName + f[1] + f"_{p.t}.png")
 
 
 def plot_s_bar(y, s_bar, nu_time, p):
@@ -449,7 +446,7 @@ def plot_s_bar(y, s_bar, nu_time, p):
     plt.savefig(p.folderName + "nu.png")
 
 
-def plot_sigma_xx(s, sigma, last_swap, p, t):
+def plot_sigma_xx(s, sigma, last_swap, p):
     if sigma is None:
         sigma = stress.calculate_stress(s, last_swap, p)
     # sigma_xx = stress.get_sigma_xx(sigma, p)
@@ -463,10 +460,10 @@ def plot_sigma_xx(s, sigma, last_swap, p, t):
     plt.ylim(p.y[0], p.y[-1])
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
-    plt.savefig(p.folderName + "sigma_xx_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "sigma_xx_" + str(p.tstep).zfill(6) + ".png")
 
 
-def plot_sigma_yy(s, sigma, last_swap, p, t):
+def plot_sigma_yy(s, sigma, last_swap, p):
     if sigma is None:
         sigma = stress.calculate_stress(s, last_swap, p)
     sigma_yy = np.ma.masked_where(sigma[:, :, 1] == 0.0, sigma[:, :, 1])
@@ -478,10 +475,10 @@ def plot_sigma_yy(s, sigma, last_swap, p, t):
     plt.ylim(p.y[0], p.y[-1])
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
-    plt.savefig(p.folderName + "sigma_yy_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "sigma_yy_" + str(p.tstep).zfill(6) + ".png")
 
 
-def plot_sigma_xy(s, sigma, last_swap, p, t):
+def plot_sigma_xy(s, sigma, last_swap, p):
     if sigma is None:
         sigma = stress.calculate_stress(s, last_swap, p)
     sigma_xy = np.ma.masked_where(sigma[:, :, 0] == 0.0, sigma[:, :, 0])
@@ -493,10 +490,10 @@ def plot_sigma_xy(s, sigma, last_swap, p, t):
     plt.ylim(p.y[0], p.y[-1])
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
-    plt.savefig(p.folderName + "sigma_xy_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "sigma_xy_" + str(p.tstep).zfill(6) + ".png")
 
 
-def plot_rel_mu(s, sigma, last_swap, p, t):
+def plot_rel_mu(s, sigma, last_swap, p):
     if sigma is None:
         sigma = stress.calculate_stress(s, last_swap, p)
     mu = np.ma.masked_where(sigma[:, :, 2] == 0.0, sigma[:, :, 2])
@@ -508,10 +505,10 @@ def plot_rel_mu(s, sigma, last_swap, p, t):
     plt.ylim(p.y[0], p.y[-1])
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
-    plt.savefig(p.folderName + "rel_mu_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "rel_mu_" + str(p.tstep).zfill(6) + ".png")
 
 
-def plot_anisotropy(last_swap, p, t):
+def plot_anisotropy(last_swap, p):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
         a = np.nanmean(last_swap, axis=2)  # -1 for lef/right, 1 for up/down
@@ -523,10 +520,10 @@ def plot_anisotropy(last_swap, p, t):
     plt.ylim(p.y[0], p.y[-1])
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
-    plt.savefig(p.folderName + "anisotropy_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "anisotropy_" + str(p.tstep).zfill(6) + ".png")
 
 
-def plot_stress(s, sigma, last_swap, p, t):
+def plot_stress(s, sigma, last_swap, p):
     if sigma is None:
         sigma = stress.calculate_stress(s, last_swap, p)
     pressure = stress.get_pressure(sigma, p, last_swap)
@@ -567,10 +564,10 @@ def plot_stress(s, sigma, last_swap, p, t):
         plt.colorbar(shrink=0.8, location="top", pad=0.01)
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
-    plt.savefig(p.folderName + "stress_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "stress_" + str(p.tstep).zfill(6) + ".png")
 
 
-def plot_pressure(s, sigma, last_swap, p, t):
+def plot_pressure(s, sigma, last_swap, p):
     if sigma is None:
         sigma = stress.calculate_stress(s, last_swap, p)
     pressure = stress.get_pressure(sigma, p)
@@ -583,10 +580,10 @@ def plot_pressure(s, sigma, last_swap, p, t):
     plt.ylim(p.y[0], p.y[-1])
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
-    plt.savefig(p.folderName + "pressure_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "pressure_" + str(p.tstep).zfill(6) + ".png")
 
 
-def plot_deviatoric(s, sigma, last_swap, p, t):
+def plot_deviatoric(s, sigma, last_swap, p):
     if sigma is None:
         sigma = stress.calculate_stress(s, last_swap, p)
     q = stress.get_deviatoric(sigma, p)
@@ -599,7 +596,7 @@ def plot_deviatoric(s, sigma, last_swap, p, t):
     plt.ylim(p.y[0], p.y[-1])
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
-    plt.savefig(p.folderName + "deviatoric_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "deviatoric_" + str(p.tstep).zfill(6) + ".png")
 
 
 def save_coordinate_system(p):
@@ -638,7 +635,7 @@ def kozeny_carman(s):
     return permeability
 
 
-def plot_permeability(s, p, t):
+def plot_permeability(s, p):
     """
     Calculate and save the permeability of the domain at time t.
     """
@@ -651,12 +648,14 @@ def plot_permeability(s, p, t):
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    plt.savefig(p.folderName + "permeability_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "permeability_" + str(p.tstep).zfill(6) + ".png")
 
 
-def save_permeability(s, p, t):
+def save_permeability(s, p):
     permeability = kozeny_carman(s)
-    np.savetxt(p.folderName + "data/permeability_" + str(t).zfill(6) + ".csv", permeability, delimiter=",")
+    np.savetxt(
+        p.folderName + "data/permeability_" + str(p.tstep).zfill(6) + ".csv", permeability, delimiter=","
+    )
 
 
 def plot_s(s, p, t, *args):
@@ -693,18 +692,18 @@ def plot_s(s, p, t, *args):
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01, ticks=ticks)
-    plt.savefig(p.folderName + "s_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "s_" + str(p.tstep).zfill(6) + ".png")
 
 
-def save_s(s, p, t):
-    np.save(p.folderName + "data/s_" + str(t).zfill(6) + ".npy", s)
+def save_s(s, p):
+    np.save(p.folderName + "data/s_" + str(p.tstep).zfill(6) + ".npy", s)
 
 
-def save_s_bar(s, p, t):
-    np.save(p.folderName + "data/s_bar_" + str(t).zfill(6) + ".npy", operators.get_average(s))
+def save_s_bar(s, p):
+    np.save(p.folderName + "data/s_bar_" + str(p.tstep).zfill(6) + ".npy", operators.get_average(s))
 
 
-def plot_nu(s, p, t):
+def plot_nu(s, p):
     plt.figure(fig)
     nu = 1 - np.mean(np.isnan(s), axis=2).T
     nu = np.ma.masked_where(nu == 0, nu)
@@ -723,18 +722,20 @@ def plot_nu(s, p, t):
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)
-    plt.savefig(p.folderName + "nu_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "nu_" + str(p.tstep).zfill(6) + ".png")
 
 
-def save_nu(s, p, t):
-    np.save(p.folderName + "data/nu_" + str(t).zfill(6) + ".npy", operators.get_solid_fraction(s))
+def save_nu(s, p):
+    np.save(p.folderName + "data/nu_" + str(p.tstep).zfill(6) + ".npy", operators.get_solid_fraction(s))
 
 
-def save_relative_nu(s, p, t):
-    np.save(p.folderName + "data/nu_" + str(t).zfill(6) + ".npy", operators.get_solid_fraction(s) / p.nu_cs)
+def save_relative_nu(s, p):
+    np.save(
+        p.folderName + "data/nu_" + str(p.tstep).zfill(6) + ".npy", operators.get_solid_fraction(s) / p.nu_cs
+    )
 
 
-def plot_relative_nu(s, p, t):
+def plot_relative_nu(s, p):
     plt.figure(fig)
     nu = 1 - np.mean(np.isnan(s), axis=2).T
     nu /= p.nu_cs
@@ -753,10 +754,10 @@ def plot_relative_nu(s, p, t):
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
-    plt.savefig(p.folderName + "rel_nu_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "rel_nu_" + str(p.tstep).zfill(6) + ".png")
 
 
-def plot_u(s, u, v, p, t):
+def plot_u(s, u, v, p):
     plt.figure(fig)
     # mask = mean(isnan(s),axis=2) > 0.95
     # u = ma.masked_where(mask,u/sum(isnan(s),axis=2)).T
@@ -785,7 +786,7 @@ def plot_u(s, u, v, p, t):
     if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
     plt.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0)
-    plt.savefig(p.folderName + "u_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "u_" + str(p.tstep).zfill(6) + ".png")
 
     plt.clf()
     # plt.quiver(X,Y,u,v)
@@ -800,7 +801,7 @@ def plot_u(s, u, v, p, t):
     if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    plt.savefig(p.folderName + "v_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "v_" + str(p.tstep).zfill(6) + ".png")
 
     U = np.sqrt(u**2 + v**2)
     plt.clf()
@@ -817,10 +818,10 @@ def plot_u(s, u, v, p, t):
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
-    plt.savefig(p.folderName + "U_mag_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "U_mag_" + str(p.tstep).zfill(6) + ".png")
 
 
-def plot_c(s, c, p, t):
+def plot_c(s, c, p):
     # print(np.unique(c))
     plt.figure(fig)
 
@@ -841,27 +842,27 @@ def plot_c(s, c, p, t):
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)  # ,ticks = ticks)
-        # np.save(p.folderName + "c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
-    plt.savefig(p.folderName + "c_" + str(t).zfill(6) + ".png")
+        # np.save(p.folderName + "c_" + str(p.tstep).zfill(6) + ".npy", np.nanmean(c, axis=2))
+    plt.savefig(p.folderName + "c_" + str(p.tstep).zfill(6) + ".png")
 
 
-def save_c(c, folderName, t):
-    np.save(folderName + "data/c_" + str(t).zfill(6) + ".npy", np.nanmean(c, axis=2))
+def save_c(c, p):
+    np.save(p.folderName + "data/c_" + str(p.tstep).zfill(6) + ".npy", np.nanmean(c, axis=2))
 
 
-def save_stress(s, sigma, last_swap, p, t):
+def save_stress(s, sigma, last_swap, p):
     if sigma is None:
         sigma = stress.calculate_stress(s, last_swap, p)
-    np.save(p.folderName + "data/sigma_" + str(t).zfill(6) + ".npy", sigma)
+    np.save(p.folderName + "data/sigma_" + str(p.tstep).zfill(6) + ".npy", sigma)
 
 
-def save_last_swap(last_swap, p, t):
-    np.save(p.folderName + "data/last_swap_" + str(t).zfill(6) + ".npy", last_swap)
+def save_last_swap(last_swap, p):
+    np.save(p.folderName + "data/last_swap_" + str(p.tstep).zfill(6) + ".npy", last_swap)
 
 
-def save_velocity(u, v, folderName, t):
-    np.save(folderName + "data/u_" + str(t).zfill(6) + ".npy", np.mean(u, axis=2))
-    np.save(folderName + "data/v_" + str(t).zfill(6) + ".npy", np.mean(v, axis=2))
+def save_velocity(u, v, p):
+    np.save(p.folderName + "data/u_" + str(p.tstep).zfill(6) + ".npy", np.mean(u, axis=2))
+    np.save(p.folderName + "data/v_" + str(p.tstep).zfill(6) + ".npy", np.mean(v, axis=2))
 
 
 def plot_outlet(outlet, output):
@@ -902,7 +903,7 @@ def save_footing(s, p, t, debug=True):
         plt.clf()
         plt.pcolormesh(p.x, p.y, nu.T, cmap=inferno, vmin=0, vmax=1)
         plt.plot([p.x[p.nx // 2]], [top], "go")
-        plt.savefig(p.folderName + "footing_" + str(t).zfill(6) + ".png")
+        plt.savefig(p.folderName + "footing_" + str(p.tstep).zfill(6) + ".png")
 
 
 def plot_footing(p):
@@ -933,7 +934,7 @@ def plot_profile(x, nu_time_x, p):
     plt.savefig(p.folderName + "collapse_profile.png")
 
 
-def plot_T(s, T, p, t):
+def plot_T(s, T, p):
     plt.figure(fig)
 
     nm = s.shape[2]
@@ -951,10 +952,10 @@ def plot_T(s, T, p, t):
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    plt.savefig(p.folderName + "T_" + str(t).zfill(6) + ".png")
+    plt.savefig(p.folderName + "T_" + str(p.tstep).zfill(6) + ".png")
 
 
-def plot_h(s, p, t):
+def plot_h(s, p):
     """
     Show the relative 'height' of the grains in each cell. Used for diagnostic purposes only, otherwise not that useful.
     """
@@ -986,7 +987,7 @@ def plot_h(s, p, t):
     plt.xlim(0, h.shape[0])
     plt.ylim(0, h.shape[1])
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    plt.savefig(p.folderName + "h_" + str(t).zfill(6) + ".png", dpi=100)
+    plt.savefig(p.folderName + "h_" + str(p.tstep).zfill(6) + ".png", dpi=100)
 
 
 def make_video(p):

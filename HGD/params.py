@@ -116,7 +116,13 @@ class dict_to_class:
         self.X, self.Y = np.meshgrid(self.x, self.y, indexing="ij")
 
         self.y += self.dy / 2.0
-        self.t = 0
+        self.t = 0  # time (s)
+        self.tstep = 0  # time step counter
+
+        self.initial_chi = 0.01 * (
+            self.nx * self.ny * self.nm
+        )  # Initial chi estimate (1% of total cells moving)
+        self.min_chi = 1.0 / (self.nx * self.ny * self.nm)  # Minimum chi
 
         if hasattr(self, "outlet_width"):
             self.half_width = int(self.outlet_width / self.dx / 2)

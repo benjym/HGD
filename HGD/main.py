@@ -84,7 +84,7 @@ def init(p, cycles=None):
     return state
 
 
-def time_step(p, state, t):
+def time_step(p, state):
     if p.queue2 is not None:
         while not p.queue2.empty():
             update = p.queue2.get()
@@ -135,7 +135,7 @@ def time_step(p, state, t):
     #         s, c, p, t, p_count, p_count_s, p_count_l, non_zero_nu_time, surface_profile
     #     )
     if len(p.cycles) > 0:
-        p = cycles.update(p, t, state)
+        p = cycles.update(p, state)
 
     u, v, s, c, T, chi, last_swap = p.move_voids(u, v, s, p, c=c, T=T, chi=chi, last_swap=last_swap)
 
@@ -158,15 +158,19 @@ def time_step(p, state, t):
 
     state = boundary.update(p, state)
 
-    if t % p.save_inc == 0:
-        plotter.update(p, state, t)
+    if p.tstep % p.save_inc == 0:
+        plotter.update(p, state)
 
-    if chi.sum() == 0:
+    # if all voids are stopped
+    is_stopped = chi.sum() < 1.0 / (p.nx * p.ny * p.nm)
+
+    if is_stopped:
         p.stopped_times += 1
     else:
         p.stopped_times = 0
 
     p.t += p.dt
+    p.tstep += 1
 
     return state
 
@@ -178,23 +182,26 @@ def time_march(p, cycles=None):
 
     state = init(p, cycles)
     if p.t_f is not None:
-        for t in tqdm(range(1, p.nt), leave=False, desc="Time", position=p.concurrent_index + 1):
-            state = time_step(
-                p,
-                state,
-                t,
-            )
+        for tstep in tqdm(range(1, p.nt), leave=False, desc="Time", position=p.concurrent_index + 1):
+            state = time_step(p, state)
     else:
-        t = 1
+        chi_progress_bar = tqdm(total=1.0, leave=False, desc="Chi Progress", position=p.concurrent_index + 1)
+
         p.stopped_times = 0
         while not p.stop_event:
-            state = time_step(p, state, t)
-            t += 1
+            # Update progress bar for chi
+            chi = state[6]
+            current_chi = chi.sum()
+            progress = (current_chi - p.initial_chi) / (p.initial_chi - p.min_chi)
+            chi_progress_bar.n = max(0, min(1.0, progress))  # Ensure bounds
+            chi_progress_bar.refresh()
+
+            state = time_step(p, state)
 
             if p.stopped_times > p.stop_after:
                 p.stop_event = True
 
-    plotter.update(p, state, t)
+    plotter.update(p, state)
 
 
 def run_simulation(sim_with_index):
