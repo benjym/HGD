@@ -142,20 +142,6 @@ def harr_substep(s, last_swap, p):
 
     Depth = get_depth(nu, p)
 
-    import matplotlib.pyplot as plt
-
-    plt.figure(77)
-    plt.ion()
-    plt.clf()
-    plt.subplot(121)
-    plt.imshow(Depth.T)
-    plt.colorbar()
-
-    plt.subplot(122)
-    plt.imshow(sigma[:, :, 1].T)
-    plt.colorbar()
-    plt.pause(0.01)
-
     # sigma_xy = - D_sigma * d/dx (sigma_yy)
     dsigma_dx, _ = np.gradient(sigma[:, :, 1], p.dx, p.dy)
     sigma[:, :, 0] = -K * Depth * dsigma_dx
@@ -488,7 +474,7 @@ def get_top(nu, p):
     return top.astype(int)
 
 
-def get_depth(nu, p):
+def get_depth(nu, p, debug=False):
     """
     Calculate the depth array based on the top indices and y-coordinates.
 
@@ -508,5 +494,15 @@ def get_depth(nu, p):
 
     for i in range(p.nx):
         depth[i, :] = p.y[top[i]] - p.y
+
+    if debug:
+        import matplotlib.pyplot as plt
+
+        plt.figure(77)
+        plt.ion()
+        plt.clf()
+        plt.pcolormesh(p.x, p.y, depth.T)
+        plt.colorbar()
+        plt.pause(0.01)
 
     return depth
