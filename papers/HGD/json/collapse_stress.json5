@@ -27,7 +27,7 @@
     
     // saving
     save_inc : 100,   // how many saves to make
-    t_f : null,
+    t_f : 1,
     
     plot : ['nu', 'stress','sigma_xx','sigma_yy','sigma_xy', 'anisotropy'],
     videos : ['nu','stress', 'anisotropy'],

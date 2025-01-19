@@ -1,6 +1,6 @@
 import numpy as np
 import warnings
-from void_migration import operators
+import HGD.operators
 
 # Implementing Eq 36 and 37 from:
 # Models of stress fluctuations in granular media
@@ -102,9 +102,11 @@ def harr_substep(s, last_swap, p):
     # NOTE: NOT CONSIDERING INCLINED GRAVITY
     weight_of_one_cell = p.solid_density * p.dx * p.g  # * p.dy
 
-    nu = operators.get_solid_fraction(s)
+    nu = HGD.operators.get_solid_fraction(s)
 
     top = get_top(nu, p)
+    depth = get_depth(nu, p)
+    D = K * depth
 
     for j in range(p.ny - 2, -1, -1):
         this_weight = nu[:, j] * weight_of_one_cell
@@ -112,8 +114,6 @@ def harr_substep(s, last_swap, p):
         # F_{x, z} = F_{x, z+\Delta z} + w \Delta z
         # + \frac{\Delta z}{\Delta x^2} D \left( F_{x+\Delta x, z+\Delta z} - 2F_{x, z+\Delta z} + F_{x-\Delta x, z+\Delta z} \right).
         # K = 1
-        depth = get_depth(p.y[j], nu, p)
-        D = K[:, j] * depth
 
         nsubsteps = np.ceil(np.amax(D) * p.dy / (0.5 * p.dx**2)).astype(int)  # CFL=0.5
         nsubsteps = max(nsubsteps, 1)  # at least one substep
@@ -129,17 +129,32 @@ def harr_substep(s, last_swap, p):
             sigma_inc = (
                 this_weight / nsubsteps
                 + up
-                + (p.dy / nsubsteps) / (p.dx**2) * D * (left_up - 2 * up + right_up)
+                + (p.dy / nsubsteps) / (p.dx**2) * D[:, j] * (left_up - 2 * up + right_up)
             )
             sigma_inc[nu[:, j] == 0] = 0
 
         sigma[:, j, 1] = sigma_inc
 
-        if p.y[j] == top:
+        # Apply surface load
+        if j == top[p.nx // 2]:
             half_pad_width = int(p.pad_width / p.dx) // 2
             sigma[p.nx // 2 - half_pad_width : p.nx // 2 + half_pad_width + 1, j, 1] = p.point_load * p.t
 
-    Depth = get_depth(p.Y, nu, p)
+    Depth = get_depth(nu, p)
+
+    # import matplotlib.pyplot as plt
+
+    # plt.figure(77)
+    # plt.ion()
+    # plt.clf()
+    # plt.subplot(121)
+    # plt.imshow(Depth.T)
+    # plt.colorbar()
+
+    # plt.subplot(122)
+    # plt.imshow(sigma[:, :, 1].T)
+    # plt.colorbar()
+    # plt.pause(0.01)
 
     # sigma_xy = - D_sigma * d/dx (sigma_yy)
     dsigma_dx, _ = np.gradient(sigma[:, :, 1], p.dx, p.dy)
@@ -154,7 +169,7 @@ def harr_substep(s, last_swap, p):
 def harr_implicit(s, last_swap, p):
     sigma = np.zeros((p.nx, p.ny, 2))
     weight_of_one_cell = p.solid_density * p.dx * p.g  # * p.dy
-    nu = operators.get_solid_fraction(s)
+    nu = HGD.operators.get_solid_fraction(s)
     w = nu * weight_of_one_cell
 
     if hasattr(p, "point_load"):
@@ -163,7 +178,7 @@ def harr_implicit(s, last_swap, p):
     # Loop over rows (z-direction, top to bottom)
     for j in range(p.ny - 2, -1, -1):
         K = 1
-        depth = get_depth(p.y[j], nu, p)
+        depth = get_depth(nu, p)
         D = K * depth
 
         # Tridiagonal coefficients
@@ -227,7 +242,7 @@ def calculate_stress_OLD(s, last_swap, p):
     # NOTE: NOT CONSIDERING INCLINED GRAVITY
     weight_of_one_cell = p.solid_density * p.dx * p.g  # * p.dy
 
-    nu = operators.get_solid_fraction(s)
+    nu = HGD.operators.get_solid_fraction(s)
 
     for j in range(p.ny - 2, -1, -1):
         for i in range(p.nx):
@@ -273,7 +288,7 @@ def calculate_stress_NEW(s, last_swap, p):
     # NOTE: NOT CONSIDERING INCLINED GRAVITY
     weight_of_one_cell = p.solid_density * p.g * p.dx  # * p.dy
 
-    nu = operators.get_solid_fraction(s)
+    nu = HGD.operators.get_solid_fraction(s)
 
     for j in range(p.ny - 1, 0, -1):
         for i in range(1, p.nx - 1):  # HACK - ignoring boundaries for now
@@ -450,17 +465,20 @@ def get_friction_angle(sigma, p, last_swap=None):
 
 
 def get_top(nu, p):
-    empty_at_middle = nu[p.nx // 2, :] == 0
-    top = np.where(empty_at_middle)[0]
-    if len(top) > 0:
-        top_idx = top[0]
-    else:
-        top_idx = p.ny - 1
-
-    top = p.y[top_idx]
-    return top
+    empty = nu == 0
+    # now get top void in each column
+    top = np.zeros(p.nx)
+    for i in range(p.nx):
+        top[i] = np.where(empty[i, :])[0][0] if np.any(empty[i, :]) else p.ny - 1
+    # print(f"Top voids: {top}")
+    return top.astype(int)
 
 
-def get_depth(y, nu, p):
+def get_depth(nu, p):
     top = get_top(nu, p)
-    return y - top
+    depth = np.zeros([p.nx, p.ny])
+
+    for i in range(p.nx):
+        depth[i, :] = p.y[top[i]] - p.y
+
+    return depth
