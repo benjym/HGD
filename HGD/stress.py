@@ -142,19 +142,19 @@ def harr_substep(s, last_swap, p):
 
     Depth = get_depth(nu, p)
 
-    # import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
-    # plt.figure(77)
-    # plt.ion()
-    # plt.clf()
-    # plt.subplot(121)
-    # plt.imshow(Depth.T)
-    # plt.colorbar()
+    plt.figure(77)
+    plt.ion()
+    plt.clf()
+    plt.subplot(121)
+    plt.imshow(Depth.T)
+    plt.colorbar()
 
-    # plt.subplot(122)
-    # plt.imshow(sigma[:, :, 1].T)
-    # plt.colorbar()
-    # plt.pause(0.01)
+    plt.subplot(122)
+    plt.imshow(sigma[:, :, 1].T)
+    plt.colorbar()
+    plt.pause(0.01)
 
     # sigma_xy = - D_sigma * d/dx (sigma_yy)
     dsigma_dx, _ = np.gradient(sigma[:, :, 1], p.dx, p.dy)
@@ -465,16 +465,44 @@ def get_friction_angle(sigma, p, last_swap=None):
 
 
 def get_top(nu, p):
-    empty = nu == 0
+    """
+    Determine the top void in each column of a 2D array.
+
+    Parameters:
+    nu (ndarray): A 2D numpy array where each element indicates the presence (0) or absence (non-zero) of a void.
+    p (object): An object with attributes `nx` (number of columns) and `ny` (number of rows).
+
+    Returns:
+    ndarray: A 1D numpy array of integers where each element represents the row index of the top void in the corresponding column.
+             If a column has no voids, the value will be `p.ny - 1`.
+    """
+    solid = nu > 0
     # now get top void in each column
     top = np.zeros(p.nx)
     for i in range(p.nx):
-        top[i] = np.where(empty[i, :])[0][0] if np.any(empty[i, :]) else p.ny - 1
+        for j in range(p.ny - 1, 0, -1):
+            if solid[i, j]:
+                top[i] = j
+                break
     # print(f"Top voids: {top}")
     return top.astype(int)
 
 
 def get_depth(nu, p):
+    """
+    Calculate the depth array based on the top indices and y-coordinates.
+
+    Parameters:
+    nu : array-like
+        An array or list of values used to determine the top indices.
+    p : object
+        An object containing the attributes 'nx', 'ny', and 'y'. 'nx' and 'ny' are the dimensions
+        of the grid, and 'y' is an array of y-coordinates.
+
+    Returns:
+    numpy.ndarray
+        A 2D array of shape (p.nx, p.ny) representing the depth values.
+    """
     top = get_top(nu, p)
     depth = np.zeros([p.nx, p.ny])
 
