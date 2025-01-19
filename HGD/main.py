@@ -185,14 +185,16 @@ def time_march(p, cycles=None):
         for tstep in tqdm(range(1, p.nt), leave=False, desc="Time", position=p.concurrent_index + 1):
             state = time_step(p, state)
     else:
-        chi_progress_bar = tqdm(total=1.0, leave=False, desc="Chi Progress", position=p.concurrent_index + 1)
+        chi_progress_bar = tqdm(total=1.0, leave=False, desc=p.this_sim, position=p.concurrent_index + 1)
 
         p.stopped_times = 0
         while not p.stop_event:
-            # Update progress bar for chi
             chi = state[6]
-            current_chi = chi.sum()
-            progress = (current_chi - p.initial_chi) / (p.initial_chi - p.min_chi)
+            # Update progress bar for chi using a log scale
+            with np.errstate(divide="ignore"):
+                progress = (np.log10(p.max_chi) - np.log10(chi.mean())) / (
+                    np.log10(p.max_chi) - np.log10(p.min_chi)
+                )
             chi_progress_bar.n = max(0, min(1.0, progress))  # Ensure bounds
             chi_progress_bar.refresh()
 
@@ -210,10 +212,13 @@ def run_simulation(sim_with_index):
         dict, p_init = params.load_file(f)
     folderName = f"output/{dict['input_filename']}/"
     dict_copy = dict.copy()
+    this_sim = ""
     for i, key in enumerate(p_init.list_keys):
         dict_copy[key] = sim[i]
         folderName += f"{key}_{sim[i]}/"
+        this_sim += f"{key}={sim[i]},"
     p = params.dict_to_class(dict_copy)
+    p.this_sim = this_sim[:-1]
     p.concurrent_index = index
     p.folderName = folderName
     p.set_defaults()

@@ -3,7 +3,6 @@ import sys
 import json5
 import numpy as np
 
-# import operators
 from HGD import stress
 
 
@@ -119,10 +118,8 @@ class dict_to_class:
         self.t = 0  # time (s)
         self.tstep = 0  # time step counter
 
-        self.initial_chi = 0.01 * (
-            self.nx * self.ny * self.nm
-        )  # Initial chi estimate (1% of total cells moving)
-        self.min_chi = 1.0 / (self.nx * self.ny * self.nm)  # Minimum chi
+        self.max_chi = 1  # Max chi is when all voids are swapping
+        self.min_chi = 1.0 / (self.nx * self.ny * self.nm)  # Minimum chi (less than one cell moving)
 
         if hasattr(self, "outlet_width"):
             self.half_width = int(self.outlet_width / self.dx / 2)

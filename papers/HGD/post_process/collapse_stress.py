@@ -102,8 +102,8 @@ im = ax[1, 1].pcolormesh(
     y,
     1e-3 * sigma_xy.T,
     # cmap=cmap,
-    vmin=-0.5,
-    vmax=0.5,
+    vmin=-0.25,
+    vmax=0.25,
     # friction_angle.T,
     cmap="bwr",
     # vmin=p.repose_angle - 5,
@@ -114,7 +114,7 @@ im = ax[1, 1].pcolormesh(
 cb = plt.colorbar(
     im,
     aspect=10,
-    ticks=[-0.5, 0, 0.5],
+    ticks=[-0.25, 0, 0.25],
 )
 cb.set_label(r"$\sigma_{xy}$ (kPa)", labelpad=labelpad)
 # cb.set_ticks([0, p.repose_angle, 2 * p.repose_angle])
