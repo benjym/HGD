@@ -44,7 +44,11 @@ class dict_to_class:
         print(f"Optimal condition: ny = {ny}.")
 
     def set_defaults(self):
-        defaults_path = resource_path("json/defaults.json5")
+        # get current directory
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        ## Now go up one directory and then into the json directory
+        json_dir = os.path.join(current_dir, "..", "json")
+        defaults_path = resource_path(f"{json_dir}/defaults.json5")
         with open(defaults_path, "r") as f:
             defaults_dict = json5.loads(f.read())
 

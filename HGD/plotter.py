@@ -84,10 +84,11 @@ def size_colormap():
     return orange_blue_cmap
 
 
-global fig, summary_fig, triple_fig
+global fig, summary_fig, triple_fig, quad_fig
 fig = plt.figure(1)
 summary_fig = plt.figure(2)
 triple_fig = plt.figure(3)
+quad_fig = plt.figure(4)
 
 replacements = {
     "repose_angle": "φ",
@@ -151,7 +152,7 @@ def replace_strings(text, replacements):
 
 
 def set_plot_size(p):
-    global fig, summary_fig, triple_fig
+    global fig, summary_fig, triple_fig, quad_fig
 
     # wipe any existing figures
     for i in plt.get_fignums():
@@ -159,7 +160,8 @@ def set_plot_size(p):
 
     fig = plt.figure(1, figsize=[p.nx / _dpi, p.ny / _dpi])
     triple_fig = plt.figure(2, figsize=[p.nx / _dpi, 3 * p.ny / _dpi])
-    summary_fig = plt.figure(3)
+    quad_fig = plt.figure(3, figsize=[p.nx / _dpi, 4 * p.ny / _dpi])
+    summary_fig = plt.figure(4)
 
 
 def check_folders_exist(p):
@@ -529,10 +531,11 @@ def plot_stress(s, sigma, last_swap, p):
     pressure = stress.get_pressure(sigma, p, last_swap)
     deviatoric = stress.get_deviatoric(sigma, p, last_swap)
     fr = stress.get_friction_angle(sigma, p, last_swap)
+    diff = stress.get_difference(sigma, p, last_swap)
 
-    plt.figure(triple_fig)
+    plt.figure(quad_fig)
     plt.clf()
-    plt.subplot(311)
+    plt.subplot(411)
     plt.pcolormesh(
         p.x,
         p.y,
@@ -547,7 +550,7 @@ def plot_stress(s, sigma, last_swap, p):
     if p.plot_colorbar:
         plt.colorbar(shrink=0.7, location="top", pad=0.05)
 
-    plt.subplot(312)
+    plt.subplot(412)
     plt.pcolormesh(p.x, p.y, deviatoric.T, vmin=0, vmax=deviatoric.max())
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
@@ -555,8 +558,16 @@ def plot_stress(s, sigma, last_swap, p):
     if p.plot_colorbar:
         plt.colorbar(shrink=0.8, location="top", pad=0.01)
 
-    plt.subplot(313)
+    plt.subplot(413)
     plt.pcolormesh(p.x, p.y, fr.T, vmin=0, vmax=2 * p.repose_angle, cmap=bwr2)
+    plt.axis("off")
+    plt.xlim(p.x[0], p.x[-1])
+    plt.ylim(p.y[0], p.y[-1])
+    if p.plot_colorbar:
+        plt.colorbar(shrink=0.8, location="top", pad=0.01)
+
+    plt.subplot(414)
+    plt.pcolormesh(p.x, p.y, diff.T)
     plt.axis("off")
     plt.xlim(p.x[0], p.x[-1])
     plt.ylim(p.y[0], p.y[-1])

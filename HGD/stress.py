@@ -100,16 +100,18 @@ def harr_substep(s, last_swap, p):
 
     sigma = np.zeros([p.nx, p.ny, 3])  # sigma_xy, sigma_yy, sigma_xx
     # NOTE: NOT CONSIDERING INCLINED GRAVITY
-    weight_of_one_cell = p.solid_density * p.dx * p.g  # * p.dy
+    weight_of_one_cell = p.solid_density * p.dx * p.g * p.dy
 
     nu = HGD.operators.get_solid_fraction(s)
 
     top = get_top(nu, p)
     depth = get_depth(nu, p)
+    # depth *= depth > 0  # set negative values to zero
+
     D = K * depth
 
     for j in range(p.ny - 2, -1, -1):
-        this_weight = nu[:, j] * weight_of_one_cell
+        this_weight_per_unit_length = nu[:, j] * weight_of_one_cell / p.dx  # convert from force to stress
 
         # F_{x, z} = F_{x, z+\Delta z} + w \Delta z
         # + \frac{\Delta z}{\Delta x^2} D \left( F_{x+\Delta x, z+\Delta z} - 2F_{x, z+\Delta z} + F_{x-\Delta x, z+\Delta z} \right).
@@ -123,13 +125,13 @@ def harr_substep(s, last_swap, p):
                 up = sigma[:, j + 1, 1]
             else:
                 up = sigma_inc
-            right_up = np.roll(up, 1, axis=0)
-            left_up = np.roll(up, -1, axis=0)
+            right_up = np.roll(D[:, j] * up, 1, axis=0)
+            left_up = np.roll(D[:, j] * up, -1, axis=0)
 
             sigma_inc = (
-                this_weight / nsubsteps
+                this_weight_per_unit_length / nsubsteps
                 + up
-                + (p.dy / nsubsteps) / (p.dx**2) * D[:, j] * (left_up - 2 * up + right_up)
+                + (p.dy / nsubsteps) / (p.dx**2) * (left_up - 2 * up * D[:, j] + right_up)
             )
             sigma_inc[nu[:, j] == 0] = 0
 
@@ -142,13 +144,12 @@ def harr_substep(s, last_swap, p):
 
     Depth = get_depth(nu, p)
 
-    # sigma_xy = - D_sigma * d/dx (sigma_yy)
-    dsigma_dx, _ = np.gradient(sigma[:, :, 1], p.dx, p.dy)
-    sigma[:, :, 0] = -K * Depth * dsigma_dx
+    # sigma_xy = - d/dx (D_sigma* sigma_yy)
+    d_Dsigma_dx, d_Dsigma_dy = np.gradient(K * Depth * sigma[:, :, 1], p.dx, p.dy)
+    sigma[:, :, 0] = -d_Dsigma_dx
 
     # sigma_xx = d/dy ( D_sigma * sigma_yy)
-    _, d_Dsigma_dy = np.gradient(K * Depth * sigma[:, :, 1], p.dx, p.dy)
-    sigma[:, :, 2] = -d_Dsigma_dy
+    sigma[:, :, 2] = -d_Dsigma_dy  # negative sign because y is decreasing
     return sigma
 
 
@@ -448,6 +449,17 @@ def get_friction_angle(sigma, p, last_swap=None):
         friction_angle = np.degrees(np.arcsin(radius / sigma_m))
 
     return friction_angle
+
+
+def get_difference(sigma, p, last_swap=None):
+    sigma_xy = sigma[:, :, 0]
+    sigma_yy = sigma[:, :, 1]
+    sigma_xx = sigma[:, :, 2]
+
+    sigma_1 = 0.5 * (sigma_yy + sigma_xx) + np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
+    sigma_3 = 0.5 * (sigma_yy + sigma_xx) - np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
+
+    return sigma_1 - sigma_3
 
 
 def get_top(nu, p):
