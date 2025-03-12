@@ -104,8 +104,8 @@ def harr_substep(s, last_swap, p):
 
     nu = HGD.operators.get_solid_fraction(s)
 
-    top = get_top(nu, p)
-    depth = get_depth(nu, p)
+    top = HGD.operators.get_top(nu, p)
+    depth = HGD.operators.get_depth(nu, p)
     # depth *= depth > 0  # set negative values to zero
 
     D = K * depth
@@ -142,7 +142,7 @@ def harr_substep(s, last_swap, p):
             half_pad_width = int(p.pad_width / p.dx) // 2
             sigma[p.nx // 2 - half_pad_width : p.nx // 2 + half_pad_width + 1, j, 1] = p.point_load * p.t
 
-    Depth = get_depth(nu, p)
+    Depth = HGD.operators.get_depth(nu, p)
 
     # sigma_xy = - d/dx (D_sigma* sigma_yy)
     d_Dsigma_dx, d_Dsigma_dy = np.gradient(K * Depth * sigma[:, :, 1], p.dx, p.dy)
@@ -165,7 +165,7 @@ def harr_implicit(s, last_swap, p):
     # Loop over rows (z-direction, top to bottom)
     for j in range(p.ny - 2, -1, -1):
         K = 1
-        depth = get_depth(nu, p)
+        depth = HGD.operators.get_depth(nu, p)
         D = K * depth
 
         # Tridiagonal coefficients
@@ -460,61 +460,3 @@ def get_difference(sigma, p, last_swap=None):
     sigma_3 = 0.5 * (sigma_yy + sigma_xx) - np.sqrt(((sigma_yy - sigma_xx) / 2) ** 2 + sigma_xy**2)
 
     return sigma_1 - sigma_3
-
-
-def get_top(nu, p):
-    """
-    Determine the top void in each column of a 2D array.
-
-    Parameters:
-    nu (ndarray): A 2D numpy array where each element indicates the presence (0) or absence (non-zero) of a void.
-    p (object): An object with attributes `nx` (number of columns) and `ny` (number of rows).
-
-    Returns:
-    ndarray: A 1D numpy array of integers where each element represents the row index of the top void in the corresponding column.
-             If a column has no voids, the value will be `p.ny - 1`.
-    """
-    solid = nu > 0
-    # now get top void in each column
-    top = np.zeros(p.nx)
-    for i in range(p.nx):
-        for j in range(p.ny - 1, 0, -1):
-            if solid[i, j]:
-                top[i] = j
-                break
-    # print(f"Top voids: {top}")
-    return top.astype(int)
-
-
-def get_depth(nu, p, debug=False):
-    """
-    Calculate the depth array based on the top indices and y-coordinates.
-
-    Parameters:
-    nu : array-like
-        An array or list of values used to determine the top indices.
-    p : object
-        An object containing the attributes 'nx', 'ny', and 'y'. 'nx' and 'ny' are the dimensions
-        of the grid, and 'y' is an array of y-coordinates.
-
-    Returns:
-    numpy.ndarray
-        A 2D array of shape (p.nx, p.ny) representing the depth values.
-    """
-    top = get_top(nu, p)
-    depth = np.zeros([p.nx, p.ny])
-
-    for i in range(p.nx):
-        depth[i, :] = p.y[top[i]] - p.y
-
-    if debug:
-        import matplotlib.pyplot as plt
-
-        plt.figure(77)
-        plt.ion()
-        plt.clf()
-        plt.pcolormesh(p.x, p.y, depth.T)
-        plt.colorbar()
-        plt.pause(0.01)
-
-    return depth

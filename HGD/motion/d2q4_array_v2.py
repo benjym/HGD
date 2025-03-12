@@ -138,7 +138,36 @@ def move_voids(
             unstable = np.logical_or(unstable, ~slope_stable)
             # P[slope_stable] = 0
 
-        swap_possible = np.logical_and(unstable, ~np.isnan(dest))
+        filled_dest = ~np.isnan(dest)
+        swap_possible = np.logical_and(unstable, filled_dest)
+
+        # # Identify potential swaps (ignoring whether dest is initially filled)
+        # swap_possible = unstable.copy()
+        # if axis == 1:  # vertical
+        #     swap_possible[:, -1, :] = False  # no swapping up from top row
+        # elif axis == 0:  # horizontal
+        #     if d > 0:  # left
+        #         swap_possible[:d, :, :] = False  # no swapping left from leftmost column
+        #     else:  # right
+        #         swap_possible[d:, :, :] = False  # no swapping right from rightmost column
+
+        # # Determine if dest is filled initially or will be filled due to other swaps
+        # filled_initially = ~np.isnan(dest)
+        # will_fill_due_to_swap = np.zeros_like(filled_initially, dtype=bool)
+
+        # # Temporarily record intended destinations
+        # potential_swap_indices = np.argwhere(swap_possible)
+        # potential_dest_indices = potential_swap_indices.copy()
+        # potential_dest_indices[:, axis] -= d
+
+        # # Mark all destinations targeted by swaps
+        # will_fill_due_to_swap[
+        #     potential_dest_indices[:, 0], potential_dest_indices[:, 1], potential_dest_indices[:, 2]
+        # ] = True
+
+        # # Allow swaps if the destination cell is filled initially OR will become filled
+        # swap_possible &= filled_initially | will_fill_due_to_swap
+
         P = np.where(swap_possible, P, 0)
         swap = np.random.rand(*P.shape) < P
 

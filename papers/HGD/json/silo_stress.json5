@@ -1,0 +1,43 @@
+{
+    aspect_ratio_y : 1,  // ny = aspect_ratio * nx
+    nx : 50, // width
+    nm : 50,
+
+    // geometry
+    H : 1.0, // (m)
+    boundaries : ['central_outlet'],
+
+    // material properties
+    repose_angle : 30, // (degrees)5
+    gsd_mode : 'mono',
+    s_m : 0.003, // minimum particle size (m)
+    s_M : 0.003, // maximum particle size (m)
+    nu_cs : 0.5,
+    alpha : 4.0,
+    half_width : 0,
+    outlet_nu : 0.3,
+    refill: false,
+    // inertia: "derived",
+    // inertia : "time_averaging",
+    inertia : false,
+
+    advection_model : 'stress', // 'average_size', 'freefall' or 'stress'
+    
+    // initial condition:
+    fill_ratio : 1.0,
+    nu_fill : 0.5,
+    IC_mode : "bottom",
+    
+    // saving
+    save_inc : 100,
+    t_f : 20,  // s
+    plot : ['nu','stress','sigma_xx','sigma_yy','sigma_xy','U_mag'],
+    videos : [],
+    save : ['s','nu','velocity'],
+    mask_s_bar : false,
+
+    // parallel
+    max_workers : 5, // leave some cores on my poor little laptop
+
+    // show_optimal_resolution : true,
+}

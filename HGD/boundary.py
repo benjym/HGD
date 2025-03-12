@@ -1,4 +1,6 @@
 import numpy as np
+import HGD.operators
+from scipy.stats import truncnorm
 
 
 def update(p, state):
@@ -457,7 +459,7 @@ def place_on_top(
 #     return u, v, s
 
 
-def close_voids(s, u, v, c, T, last_swap, chi, sigma, outlet):
+def close_voids(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     """
     Not implemented. Do not use.
     """
@@ -470,3 +472,120 @@ def close_voids(s, u, v, c, T, last_swap, chi, sigma, outlet):
                     #     v[i, j:] -= 1
                     #     s[i, j:, k] = np.roll(s[i, j:, k], -1)
     return s, u, v, c, T, last_swap, chi, sigma, outlet
+
+
+def silo_fluid(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
+    nu = HGD.operators.get_solid_fraction(s)
+    top = HGD.operators.get_top(nu, p, nu_lim=p.nu_cs)
+
+    # Particles fall a height H in t_f = A/s^2, A = (18\mu H)/(g \Delta rho)
+    # If a total amount of material M is discharged into the system over a time period T, then the average mass flow rate is M/T
+    # The mass flow rate of a particular size \dot{m}(s,t) = M/T \times f(s,t) \times \mathcal{H}(t-Hs^2/A)\mathcal{H}(T+Hs^2/A-t), where f(s,t) is the fraction of material of size s at time t, and the two heaviside functions ensure that the material is only discharged between t_f and T+t_f.
+
+    # s_bins = np.linspace(p.s_m, p.s_M, p.nm + 1) # should be defined in initial.py for each case
+    # f = initial.gsd(p, s_bins)
+    s_bins = np.array([p.s_m, p.s_M])  # HACK: JUST BIDISPERSE
+    f = np.array([0.5, 0.5])  # HACK: ASSUME EQUAL WEIGHTS
+
+    A = (18 * p.dynamic_viscosity * p.H) / (p.g * p.delta_rho)
+    t_f = A / s_bins**2
+    fill_rate = p.fill_fraction / p.charge_duration * p.nu_cs[0, 0] * p.nx * p.ny * p.nm
+    m = fill_rate * f * np.heaviside(p.t - t_f, 1) * np.heaviside(p.charge_duration + t_f - p.t, 1)
+
+    # Now for each s calculate the distance from the centre it is spread to
+    u_y = s_bins**2 * p.delta_rho * p.g / (18 * p.dynamic_viscosity)
+    tau_p = s_bins**2 * p.solid_density / (18 * p.dynamic_viscosity)
+    tau_f = p.H / u_y
+    Stk = tau_p / tau_f
+    u_x = p.aspect_ratio_y * u_y
+    W_crit = u_x * t_f.mean()  # distance from centre of silo to where particles are spread to
+
+    A = 1  # fitting parameter for mu
+    B = 0.5  # fitting parameter for sigma
+
+    if p.tstep == 0:
+        print(f"\nTime: {p.t}, t_f: {t_f}, m: {m}, W_crit: {W_crit}")
+
+    for n in range(len(s_bins)):
+        # N = int(round(m[n] * p.dt))  # target value we want to fill across whole row
+        N = np.random.poisson(m[n] * p.dt)  # target value we want to fill across whole row
+        # mu = W_crit[n] / (Stk[n] ** A + 1)
+        mu = 0  # i never want PILES at the corners and nothing in the middle??
+
+        sigma = (p.H - p.fill_opening_width) / (Stk[n] ** B + 1) + p.fill_opening_width
+        a, b = (-p.W / 2.0 - mu) / sigma, (p.W / 2.0 - mu) / sigma
+
+        # Compute the truncated normal PDF
+        pdf_values = truncnorm.pdf(p.x, a, b, loc=mu, scale=sigma)
+
+        # Normalize to get discrete probabilities
+        discrete_probs = pdf_values / np.sum(pdf_values)
+        to_fill = np.random.multinomial(N, discrete_probs)
+
+        # for i in range(p.nx):
+        #     j = top[i]
+
+        #     sigma = (p.H - p.fill_opening_width) / (Stk[n] ** B + 1) + p.fill_opening_width
+        #     a1, b1 = (-p.W / 2.0 - mu) / sigma, (p.W / 2.0 - mu) / sigma
+        #     a2, b2 = (-p.W / 2.0 + mu) / sigma, (p.W / 2.0 + mu) / sigma
+
+        #     to_fill = int(
+        #         round(
+        #             N
+        #             # / 2.0
+        #             * p.dx
+        #             * (
+        #                 truncnorm(a=a1, b=b1, loc=mu, scale=sigma).pdf(p.x[i])
+        #                 # + truncnorm(a=a2, b=b2, loc=-mu, scale=sigma).pdf(p.x[i])
+        #             )
+        #         )
+        #     )
+        #     to_fill_total += to_fill
+
+        # debug = False
+        # if debug:
+
+        #     import matplotlib.pyplot as plt
+
+        #     plt.figure(32)
+        #     plt.clf()
+        #     plt.title(n)
+        #     plt.ion()
+        #     plt.plot(
+        #         p.x,
+        #         truncnorm.pdf(p.x, a1, b1, loc=mu, scale=sigma),
+        #         "b-",
+        #     )
+        #     plt.plot(
+        #         p.x,
+        #         truncnorm.pdf(p.x, a2, b2, loc=-mu, scale=sigma),
+        #         "r-",
+        #     )
+        #     plt.pause(0.01)
+
+        for i in range(p.nx):
+            j = top[i]
+            s = place_at(s, i, j, p, to_fill[i], s_bins, n)
+        # if N > 0:
+        #     print(
+        #         f"Filled {to_fill_total} voids with {s_bins[n]}. Target was {N} ({to_fill_total/N*100:.2f}%)"
+        #     )
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
+
+
+def place_at(s, i, j, p, to_fill, s_bins, n):
+    # Now actually fill the voids
+    while to_fill > 0:
+        remaining_voids = p.nu_cs[i, j] - HGD.operators.get_solid_fraction(s, [i, j])
+        if remaining_voids > 0:
+            available_k = np.nonzero(np.isnan(s[i, j, :]))[0]
+            if len(available_k) > 0:
+                num = min(to_fill, len(available_k), int(remaining_voids * p.nm))
+                chosen_k = np.random.choice(available_k, size=num, replace=False)
+                s[i, j, chosen_k] = s_bins[n]
+                to_fill -= len(chosen_k)
+        else:
+            j += 1
+            if j >= p.ny:
+                raise ValueError("Not enough space to fill")
+    return s

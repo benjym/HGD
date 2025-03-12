@@ -1,0 +1,33 @@
+{
+    // resolution
+    nx : 25, // width
+    aspect_ratio_y : 2,  // ny = aspect_ratio * nx
+    // aspect_ratio_m : 0.5,    // nm = aspect_ratio * nx
+    nm : 100,
+
+    // geometry
+    H : 1, // (m)
+
+    // material properties
+    repose_angle : 30, // (degrees)
+    gsd_mode : 'mono',
+    s_m : 0.001, // minimum particle size (m)
+    s_M : 0.001, // maximum particle size (m)
+    nu_cs : 0.5,
+    // alpha : 1,
+
+    motion_model : "d2q4_cpp",
+    
+    // initial condition:
+    fill_ratio : 0.25,
+    nu_fill : [0.1,0.5,0.9],
+    IC_mode : "top",
+    
+    // saving
+    save_inc : 10,
+    t_f : 3.0,  // s
+    plot : ['nu'],  //,'stable'],
+    videos : ['nu'],
+    save : ['nu'],
+    mask_s_bar : false
+}

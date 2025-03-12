@@ -137,7 +137,7 @@ def time_step(p, state):
     if len(p.cycles) > 0:
         p = cycles.update(p, state)
 
-    u, v, s, c, T, chi, last_swap = p.move_voids(u, v, s, p, c=c, T=T, chi=chi, last_swap=last_swap)
+    u, v, s, c, T, chi, last_swap = p.move_voids(u, v, s, p, 0, c, T, chi, last_swap)
 
     state = (
         s,
@@ -272,4 +272,4 @@ if __name__ == "__main__":
     folderNames.extend(results)
 
     if len(all_sims) > 1:
-        plotter.stack_videos(folderNames, dict["input_filename"], p_init.videos)
+        plotter.stack_videos(folderNames, dict["input_filename"], p_init)

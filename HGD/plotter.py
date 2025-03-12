@@ -669,29 +669,15 @@ def save_permeability(s, p):
     )
 
 
-def plot_s(s, p, t, *args):
+def plot_s(s, p, *args):
     plt.figure(fig)
     plt.clf()
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=RuntimeWarning)
-        s_plot = np.nanmean(s, axis=2).T
-    s_plot = np.ma.masked_where(np.isnan(s_plot), s_plot)
-    if p.mask_s_bar:
-        nu = operators.get_solid_fraction(s).T
-        s_plot = np.ma.masked_where(nu < p.nu_cs / 4.0, s_plot)
 
-    if p.gsd_mode == "fbi":
-        plt.pcolormesh(
-            p.x,
-            p.y,
-            s_plot,
-            cmap=orange_blue_cmap,
-            vmin=p.s_m - (p.s_m / 100),
-            vmax=(p.Fr * p.s_M) + ((p.Fr * p.s_M) / 100),
-        )
-    else:
-        plt.pcolormesh(p.x, p.y, s_plot, cmap=orange_blue_cmap, vmin=p.s_m, vmax=p.s_M)
-        # plt.colorbar()
+    s_bar = operators.get_average(s)
+    nu = operators.get_solid_fraction(s)
+    alpha = np.clip(nu / p.nu_cs, 0, 1)
+
+    plt.pcolormesh(p.x, p.y, s_bar.T, cmap=orange_blue_cmap, vmin=p.s_m, vmax=p.s_M, alpha=alpha.T)
 
     if p.internal_geometry:
         for i in p.internal_geometry["perf_pts"]:
@@ -1037,31 +1023,45 @@ def make_video(p):
         print("ffmpeg not installed, cannot make videos")
 
 
-def stack_videos(paths, name, videos):
+def stack_videos(paths, name, p):
+    videos = p.videos
+    heights = p.ny
     if is_ffmpeg_installed:
-        for video in videos:
+        if isinstance(heights, int):
+            heights = [heights] * len(videos)
+        max_height = 4 * max(heights)  # Find the maximum height among all videos
+
+        for video, height in zip(videos, heights):
             cmd = [
                 "ffmpeg",
                 "-y",
             ]
-            for path in paths:
+            for i, path in enumerate(paths):
                 cmd.extend(["-i", f"{path}/{video}_video.mp4"])
-            pad_string = ""
+
+            filter_complex = ""
             for i in range(len(paths)):
-                pad_string += f"[{i}]pad=iw+5:color=black[left];[left][{i+1}]"
+                filter_complex += f"[{i}:v]scale=-1:{max_height},setpts=PTS-STARTPTS[v{i}];"
+
+            input_labels = "".join(f"[v{i}]" for i in range(len(paths)))
+            filter_complex += f"{input_labels}hstack=inputs={len(paths)}[stacked]"
 
             cmd.extend(
                 [
-                    *_video_encoding,
-                    # "-c:v", "libx264", "-pix_fmt", "yuv420p",
                     "-filter_complex",
-                    # f"{pad_string}hstack=inputs={len(paths)}",
-                    f"hstack=inputs={len(paths)}",
+                    filter_complex,
+                    "-map",
+                    "[stacked]",
+                    "-c:v",
+                    "libx264",
+                    "-pix_fmt",
+                    "yuv420p",
                     f"{video}_videos.mp4",
                 ]
             )
+
             result = subprocess.run(cmd, capture_output=True, text=True)
-            if not result.returncode == 0:
+            if result.returncode != 0:
                 print(f"Error stacking first pass {video} videos")
                 print("Error message:", result.stderr)
 
@@ -1069,17 +1069,29 @@ def stack_videos(paths, name, videos):
             cmd = ["ffmpeg", "-y"]
             for video in videos:
                 cmd.extend(["-i", f"{video}_videos.mp4"])
+
+            filter_complex = ""
+            for i in range(len(videos)):
+                filter_complex += f"[{i}:v]scale=-1:{max_height},setpts=PTS-STARTPTS[v{i}];"
+
+            input_labels = "".join(f"[v{i}]" for i in range(len(videos)))
+            filter_complex += f"{input_labels}vstack=inputs={len(videos)}[final]"
+
             cmd.extend(
                 [
-                    *_video_encoding,
-                    # "-c:v", "libx264", "-pix_fmt", "yuv420p",
                     "-filter_complex",
-                    f"vstack=inputs={len(videos)}",
+                    filter_complex,
+                    "-map",
+                    "[final]",
+                    "-c:v",
+                    "libx264",
+                    "-pix_fmt",
+                    "yuv420p",
                     f"output/{name}.mp4",
                 ]
             )
-            result = subprocess.run(cmd, capture_output=True, text=True)
 
+            result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode == 0:
                 cmd = ["rm"]
                 for video in videos:

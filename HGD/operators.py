@@ -252,7 +252,10 @@ def locally_solid(s, i, j, p):
     This function calculates the solid fraction at the specified point (i, j) in the simulation grid. It then compares this value to the critical solid fraction threshold (nu_cs) defined in the parameter object p. If the solid fraction at the point is greater than or equal to nu_cs, the function returns True, indicating the point is considered locally solid. Otherwise, it returns False.
     """
     nu = get_solid_fraction(s, [i, j])
-    return nu >= p.nu_cs
+    if isinstance(p.nu_cs, np.ndarray):
+        return nu >= p.nu_cs[i, j]
+    else:
+        return nu >= p.nu_cs
 
 
 def empty_nearby(nu, p):
@@ -272,3 +275,61 @@ def empty_nearby(nu, p):
     nu_max = maximum_filter(nu, footprint=kernel)  # , mode='constant', cval=0.0)
 
     return nu_max == 0
+
+
+def get_top(nu, p, nu_lim=0):
+    """
+    Determine the top void in each column of a 2D array.
+
+    Parameters:
+    nu (ndarray): A 2D numpy array where each element indicates the presence (0) or absence (non-zero) of a void.
+    p (object): An object with attributes `nx` (number of columns) and `ny` (number of rows).
+
+    Returns:
+    ndarray: A 1D numpy array of integers where each element represents the row index of the top void in the corresponding column.
+             If a column has no voids, the value will be `p.ny - 1`.
+    """
+    solid = nu > nu_lim
+    # now get top void in each column
+    top = np.zeros(p.nx)
+    for i in range(p.nx):
+        for j in range(p.ny - 1, 0, -1):
+            if solid[i, j]:
+                top[i] = j
+                break
+    # print(f"Top voids: {top}")
+    return top.astype(int)
+
+
+def get_depth(nu, p, debug=False):
+    """
+    Calculate the depth array based on the top indices and y-coordinates.
+
+    Parameters:
+    nu : array-like
+        An array or list of values used to determine the top indices.
+    p : object
+        An object containing the attributes 'nx', 'ny', and 'y'. 'nx' and 'ny' are the dimensions
+        of the grid, and 'y' is an array of y-coordinates.
+
+    Returns:
+    numpy.ndarray
+        A 2D array of shape (p.nx, p.ny) representing the depth values.
+    """
+    top = get_top(nu, p)
+    depth = np.zeros([p.nx, p.ny])
+
+    for i in range(p.nx):
+        depth[i, :] = p.y[top[i]] - p.y
+
+    if debug:
+        import matplotlib.pyplot as plt
+
+        plt.figure(77)
+        plt.ion()
+        plt.clf()
+        plt.pcolormesh(p.x, p.y, depth.T)
+        plt.colorbar()
+        plt.pause(0.01)
+
+    return depth

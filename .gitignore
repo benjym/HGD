@@ -6,3 +6,5 @@ HGD.egg-info/
 output/
 .venv/
 build/
+.vscode/
+venv/

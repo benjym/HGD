@@ -16,7 +16,7 @@
     nu_cs : 0.5,
     alpha : 1.0,
 
-    inertia: [true, false],
+    inertia: [true, 'time-averaging', 'derived'],
     // inertia: true,
     
     // initial condition:
