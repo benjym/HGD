@@ -218,7 +218,8 @@ class dict_to_class:
             self.nu_cs[np.isnan(self.nu_cs)] = self.nu_1
             self.nu_cs[self.nu_cs < self.nu_1] = self.nu_1
         else:
-            self.nu_cs = np.full([self.nx, self.ny], self.nu_1)
+            # self.nu_cs = np.full([self.nx, self.ny], self.nu_1)
+            self.nu_cs = self.nu_1
 
     def process_charge_discharge_csv(self, array):
         self.cycles = []
