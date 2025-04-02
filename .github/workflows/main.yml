@@ -21,6 +21,7 @@ jobs:
       # - run: pip install pycco
       # - run: pycco void-migration/*.py
       # - run: touch docs/.nojekyll
+      - run: sudo apt install -y libeigen3-dev
       - run: pip install -e .
       - run: mkdocs gh-deploy --force
       - run: python -m unittest
