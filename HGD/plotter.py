@@ -375,7 +375,7 @@ def plot_gamma_dot(s, chi, p):
 
 
 def plot_chi(chi, p):
-    plt.figure(fig, layout="constrained")
+    plt.figure(fig)  # , layout="constrained")
     plt.clf()
     plt.pcolormesh(p.x, p.y, chi.T)
     plt.axis("off")
@@ -737,7 +737,7 @@ def plot_relative_nu(s, p):
     nu = 1 - np.mean(np.isnan(s), axis=2).T
     nu /= p.nu_cs
     if p.internal_geometry:
-        nu = np.ma.masked_where(p.boundary.T, nu)
+        nu = np.ma.masked_where(p.boundary_mask.T, nu)
     nu = np.ma.masked_where(nu == 0, nu)
     plt.clf()
     plt.pcolormesh(p.x, p.y, nu, cmap=bwr, vmin=0, vmax=2)
@@ -803,7 +803,7 @@ def plot_u(s, u, v, p):
     U = np.sqrt(u**2 + v**2)
     plt.clf()
     plt.pcolormesh(
-        p.x, p.y, np.ma.masked_where(p.boundary.T, U), vmin=0, vmax=np.amax(np.abs(U)), cmap=inferno
+        p.x, p.y, np.ma.masked_where(p.boundary_mask.T, U), vmin=0, vmax=np.amax(np.abs(U)), cmap=inferno
     )
     if p.internal_geometry:
         if p.internal_geometry["perf_plate"]:

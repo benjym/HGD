@@ -1,12 +1,12 @@
 {
     // resolution
-    nx : 20, // width
-    ny : 20, // height
+    nx : 50, // width
+    ny : 50, // height
     nm : 20,  // number of simultaneous simulations
 
     // geometry
     H : 1, // (m)
-    P_stab : 0.01,
+    P_stab : 0.5,
 
     // material properties
     repose_angle : 30, // (degrees)
@@ -19,7 +19,8 @@
     nu_fill : 0.5,
     IC_mode : "left_column",
 
-    inertia: ['derived', 'time_averaging', false],
+    motion_model : "d2q4_cpp",
+    inertia: [false, true],
     // inertia: true,
     
     plot : ['nu', 'U_mag', 'chi'],
@@ -28,5 +29,5 @@
 
     // saving
     saves : 20,
-    t_f : 50,  // s
+    t_f : 1,  // s
 }

@@ -1,0 +1,36 @@
+{
+    // resolution
+    nx : 5, // width
+    aspect_ratio_y : 50,  // ny = aspect_ratio * nx
+    // aspect_ratio_m : 0.5,    // nm = aspect_ratio * nx
+    nm : 1000,
+
+    // geometry
+    H : 1, // (m)
+
+    // material properties
+    repose_angle : 30, // (degrees)
+    gsd_mode : 'bi',
+    s_m : 0.001, // minimum particle size (m)
+    s_M : 0.001, // maximum particle size (m)
+    nu_cs : 0.5,
+
+    // motion_model : ["d2q4_cpp","d2q4_array_v2"],
+    motion_model : "d2q4_cpp",
+    
+    // initial condition:
+    fill_ratio : 0.25,
+    // nu_fill : [0.2,0.5,0.8],
+    nu_fill : 1, // need to start off full for layers filling mode
+    nu_fill_1 : 0.8,
+    nu_fill_2 : 0.1,
+    IC_mode : "layers",
+    
+    // saving
+    save_inc : 1,
+    t_f : 2.0,  // s
+    plot : ['nu', 's'],  //,'stable'],
+    videos : ['nu', 's'],
+    save : ['nu'],
+    mask_s_bar : false
+}

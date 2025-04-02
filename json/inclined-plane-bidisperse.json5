@@ -1,34 +1,42 @@
 {
     // resolution
-    nx : 51,
+    nx : 21,
     ny : 51,
     nm : 21,  // number of simultaneous simulations
 
     // geometry
     H : 1, // m
-    theta : 45,  // angle of gravity (degrees)
+    // theta : 45,  // angle of gravity (degrees)
     boundaries : ["slope"],
     cyclic_BC : true,
-    Tg : 0.00001, 
+    cyclic_BC_y_angle : 30,
+    void_introduction_rate : 0.05, 
     
     // material properties
-    mu : 0.5,  // friction angle
     s_m : 0.001, // minimum particle size (m)
     s_M : 0.01, // maximum particle size (m)
     gsd_mode : 'bi',
     nu_cs : 0.5,
+
+    masks : ["slope"],
+    inertia : false,
+
+    motion_model : 'd2q4_cpp',
     
     // initial conditions
-    IC_mode : "top",  // just leave empty space at the top
-    fill_ratio : 0.8,
+    // IC_mode : "bottom",  // just leave empty space at the top
+    IC_mode : "slope",
+    fill_ratio : 0.7,
     nu_fill : 0.5,
 
     // temporal stuff
-    t_f : 2.0,  // final time
+    t_f : 20.0,  // final time
     
     // saving
-    save_inc : 1,  // how often to save
+    save_inc : 100,  // how often to save
+    plot : ['nu', 's', 'U_mag', 'chi'],
+    videos : ['nu', 's', 'U_mag', 'chi'],
 
     // testing area
-    close_voids : false,
+    // close_voids : false,
 }

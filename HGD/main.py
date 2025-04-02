@@ -12,6 +12,7 @@ from HGD import thermal
 from HGD import initial
 from HGD import stress
 from HGD import boundary
+from HGD import mask
 
 
 def init(p, cycles=None):
@@ -44,7 +45,8 @@ def init(p, cycles=None):
 
     c = initial.set_concentration(s, p.X, p.Y, p)
 
-    initial.set_boundary(s, p.X, p.Y, p)
+    # initial.set_boundary(s, p.X, p.Y, p)
+    p = mask.update(p, s)
 
     if hasattr(p, "temperature"):
         T = p.temperature["inlet_temperature"] * np.ones_like(s)
@@ -182,7 +184,7 @@ def time_march(p, cycles=None):
 
     state = init(p, cycles)
     if p.t_f is not None:
-        for tstep in tqdm(range(1, p.nt), leave=False, desc="Time", position=p.concurrent_index + 1):
+        for tstep in tqdm(range(1, p.nt), leave=False, desc=p.this_sim, position=p.concurrent_index + 1):
             state = time_step(p, state)
     else:
         chi_progress_bar = tqdm(total=1.0, leave=False, desc=p.this_sim, position=p.concurrent_index + 1)

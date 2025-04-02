@@ -11,8 +11,10 @@
     theta : 0, // angle of gravity (0 is vertical, degrees)
     g : 9.81, // gravitational acceleration (m/s^2)
     boundaries : [], // "central_outlet", "multiple_outlets", "slope", "mara" or "pour"
+    masks: [], // list of masks to be used in the simulation
     internal_geometry : false, // true if internal geometry is present, currently defined only for a single case
     cyclic_BC : false, // true if cyclic BCs are used horizontally
+    cyclic_BC_y_angle : 0, // angle of the cyclic BCs (degrees)
     refill : false, // should the particles come back in the top if they leave the bottom
     outlet_rate : 1.0, // proportion of each timestep that the outlet is open
     outlet_nu : 0, // solid fraction of the particles in the outlet

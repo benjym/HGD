@@ -1,12 +1,12 @@
 {
     // resolution
-    nx : 100, // width
+    nx : 200, // width
     // nx : 20,
     
     // geometry
     H : 1, // (m)
     aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
-    nm : 100,
+    nm : 200,
 
     motion_model : "d2q4_cpp",
 

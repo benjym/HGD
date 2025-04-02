@@ -1,0 +1,45 @@
+{
+    // resolution
+    nx : 50,
+    aspect_ratio_y : [2, 1, 0.5],  // ny = aspect_ratio * nx
+    // aspect_ratio_y : 1,
+    aspect_ratio_m : 2,  // nm = aspect_ratio * nx
+
+    // geometry
+    H : [0.1,1.0,10.0], // m
+    theta : 0.0,  // angle of gravity - keep set to zero
+    // refill : true,  // should particles go back to top or not
+    boundaries : ["silo_fluid"],
+    
+    // material properties
+    alpha : 4.0,
+    repose_angle : 30,  // friction angle, degrees
+    half_width : 1,  // half width of outlet in grid points
+    outlet_rate : 1,  // rate of outlet opening
+    P_stab : 0.5,
+
+    s_m : 50e-6, // minimum particle size (m)
+    s_M : 150e-6, // maximum particle size (m)
+    gsd_mode : 'bi',
+    nu_cs : 0.5,  // critical density above which motion stops
+
+    // initial conditions
+    IC_mode : "empty",  // just leave empty space at the top
+
+    // temporal stuff
+    t_f : 360,  // final time
+    // t_f : 0.1,
+    solid_density : 2700,  // kg/m^3
+
+    // total_charge : 2, // kg
+    fill_fraction : 0.5,  // fraction of silo filled (at nu_cs)
+    charge_duration : 300, //  s
+    delta_rho : 2700, //  kg/m^3, assume air has zero density
+    dynamic_viscosity : 1e-5, //  air viscosity (kg/m/s)
+    fill_opening_width : 0.01, // m
+    
+    // saving
+    saves : 100,  // how often to save
+    plot : ['nu', 's'],  // what to plot
+    videos : ['nu', 's'],  // what to save videos of
+}

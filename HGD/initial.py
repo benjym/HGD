@@ -142,6 +142,23 @@ def IC(p):
         mask[
             :, -1, :
         ] = True  # top row can't be filled for algorithmic reasons - could solve this if we need to
+    # create alternating layers of two densities
+    elif p.IC_mode == "layers":
+        layer_thickness = 20
+        mask = np.zeros([p.nx, p.ny, p.nm], dtype=bool)
+        current_layer = 0
+        extra_num_masked_1 = (1 - p.nu_fill_1) * p.nm
+        extra_num_masked_2 = (1 - p.nu_fill_2) * p.nm
+        for j in range(p.ny):
+            if j % layer_thickness == 0:
+                current_layer = 1 - current_layer
+            for i in range(p.nx):
+                if current_layer == 0:
+                    indices = rng.choice(p.nm, size=int(extra_num_masked_1), replace=False)
+                    mask[i, j, indices] = True
+                else:
+                    indices = rng.choice(p.nm, size=int(extra_num_masked_2), replace=False)
+                    mask[i, j, indices] = True
 
     # create a wedge at the angle of repose
     elif p.IC_mode == "wedge":
@@ -152,6 +169,13 @@ def IC(p):
             for j in range(p.ny):
                 if p.y[j] - H < -np.abs(p.x[i]) * np.tan(np.radians(p.repose_angle)):
                     mask[i, j, :] = False
+
+    elif p.IC_mode == "slope":
+        x = np.arange(0, p.nx)
+        y = np.arange(0, p.ny)
+        X, Y = np.meshgrid(x, y, indexing="ij")
+        top = p.cyclic_BC_y_offset + p.fill_ratio * p.ny
+        mask = Y > (-p.cyclic_BC_y_offset / p.nx * X + top)
 
     else:
         raise ValueError(f"Unrecognised IC_mode: {p.IC_mode}")
@@ -170,20 +194,20 @@ def IC(p):
     return s
 
 
-def set_boundary(s, X, Y, p):
-    if p.internal_geometry:
-        p.boundary = np.zeros([p.nx, p.ny], dtype=bool)
-        # boundary[4:-4:5,:] = 1
-        p.boundary[np.cos(500 * 2 * np.pi * X) > 0] = 1
-        p.boundary[:, : p.nx // 2] = 0
-        p.boundary[:, -p.nx // 2 :] = 0
-        p.boundary[:, p.ny // 2 - 5 : p.ny // 2 + 5] = 0
-        p.boundary[np.abs(X) - 2 * p.half_width * p.dy > Y] = 1
-        p.boundary[np.abs(X) - 2 * p.half_width * p.dy > p.H - Y] = 1
-        boundary_tile = np.tile(p.boundary.T, [p.nm, 1, 1]).T
-        s[boundary_tile] = np.nan
-    else:
-        p.boundary = np.zeros([p.nx, p.ny], dtype=bool)
+# def set_boundary(s, X, Y, p):
+#     if p.internal_geometry:
+#         p.boundary = np.zeros([p.nx, p.ny], dtype=bool)
+#         # boundary[4:-4:5,:] = 1
+#         p.boundary[np.cos(500 * 2 * np.pi * X) > 0] = 1
+#         p.boundary[:, : p.nx // 2] = 0
+#         p.boundary[:, -p.nx // 2 :] = 0
+#         p.boundary[:, p.ny // 2 - 5 : p.ny // 2 + 5] = 0
+#         p.boundary[np.abs(X) - 2 * p.half_width * p.dy > Y] = 1
+#         p.boundary[np.abs(X) - 2 * p.half_width * p.dy > p.H - Y] = 1
+#         boundary_tile = np.tile(p.boundary.T, [p.nm, 1, 1]).T
+#         s[boundary_tile] = np.nan
+#     else:
+#         p.boundary = np.zeros([p.nx, p.ny], dtype=bool)
 
 
 def inclination(p, s):

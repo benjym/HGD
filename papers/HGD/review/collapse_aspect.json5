@@ -1,9 +1,9 @@
 {
     // resolution
-    nx : 100, // width
-    aspect_ratio_y : 0.5,  // ny = aspect_ratio * nx
+    ny : 20, // width
+    aspect_ratio_x : 4,
     // aspect_ratio_m : 0.5,    // nm = aspect_ratio * nx
-    nm : 100,
+    aspect_ratio_m : 1,
 
     // geometry
     H : 1, // (m)
@@ -17,7 +17,7 @@
     // alpha : 1,
     
     // initial condition:
-    fill_ratio : 0.25,
+    fill_ratio : [0.25,0.5,1.0],
     nu_fill : [0.1,0.5,0.9],
     IC_mode : "column",
     

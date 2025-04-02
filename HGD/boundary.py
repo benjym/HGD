@@ -206,22 +206,37 @@ def multiple_outlets(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
 
 
 def slope(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
+    import matplotlib.pyplot as plt
+
+    # nu = HGD.operators.get_solid_fraction(s)
+    # plt.clf()
+    # plt.pcolormesh(p.x, p.y, nu[:, :].T, shading="auto")
     for i in range(p.nx):
+        # print(i)
+        # print(np.nonzero(~p.boundary_mask[i]))
+        j = np.nonzero(~p.boundary_mask[i])[0][0]  # first solid
+        # plt.plot(p.x[i], p.y[j], "ro")
+        # print(j)
         for k in range(p.nm):
-            if not np.isnan(s[i, 0, k]):
+            if not np.isnan(s[i, j, k]):
                 # MOVE UP TO FIRST VOID --- THIS GENERATES SHEARING WHEN INCLINED!
-                if (
-                    np.random.rand() < (p.Tg * p.H) / (p.free_fall_velocity * p.dt)
-                    and np.sum(np.isnan(s[i, :, k]))
-                ) > 0:  # Tg is relative height (out of the maximum depth) that voids should rise to before being filled
-                    first_void = np.isnan(s[i, :, k]).nonzero()[0][0]
-                    v[i, : first_void + 1] += np.isnan(s[i, : first_void + 1, k])
-                    s[i, : first_void + 1, k] = np.roll(s[i, : first_void + 1, k], 1)
+                # if (
+                #     np.random.rand() < (p.void_introduction_rate * p.H) / (p.free_fall_velocity * p.dt)
+                #     and np.sum(np.isnan(s[i, :, k]))
+                # ) > 0:  # Tg is relative height (out of the maximum depth) that voids should rise to before being filled
+                #     nu = HGD.operators.get_solid_fraction(s)
+                #     stable = nu[i, j:] < p.nu_cs
+                #     first_void = (np.isnan(s[i, j:, k]) & stable).nonzero()[0][0]
+                #     v[i, j : first_void + 1, k] += np.isnan(s[i, j : first_void + 1, k])
+                #     s[i, j : first_void + 1, k] = np.roll(s[i, j : first_void + 1, k], 1)
                 # MOVE EVERYTHING UP
-                # if (np.random.rand() < p.Tg * p.dt / p.dy and np.sum(np.isnan(s[i, :, k]))) > 0:
-                #     if np.isnan(s[i, -1, k]):
-                #         v[i, :] += 1  # np.isnan(s[i,:,k])
-                #         s[i, :, k] = np.roll(s[i, :, k], 1)
+                if (
+                    np.random.rand() < p.void_introduction_rate * p.dt / p.dy and np.sum(np.isnan(s[i, :, k]))
+                ) > 0:
+                    if np.isnan(s[i, -1, k]):
+                        v[i, j:] += 1  # np.isnan(s[i,:,k])
+                        s[i, j:, k] = np.roll(s[i, j:, k], 1)
+    # plt.show()
     return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 

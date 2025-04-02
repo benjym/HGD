@@ -68,12 +68,16 @@ def move_voids(
     u_new = np.zeros_like(u)
     v_new = np.zeros_like(v)
 
-    if p.inertia == "derived":
-        u = np.zeros_like(u)
-        v = np.zeros_like(v)
+    # if p.inertia == "derived":
+    # u[np.isnan(s)] = 0
+    # v[np.isnan(s)] = 0
+    # u = np.zeros_like(u)
+    # v = np.zeros_like(v)
+    # u = np.repeat(np.mean(u, axis=2)[:, :, np.newaxis], p.nm, axis=2)
+    # v = np.repeat(np.mean(v, axis=2)[:, :, np.newaxis], p.nm, axis=2)
 
     for axis, d in options:
-        dest = np.roll(s, d, axis=axis)
+        s_dest = np.roll(s, d, axis=axis)
         S_bar_dest = np.roll(S_bar, d, axis=axis)
 
         if p.advection_model == "average_size":
@@ -94,20 +98,21 @@ def move_voids(
 
         with np.errstate(divide="ignore", invalid="ignore"):
             beta = np.exp(-p.P_stab * p.dt / (p.dx / u_here))
+            # print(beta)
 
         if axis == 1:  # vertical
             s_inv_bar = operators.get_hyperbolic_average(s)
             S_inv_bar = np.repeat(s_inv_bar[:, :, np.newaxis], p.nm, axis=2)
             S_inv_bar_dest = np.roll(S_inv_bar, d, axis=axis)
 
-            P = (p.dt / p.dy) * U_dest * (S_inv_bar_dest / dest)
+            P = (p.dt / p.dy) * U_dest * (S_inv_bar_dest / s_dest)
 
             if p.inertia is not False:
                 P += (p.dt / p.dy) * np.roll(v, d, axis=axis)
 
             P[:, -1, :] = 0  # no swapping up from top row
         elif axis == 0:  # horizontal
-            P = p.alpha * U_dest * dest * (p.dt / p.dy / p.dy) * P_diff_weighting
+            P = p.alpha * U_dest * s_dest * (p.dt / p.dy / p.dy) * P_diff_weighting
 
             if p.inertia is not False:
                 if d < 0:  # left
@@ -138,7 +143,7 @@ def move_voids(
             unstable = np.logical_or(unstable, ~slope_stable)
             # P[slope_stable] = 0
 
-        filled_dest = ~np.isnan(dest)
+        filled_dest = ~np.isnan(s_dest)
         swap_possible = np.logical_and(unstable, filled_dest)
 
         # # Identify potential swaps (ignoring whether dest is initially filled)
@@ -152,7 +157,7 @@ def move_voids(
         #         swap_possible[d:, :, :] = False  # no swapping right from rightmost column
 
         # # Determine if dest is filled initially or will be filled due to other swaps
-        # filled_initially = ~np.isnan(dest)
+        # filled_initially = ~np.isnan(s_dest)
         # will_fill_due_to_swap = np.zeros_like(filled_initially, dtype=bool)
 
         # # Temporarily record intended destinations
@@ -173,9 +178,9 @@ def move_voids(
 
         if p.inertia == "derived":
             if axis == 0:
-                u += P * p.dx / p.dt
+                u_new += P * p.dx / p.dt * d
             elif axis == 1:
-                v -= P * p.dy / p.dt
+                v_new -= P * p.dy / p.dt * d
 
         this_swap_indices = np.argwhere(swap)
         this_dest_indices = this_swap_indices.copy()
@@ -215,9 +220,10 @@ def move_voids(
         # N_swap[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]] += 1
         np.add.at(N_swap, (swap_indices_filtered[:, 0], swap_indices_filtered[:, 1]), 1)
 
-        if p.inertia == "time_averaging" or p.inertia is False:
-            delta = dest_indices_filtered - swap_indices_filtered
+        # if p.inertia == "time_averaging" or p.inertia is False:
+        delta = dest_indices_filtered - swap_indices_filtered
 
+        if p.inertia == "time_averaging" or p.inertia is False:
             # Update the new velocities where the mass is
             u_new[swap_indices_filtered[:, 0], swap_indices_filtered[:, 1], swap_indices_filtered[:, 2]] = (
                 -delta[:, 0] * p.dx / p.dt
@@ -226,10 +232,10 @@ def move_voids(
                 delta[:, 1] * p.dy / p.dt
             )
 
-        if p.inertia == "time_averaging":
-            # Zero out the velocities for the swapped voids
-            u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
-            v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
+        # if p.inertia == "time_averaging":
+        #     # Zero out the velocities for the swapped voids
+        #     u[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
+        #     v[dest_indices_filtered[:, 0], dest_indices_filtered[:, 1], dest_indices_filtered[:, 2]] = 0
 
     if p.inertia == "time_averaging":
         u = beta * u + (1 - beta) * u_new
@@ -237,6 +243,9 @@ def move_voids(
     elif p.inertia is False:
         u = u_new
         v = v_new
+    elif p.inertia == "derived":
+        u += u_new
+        v += v_new
     last_swap[np.isnan(s)] = np.nan
 
     chi_new = (

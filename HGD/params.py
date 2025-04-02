@@ -22,6 +22,7 @@ class dict_to_class:
                 "videos",
                 "T_cycles",
                 "boundaries",
+                "masks",
                 "cycles",
             ]:
                 list_keys.append(key)
@@ -63,6 +64,14 @@ class dict_to_class:
                 self.ny = [int(nx * self.aspect_ratio_y) for nx in self.nx]
             else:
                 self.ny = int(self.nx * self.aspect_ratio_y)
+        elif hasattr(self, "aspect_ratio_x"):
+            if isinstance(self.aspect_ratio_x, list):
+                self.nx = [int(self.ny * ar) for ar in self.aspect_ratio_x]
+            elif isinstance(self.ny, list):
+                self.nx = [int(ny * self.aspect_ratio_x) for ny in self.ny]
+            else:
+                self.nx = int(self.ny * self.aspect_ratio_x)
+
         if hasattr(self, "aspect_ratio_m"):
             if isinstance(self.aspect_ratio_m, list):
                 self.nm = [int(self.nx * ar) for ar in self.aspect_ratio_m]
@@ -91,6 +100,9 @@ class dict_to_class:
                 self.s_m = 1
                 self.s_M = 1
 
+        if hasattr(self, "cyclic_BC_y_angle"):
+            self.cyclic_BC_y_offset = int(np.tan(np.radians(self.cyclic_BC_y_angle)) * self.nx)
+
         # user can define mu or repose_angle. If both defined, mu takes precedence.
         if hasattr(self, "mu"):
             self.repose_angle = np.degrees(np.arctan(self.mu))
@@ -117,6 +129,9 @@ class dict_to_class:
             sys.exit(f"Fatal error: dx != dy. dx = {self.dx}, dy = {self.dy}")
         self.W = self.nx * self.dx
         self.X, self.Y = np.meshgrid(self.x, self.y, indexing="ij")
+
+        if hasattr(self, "freefall_time"):
+            self.t_f = 1.2 * self.H / np.sqrt(self.g * self.dy)
 
         self.y += self.dy / 2.0
         self.t = 0  # time (s)
