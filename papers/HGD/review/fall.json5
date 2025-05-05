@@ -1,7 +1,7 @@
 {
     // resolution
     nx : 5, // width
-    aspect_ratio_y : [1,10,100,1000,10000],  // ny = aspect_ratio * nx
+    aspect_ratio_y : [1,10,100],  //,1000,10000],  // ny = aspect_ratio * nx
     // aspect_ratio_y : 100,
     // aspect_ratio_m : 0.5,    // nm = aspect_ratio * nx
     nm : 100,

@@ -106,6 +106,29 @@ def IC(p):
                 fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
                 F = rng.uniform(low=0, high=1, size=len(fill))
                 s[i, j, fill] = p.d_50 * (-np.log(1 - F) / np.log(2)) ** (1 / p.k)
+
+    elif p.gsd_mode == "tri":  # three sizes
+        # assumes existence of p.s_m (min size), p.s_mid (mid size) and p.s_M (max size)
+        # relative proportions are given by p.large_concentration and p.mid_concentration. the total from all three sizes must be one, so:
+        min_concentration = 1 - p.large_concentration - p.mid_concentration
+
+        s = np.nan * np.ones([p.nx, p.ny, p.nm])
+        for i in range(p.nx):
+            for j in range(p.ny):
+                # fill the large sizes first
+                large = rng.choice(p.nm, size=int(p.nm * p.large_concentration * p.nu_fill), replace=False)
+                s[i, j, large] = p.s_M
+
+                # now fill the mid sizes
+                remaining = np.where(np.isnan(s[i, j, :]))[0]
+                mid = rng.choice(remaining, size=int(p.nm * p.mid_concentration * p.nu_fill), replace=False)
+                s[i, j, mid] = p.s_mid
+
+                # finally fill the small sizes
+                remaining = np.where(np.isnan(s[i, j, :]))[0]
+                small = rng.choice(remaining, size=int(p.nm * min_concentration * p.nu_fill), replace=False)
+                s[i, j, small] = p.s_m
+
     else:
         raise ValueError(f"Unrecognised gsd_mode: {p.gsd_mode}")
 

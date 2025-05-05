@@ -187,11 +187,11 @@ def stable_slope_fast(s, d, p, chi=None, potential_free_surface=None):
     # delta_nu = -dir*np.gradient(nu_here,axis=0)
     if p.inertia:
         get_delta_limit(p, chi)
-    else:
-        delta_limit = p.delta_limit
+    # else:
+    # delta_limit = p.delta_limit
 
     if potential_free_surface is None:
-        stable = delta_nu <= delta_limit
+        stable = delta_nu <= p.delta_limit
     else:
         stable = (delta_nu <= p.delta_limit) & potential_free_surface
 
@@ -333,3 +333,166 @@ def get_depth(nu, p, debug=False):
         plt.pause(0.01)
 
     return depth
+
+
+def get_lr(i, j, p):
+    if i == 0:
+        if p.cyclic_BC:
+            l = p.nx - 1
+        else:
+            l = 0
+        r = 1
+    elif i == p.nx - 1:
+        if p.cyclic_BC:
+            r = 0
+        else:
+            r = p.nx - 1
+        l = p.nx - 2
+    else:
+        l = i - 1
+        r = i + 1
+
+    # Cyclic BC in y direction
+    if p.cyclic_BC_y_offset > 0:
+        if i == p.nx - 1:
+            j_r = j + p.cyclic_BC_y_offset
+            if j_r >= p.ny - 1:
+                j_r = p.ny - 1
+        else:
+            j_r = j
+        if i == 0:
+            j_l = j - p.cyclic_BC_y_offset
+            if j_l < 0:
+                j_l = 0
+        else:
+            j_l = j
+    else:
+        j_r = j
+        j_l = j
+
+    return l, r, j_l, j_r
+
+
+# def stream(u, v, s, p):
+#     s_bar = np.nanmean(s)  # global mean value
+#     v_y = np.sqrt(p.g * s_bar)
+
+#     # QUESTION TO ANSWER:
+#     # 1. Is this just from advection?
+#     # 2. If not, I guess we need to consider not just the expected velocity (derived from the probability) but what actually moved (otherwise P_lr is always symmetric and so no velocity). Can be done by multiplying by the solid fraction!
+
+#     nu = get_solid_fraction(s)
+#     n = 1 - nu
+#     # unstable = nu < p.nu_cs
+
+#     u_old = np.nanmean(u, axis=2)
+#     v_old = np.nanmean(v, axis=2)
+
+#     P_lr = p.alpha * v_y * s_bar * (p.dt / p.dy / p.dy)
+#     v_lr_eff = P_lr * p.dy / p.dt  # magic!
+#     # P_u = v_y * p.dt / p.dy
+
+#     nu_l = np.roll(nu, -1, axis=1)
+#     nu_r = np.roll(nu, 1, axis=1)
+#     nu_u = np.roll(nu, -1, axis=0)
+#     u_l_new = v_lr_eff * (1 - nu_l) + np.where(u_old < 0, -u_old, 0)
+#     u_r_new = v_lr_eff * (1 - nu_r) + np.where(u_old > 0, u_old, 0)
+#     u_new = u_l_new + u_r_new
+#     v_new = v_y * (1 - nu_u) + v_old
+
+#     N_u = np.floor(p.nm * v_new * p.dt / p.dy).astype(int)
+#     N_l = np.floor(p.nm * u_l_new * p.dt / p.dx).astype(int)
+#     N_r = np.floor(p.nm * u_r_new * p.dt / p.dx).astype(int)
+
+#     for i in range(p.nx):
+#         for j in range(p.ny):
+#             l, r, j_l, j_r = get_lr(i, j, p)
+#             dests = [[i, j - 1], [l, j], [r, j]]  # up, left, right
+#             Ns = np.array([N_u[i, j], N_l[l, j_l], N_r[r, j_r]])
+#             print(Ns, end=" ")
+#             solid_indices = np.argwhere(~np.isnan(s[i, j, :]))
+#             np.random.shuffle(solid_indices)
+#             if Ns.sum() > 0:
+#                 for k in range(len(solid_indices)):  # try each just once?
+#                     d = np.random.choice([0, 1, 2], p=Ns / Ns.sum())
+#                     dest = dests[d]
+#                     if np.isnan(s[i, j, solid_indices[k]]):
+#                         s[dest[0], dest[1], solid_indices[k]] = s[i, j, solid_indices[k]]
+#                         s[i, j, solid_indices[k]] = np.nan
+#                     Ns[d] -= 1
+#                     if Ns.sum() == 0:
+#                         break
+#             print(Ns.sum())
+
+#     u = np.repeat(u_new[:, :, np.newaxis], p.nm, axis=2)
+#     v = np.repeat(v_new[:, :, np.newaxis], p.nm, axis=2)
+
+#     return u, v, s
+
+
+def stream(u, v, s, p):
+    ### FROM THE PERPECTIVE OF THE SOLID PHASE!!!!!!
+    s_bar = np.nanmean(s)  # global mean value
+    v_y = np.sqrt(p.g * s_bar)
+
+    nu = get_solid_fraction(s)
+    nu_u = np.roll(nu, 1, axis=1)
+    nu_l = np.roll(nu, 1, axis=0)
+    nu_r = np.roll(nu, -1, axis=0)
+
+    # VERTICAL
+    v_old = np.nanmean(v, axis=2)
+    v_new = v_y * (1 - nu_u / p.nu_cs) + v_old  # HACK: NOT SURE ABOUT THE DIVISION BY NU_CS
+
+    # HORIZONTAL
+    P_lr = p.alpha * v_y * s_bar * (p.dt / p.dy / p.dy)
+    u_old = np.nanmean(u, axis=2)
+    u_new_l = P_lr * (1 - nu_l / p.nu_cs) * p.dy / p.dt + np.where(
+        u_old < 0, -u_old, 0
+    )  # magic! --- MIGHT BE WRONG WAY AROUND L/R
+    u_new_r = P_lr * (1 - nu_r / p.nu_cs) * p.dy / p.dt + np.where(u_old > 0, u_old, 0)  # magic!
+
+    u_new = -u_new_l + u_new_r
+
+    N_l = np.floor(p.nm * u_new_l * p.dt / p.dx).astype(int)
+    N_r = np.floor(p.nm * u_new_r * p.dt / p.dx).astype(int)
+    N_u = np.floor(p.nm * v_new * p.dt / p.dy).astype(int)
+
+    # stable_left = stable_slope(s, 1, p)[:, :, 0]
+    # stable_right = stable_slope_fast(s, -1, p)[:, :, 0]
+
+    for i in range(0, p.nx - 1):
+        for j in range(1, p.ny):
+            if nu[i, j] < p.nu_cs:
+                solid_here = ~np.isnan(s[i, j, :])
+                dests = [[i, j - 1], [i - 1, j], [i + 1, j]]  # up, left, right
+                Ns = [N_u[i, j], N_l[i, j], N_r[i, j]]
+                # stable_left = stable_slope(s, i, j, i - 1, p)
+                # stable_right = stable_slope(s, i, j, i + 1, p)
+                # stable_slopes = [False, stable_left, stable_right]
+                # print(stable_slopes)
+                for d in range(3):
+                    # if not stable_slopes[d]:
+                    void_dest = np.isnan(s[dests[d][0], dests[d][1], :])
+                    potential_swaps = np.logical_and(solid_here, void_dest)
+                    potential_swap_indices = np.argwhere(potential_swaps).flatten()
+                    num_available_dest_voids = int(
+                        np.floor(p.nm * (1 - nu[dests[d][0], dests[d][1]] - p.nu_cs))
+                    )
+                    max_swaps = np.minimum(Ns[d], len(potential_swap_indices))
+                    max_swaps = np.minimum(max_swaps, num_available_dest_voids)
+                    if max_swaps > 0:
+                        swaps = np.random.choice(potential_swap_indices, size=max_swaps, replace=False)
+                        for k in range(max_swaps):
+                            s[dests[d][0], dests[d][1], swaps[k]] = s[i, j, swaps[k]]
+                            s[i, j, swaps[k]] = np.nan
+
+    # HACK: this is not correct, but it works for now
+    v_new[nu >= p.nu_cs] = 0
+    v_new[nu == 0] = 0
+    v = np.repeat(v_new[:, :, np.newaxis], p.nm, axis=2)
+
+    u_new[nu >= p.nu_cs] = 0
+    u_new[nu == 0] = 0
+    u = np.repeat(u_new[:, :, np.newaxis], p.nm, axis=2)
+    return u, v, s

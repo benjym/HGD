@@ -12,8 +12,8 @@ plt.style.use("papers/HGD/paper.mplstyle")
 with open("papers/HGD/review/fall.json5") as f:
     dict, p = load_file(f)
 
-fig = plt.figure(figsize=[3.31894680556, 2.1])
-axes = fig.subplots(2, 2).flatten()
+fig = plt.figure(figsize=[3.31894680556, 1.2])
+axes = fig.subplots(1, 3).flatten()
 
 for i, aspect_ratio_y in enumerate(p.aspect_ratio_y):
     ax = axes[i]
@@ -68,9 +68,9 @@ for i, aspect_ratio_y in enumerate(p.aspect_ratio_y):
     ax.set_yticks([0, p.H])
     # plt.axis("equal")
 
-plt.sca(axes[2])
-plt.xlabel("$t$ (s)", labelpad=-2)
-plt.ylabel("$y$ (m)")  # , rotation="horizontal")  # ,labelpad=3)
+plt.sca(axes[0])
+plt.xlabel("$t$ (s)", labelpad=-2, x=0.4)
+plt.ylabel("$y$ (m)", labelpad=-2)  # , rotation="horizontal")  # ,labelpad=3)
 # plt.xticks([-W / 2, W / 2])
 # plt.yticks([0, p.H])
 
@@ -83,7 +83,9 @@ norm = colors.Normalize(vmin=0, vmax=1)  # Set the range for the colorbar
 scalar_mappable = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 # # Add colorbar to the plot
-cax = fig.add_axes([0.91, 0.18, 0.02, 0.95 - 0.18])  # x,y, width, height
+bottom = 0.31
+top = 0.95
+cax = fig.add_axes([0.91, bottom, 0.02, top - bottom])  # x,y, width, height
 cbar = plt.colorbar(scalar_mappable, ax=axes[0], cax=cax)
 cbar.set_label(r"$\nu$ (-)")  # Label for the colorbar
 cbar.set_ticks([0, 1])  # Set ticks at ends
@@ -92,5 +94,5 @@ label_position = cbar.ax.get_position()
 new_x = label_position.x0 + 1  # Adjust this value to move the label
 cbar.ax.yaxis.set_label_coords(new_x, 0.5)
 
-plt.subplots_adjust(left=0.12, bottom=0.18, right=0.85, top=0.95, hspace=0.4, wspace=0.5)
-plt.savefig(os.path.expanduser(f"~/Dropbox/Apps/Overleaf/Heterarchical Granular Dynamics/im/fall.pdf"))
+plt.subplots_adjust(left=0.09, bottom=bottom, right=0.85, top=top, hspace=0.4, wspace=0.5)
+plt.savefig(os.path.expanduser(f"~/Dropbox/Apps/Overleaf/Heterarchical Granular Dynamics/im/fall_3.pdf"))

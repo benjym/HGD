@@ -489,7 +489,7 @@ def close_voids(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 
-def silo_fluid(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
+def silo_fluid(p, s, u, v, c, T, last_swap, chi, sigma, outlet, debug=False):
     nu = HGD.operators.get_solid_fraction(s)
     top = HGD.operators.get_top(nu, p, nu_lim=p.nu_cs)
 
@@ -504,7 +504,7 @@ def silo_fluid(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
 
     A = (18 * p.dynamic_viscosity * p.H) / (p.g * p.delta_rho)
     t_f = A / s_bins**2
-    fill_rate = p.fill_fraction / p.charge_duration * p.nu_cs[0, 0] * p.nx * p.ny * p.nm
+    fill_rate = p.fill_fraction / p.charge_duration * p.nu_cs * p.nx * p.ny * p.nm
     m = fill_rate * f * np.heaviside(p.t - t_f, 1) * np.heaviside(p.charge_duration + t_f - p.t, 1)
 
     # Now for each s calculate the distance from the centre it is spread to
@@ -518,7 +518,7 @@ def silo_fluid(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     A = 1  # fitting parameter for mu
     B = 0.5  # fitting parameter for sigma
 
-    if p.tstep == 0:
+    if p.tstep == 0 and debug:
         print(f"\nTime: {p.t}, t_f: {t_f}, m: {m}, W_crit: {W_crit}")
 
     for n in range(len(s_bins)):
@@ -537,46 +537,19 @@ def silo_fluid(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
         discrete_probs = pdf_values / np.sum(pdf_values)
         to_fill = np.random.multinomial(N, discrete_probs)
 
-        # for i in range(p.nx):
-        #     j = top[i]
+        if debug:
+            import matplotlib.pyplot as plt
 
-        #     sigma = (p.H - p.fill_opening_width) / (Stk[n] ** B + 1) + p.fill_opening_width
-        #     a1, b1 = (-p.W / 2.0 - mu) / sigma, (p.W / 2.0 - mu) / sigma
-        #     a2, b2 = (-p.W / 2.0 + mu) / sigma, (p.W / 2.0 + mu) / sigma
-
-        #     to_fill = int(
-        #         round(
-        #             N
-        #             # / 2.0
-        #             * p.dx
-        #             * (
-        #                 truncnorm(a=a1, b=b1, loc=mu, scale=sigma).pdf(p.x[i])
-        #                 # + truncnorm(a=a2, b=b2, loc=-mu, scale=sigma).pdf(p.x[i])
-        #             )
-        #         )
-        #     )
-        #     to_fill_total += to_fill
-
-        # debug = False
-        # if debug:
-
-        #     import matplotlib.pyplot as plt
-
-        #     plt.figure(32)
-        #     plt.clf()
-        #     plt.title(n)
-        #     plt.ion()
-        #     plt.plot(
-        #         p.x,
-        #         truncnorm.pdf(p.x, a1, b1, loc=mu, scale=sigma),
-        #         "b-",
-        #     )
-        #     plt.plot(
-        #         p.x,
-        #         truncnorm.pdf(p.x, a2, b2, loc=-mu, scale=sigma),
-        #         "r-",
-        #     )
-        #     plt.pause(0.01)
+            plt.figure(32)
+            plt.clf()
+            plt.title(n)
+            plt.ion()
+            plt.plot(
+                p.x,
+                truncnorm.pdf(p.x, a, b, loc=mu, scale=sigma),
+                "b",
+            )
+            plt.pause(0.01)
 
         for i in range(p.nx):
             j = top[i]
@@ -591,7 +564,7 @@ def silo_fluid(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
 def place_at(s, i, j, p, to_fill, s_bins, n):
     # Now actually fill the voids
     while to_fill > 0:
-        remaining_voids = p.nu_cs[i, j] - HGD.operators.get_solid_fraction(s, [i, j])
+        remaining_voids = p.nu_cs - HGD.operators.get_solid_fraction(s, [i, j])
         if remaining_voids > 0:
             available_k = np.nonzero(np.isnan(s[i, j, :]))[0]
             if len(available_k) > 0:

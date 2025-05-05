@@ -30,6 +30,8 @@
     t_f : 360,  // final time
     // t_f : 0.1,
     solid_density : 2700,  // kg/m^3
+    motion_model : "d2q4_cpp",
+
 
     // total_charge : 2, // kg
     fill_fraction : 0.5,  // fraction of silo filled (at nu_cs)

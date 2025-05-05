@@ -22,8 +22,8 @@
     fill_ratio : 0.25,
     // nu_fill : [0.2,0.5,0.8],
     nu_fill : 1, // need to start off full for layers filling mode
-    nu_fill_1 : 0.8,
-    nu_fill_2 : 0.1,
+    nu_fill_1 : 0.1,
+    nu_fill_2 : 0.8,
     IC_mode : "layers",
     
     // saving

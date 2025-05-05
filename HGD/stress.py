@@ -87,10 +87,12 @@ def calculate_stress_fraction(last_swap, p):
 
 
 def calculate_stress(s, last_swap, p):
-    # return calculate_stress_NEW(s, last_swap, p)
-    # return calculate_stress_OLD(s, last_swap, p)
-    return harr_substep(s, last_swap, p)
-    # return harr_implicit(s, last_swap, p)
+    if p.stress_mode == "harr":
+        return harr_substep(s, last_swap, p)
+        # return harr_implicit(s, last_swap, p)
+    else:
+        # return calculate_stress_NEW(s, last_swap, p)
+        return calculate_stress_OLD(s, last_swap, p)
 
 
 def harr_substep(s, last_swap, p):
@@ -225,7 +227,7 @@ def solve_tridiagonal(a, b, c, d):
 def calculate_stress_OLD(s, last_swap, p):
     stress_fraction = calculate_stress_fraction(last_swap, p)
 
-    sigma = np.zeros([p.nx, p.ny, 2])  # sigma_xy, sigma_yy
+    sigma = np.zeros([p.nx, p.ny, 3])  # sigma_xy, sigma_yy, sigma_xx
     # NOTE: NOT CONSIDERING INCLINED GRAVITY
     weight_of_one_cell = p.solid_density * p.dx * p.g  # * p.dy
 
@@ -264,14 +266,15 @@ def calculate_stress_OLD(s, last_swap, p):
                     + 0.5 * (1 - stress_fraction[i, j]) * (left_up[1] + right_up[1])
                     + 0.5 * (left_up[0] - right_up[0])
                 )
-
+    sigma[:, :, 2] = (1 - stress_fraction) * sigma[:, :, 1]  # sigma_xx = K * sigma_yy
     return sigma
 
 
 def calculate_stress_NEW(s, last_swap, p):
     stress_fraction = calculate_stress_fraction(last_swap, p)
 
-    sigma = np.zeros([p.nx, p.ny, 2])  # sigma_xy, sigma_yy
+    # sigma = np.zeros([p.nx, p.ny, 2])  # sigma_xy, sigma_yy
+    sigma = np.zeros([p.nx, p.ny, 3])  # sigma_xy, sigma_yy, sigma_xx
     # NOTE: NOT CONSIDERING INCLINED GRAVITY
     weight_of_one_cell = p.solid_density * p.g * p.dx  # * p.dy
 
@@ -332,7 +335,8 @@ def calculate_stress_NEW(s, last_swap, p):
                             lr_frac * sigma_here[0]  # half of the shear stress from the current cell
                             + p_there * sigma_here[1]  # redirected part of the vertical force
                         )
-
+    K = 1.0 - stress_fraction
+    sigma[:, :, 2] = K * sigma[:, :, 1]  # sigma_xx = sigma_yy
     return sigma
 
 

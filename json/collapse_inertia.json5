@@ -24,10 +24,10 @@
     // inertia: true,
     
     plot : ['nu', 'U_mag', 'chi'],
-    videos : ['nu', 'U_mag', 'chi'],
+    videos : ['nu', 'u','v', 'U_mag', 'chi'],
     plot_colorbar : true,
 
     // saving
     saves : 20,
-    t_f : 1,  // s
+    t_f : 10,  // s
 }

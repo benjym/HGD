@@ -13,6 +13,8 @@ from HGD import initial
 from HGD import stress
 from HGD import boundary
 from HGD import mask
+from HGD import operators
+from HGD import cycles
 
 
 def init(p, cycles=None):
@@ -139,7 +141,14 @@ def time_step(p, state):
     if len(p.cycles) > 0:
         p = cycles.update(p, state)
 
-    u, v, s, c, T, chi, last_swap = p.move_voids(u, v, s, p, 0, c, T, chi, last_swap)
+    u_new, v_new, s, c, T, chi, last_swap = p.move_voids(u, v, s, p, 0, c, T, chi, last_swap)
+
+    if p.inertia:
+        # u, v, s = operators.stream(u_new, v_new, s, p)
+        u, v, s = operators.stream(u, v, s, p)
+    else:
+        pass
+        # u, v = u_new, v_new
 
     state = (
         s,

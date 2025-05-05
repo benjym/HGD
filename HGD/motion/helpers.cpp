@@ -69,13 +69,12 @@ std::vector<double> compute_s_inv_bar(py::array_t<double> s)
 }
 
 // Compute solid fraction mean using Eigen
-std::vector<double> compute_s_bar(py::array_t<double> s)
+std::vector<double> compute_mean(py::array_t<double> input)
 {
-    auto s_buf = s.unchecked<3>(); 
-    int nx = s.shape(0), ny = s.shape(1), nm = s.shape(2);
+    auto buf = input.unchecked<3>(); 
+    int nx = buf.shape(0), ny = buf.shape(1), nm = buf.shape(2);
 
-    // MatrixXd s_bar = MatrixXd::Zero(nx, ny);
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> s_bar(nx, ny);
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> output(nx, ny);
 
 
     #pragma omp parallel for collapse(2)
@@ -85,16 +84,16 @@ std::vector<double> compute_s_bar(py::array_t<double> s)
         {
             VectorXd col(nm);
             for (int k = 0; k < nm; k++)
-                col(k) = s_buf(i, j, k);
+                col(k) = buf(i, j, k);
 
             VectorXd valid = col.array().isNaN().select(0, col);
             int count = (valid.array() > 0.0).count();
 
-            s_bar(i, j) = (count > 0) ? valid.sum() / count : 0.0;
+            output(i, j) = (count > 0) ? valid.sum() / count : 0.0;
         }
     }
 
-    return std::vector<double>(s_bar.data(), s_bar.data() + s_bar.size());
+    return std::vector<double>(output.data(), output.data() + output.size());
 }
 
 // Compute "some particles" mask using Eigen
@@ -143,4 +142,24 @@ std::vector<bool> compute_locally_fluid(const std::vector<double>& nu, int nx, i
     }
 
     return std::vector<bool>(locally_fluid.data(), locally_fluid.data() + locally_fluid.size());
+}
+
+std::tuple<int, int, int, int> get_lr(int i, int j, int nx, int ny, int cyclic_BC_y_offset, bool cyclic_BC) {
+    int l = (i == 0) ? (cyclic_BC ? nx - 1 : 0) : i - 1;
+    int r = (i == nx - 1) ? (cyclic_BC ? 0 : nx - 1) : i + 1;
+    int j_l, j_r;
+
+    if (cyclic_BC_y_offset > 0 && i == nx - 1) {
+        j_r = j + cyclic_BC_y_offset; // Reference cells upwards at the right boundary
+        if (j_r >= ny - 1) j_r = ny - 1;
+    } else {
+        j_r = j;
+    }
+    if (cyclic_BC_y_offset > 0 && i == 0) {
+        j_l = j - cyclic_BC_y_offset; // Reference cells downwards at the left boundary
+        if (j_l < 0) j_l = 0;
+    } else {
+        j_l = j;
+    }
+    return std::make_tuple(l, r, j_l, j_r);
 }
