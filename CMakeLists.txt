@@ -3,46 +3,19 @@ project(move_voids_module LANGUAGES CXX)
 
 # Find required packages
 find_package(pybind11 REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(OpenMP REQUIRED)
 
-# Define module with sources
-pybind11_add_module(d2q4_cpp HGD/motion/d2q4.cpp HGD/motion/helpers.cpp)
+# Create platform-agnostic core library
+add_library(core STATIC HGD/motion/core.cpp)
+target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/HGD/motion)
+target_compile_features(core PUBLIC cxx_std_14)
 
-# Link Eigen library
-target_link_libraries(d2q4_cpp PRIVATE Eigen3::Eigen)
+# Python extension
+pybind11_add_module(d2q4_cpp HGD/motion/bindings_py.cpp)
+target_link_libraries(d2q4_cpp PRIVATE core)
+target_compile_definitions(d2q4_cpp PRIVATE EIGEN_DONT_ALIGN_STATICALLY EIGEN_DONT_PARALLELIZE)
 
 # Set optimization and math flags
-target_compile_options(d2q4_cpp PRIVATE -O3 -march=native) # -ffast-math) # -ffast-math breaks nan check operations!!!!
-
-# Include Eigen headers
-target_include_directories(d2q4_cpp PRIVATE ${EIGEN3_INCLUDE_DIRS})
-
-# Link OpenMP correctly
-if(OpenMP_CXX_FOUND)
-    message(STATUS "OpenMP found: ${OpenMP_CXX_FLAGS}")
-    target_link_libraries(d2q4_cpp PRIVATE OpenMP::OpenMP_CXX)
-endif()
-
-# Compiler-specific settings
-if(APPLE)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-        message(STATUS "Using AppleClang on macOS.")
-        target_compile_options(d2q4_cpp PRIVATE -Xpreprocessor -fopenmp)
-        target_link_directories(d2q4_cpp PRIVATE /usr/local/opt/libomp/lib)
-        target_include_directories(d2q4_cpp PRIVATE /usr/local/opt/libomp/include)
-
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        message(STATUS "Using Homebrew GCC on macOS.")
-        target_include_directories(d2q4_cpp SYSTEM PRIVATE
-            /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include
-            /Library/Developer/CommandLineTools/usr/include/c++/v1
-            /usr/local/include
-        )
-        target_link_directories(d2q4_cpp PRIVATE /usr/local/opt/libomp/lib)
-        target_include_directories(d2q4_cpp PRIVATE /usr/local/opt/libomp/include)
-    endif()
-endif()
+target_compile_options(d2q4_cpp PRIVATE -O3 -march=native)
 
 # Ensure the module is placed inside HGD/motion/
 set_target_properties(d2q4_cpp PROPERTIES

@@ -14,7 +14,8 @@ from HGD import stress
 from HGD import boundary
 from HGD import mask
 from HGD import operators
-from HGD import cycles
+
+# from HGD import cycles
 
 
 def init(p, cycles=None):
