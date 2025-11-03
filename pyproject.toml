@@ -1,6 +1,6 @@
 [project]
 name = "HGD"
-version = "1.1"
+version = "1.2"
 requires-python = ">=3.9"
 authors = [
   {name = "Benjy Marks", email = "benjy.marks@sydney.edu.au"},
@@ -28,15 +28,13 @@ dependencies = [
 ]
 
 [build-system]
-requires = ["scikit-build-core", "pybind11", "setuptools", "wheel"]
+requires = ["scikit-build-core", "pybind11"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
 cmake.minimum-version = "3.15"
+cmake.build-type = "Release"
 
 [tool.black]
 line-length = 110
 target-version = ['py311']
-
-[tool.setuptools]
-packages = ["HGD"]

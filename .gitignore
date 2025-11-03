@@ -8,3 +8,4 @@ output/
 build/
 .vscode/
 venv/
+*.so

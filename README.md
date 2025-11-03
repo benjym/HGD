@@ -6,16 +6,18 @@ A python package for simulating the motion of a granular material as a result of
 
 # Installation
 
-1.  Download and unzip (or clone) this repository
-2.  Install python 3.11 or newer. `c++` version of the code also requires `eigen` and `openmp` on the system.
-3.  Install the required python packages with `pip install -e .`
-4.  Set up your pre-commit hooks (so that when you make changes things are kept nice and clean) by running `pre-commit install`
-5.  Run the code with `python HGD/main.py json/collapse.json5`. The parameters for this specific case are stored in `json/collapse.json5`. Change that file name to a different `json5` file to use those values instead.
+1. Download and unzip (or clone) this repository
+2. Install python 3.11 or newer. `c++` version of the code also requires `openmp` on the system.
+3. Install the required python packages with `pip install -e .`. This also builds the `c++` extension module.
+4. Set up your pre-commit hooks (so that when you make changes things are kept nice and clean) by running `pre-commit install`
+5. Run the code with `python HGD/main.py json/collapse.json5`. The parameters for this specific case are stored in `json/collapse.json5`. Change that file name to a different `json5` file to use those values instead. Default parameters are stored in `json/defaults.json5`.
 
 # Documentation
+
 You can [read the docs here](https://benjym.github.io/HGD/).
 
 # Authors
+
 - [Benjy Marks](mailto:benjy.marks@sydney.edu.au)
 - [Shivakumar Athani](mailto:shivakumar.athani@sydney.edu.au)
 - [Jiahuan Li](mailto:jiahuan.li@sydney.edu.au)
