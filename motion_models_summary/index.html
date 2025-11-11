@@ -1,0 +1,812 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Motion Models Analysis - Executive Summary - Heterarchical Granular Dynamics</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#motion-models-analysis-executive-summary" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Heterarchical Granular Dynamics" class="md-header__button md-logo" aria-label="Heterarchical Granular Dynamics" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Heterarchical Granular Dynamics
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Motion Models Analysis - Executive Summary
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Heterarchical Granular Dynamics" class="md-nav__button md-logo" aria-label="Heterarchical Granular Dynamics" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Heterarchical Granular Dynamics
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Heterarchical Granular Dynamics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-comparison-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Comparison Table
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inertia-implementation-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inertia Implementation Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#physics-models-supported" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physics Models Supported
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-factors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Factors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendations-for-stream_core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendations for stream_core
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommendations for stream_core">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recommended-option-1-minimal-upgrade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏆 Recommended: Option 1 - Minimal Upgrade
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternative Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-each-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use Each Implementation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="When to Use Each Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#for-understanding-physics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Understanding Physics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-python-research" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Python Research
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-production-simulations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Production Simulations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-physics-equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Physics Equations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Physics Equations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#upward-motion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upward Motion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lateral-motion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lateral Motion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#characteristic-velocity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Characteristic Velocity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slope-stability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slope Stability
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Questions?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="motion-models-analysis-executive-summary">Motion Models Analysis - Executive Summary</h1>
+<p>This is a quick reference summary of the comprehensive analysis in <code>motion_models_analysis.pdf</code>.</p>
+<h2 id="quick-comparison-table">Quick Comparison Table</h2>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>Speed</th>
+<th>Inertia</th>
+<th>Status</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>d2q4_slow.py</td>
+<td>1×</td>
+<td>❌</td>
+<td>Active</td>
+<td>Reference/Learning</td>
+</tr>
+<tr>
+<td>d2q4_array.py</td>
+<td>10-50×</td>
+<td>❌</td>
+<td>Active</td>
+<td>Fast Python</td>
+</tr>
+<tr>
+<td>d2q4_array_v2.py</td>
+<td>10-30×</td>
+<td>✅ Full</td>
+<td>Active</td>
+<td>Research/Advanced</td>
+</tr>
+<tr>
+<td>d2q4_SA_array.py</td>
+<td>5-20×</td>
+<td>❌</td>
+<td>Experimental</td>
+<td>Alternative approach</td>
+</tr>
+<tr>
+<td>core.cpp</td>
+<td>50-200×</td>
+<td>⚠️ Partial</td>
+<td>Production</td>
+<td>Fast simulations</td>
+</tr>
+<tr>
+<td>d2q4.cpp.dep</td>
+<td>40-150×</td>
+<td>✅</td>
+<td>Deprecated</td>
+<td>Historical</td>
+</tr>
+</tbody>
+</table>
+<h2 id="key-findings">Key Findings</h2>
+<h3 id="inertia-implementation-status">Inertia Implementation Status</h3>
+<p><strong>Complete Inertia</strong> (✅):
+- <code>d2q4_array_v2.py</code> - Most advanced Python implementation with full momentum transfer
+  - Velocities stored per particle: <code>u[i,j,k]</code>, <code>v[i,j,k]</code>
+  - Velocities swap with particles during motion
+  - Contribution to probabilities: <code>P += (dt/dy) * v_dest</code>
+  - Velocity of new void set to zero</p>
+<p><strong>Partial Inertia</strong> (⚠️):
+- <code>core.cpp</code> - Has inertia parameter but not fully used in <code>stream_core</code>
+  - <code>move_voids_core</code> updates velocities
+  - <code>stream_core</code> uses mean velocities only
+  - Missing: velocity swap, probabilistic motion with inertia</p>
+<p><strong>No Inertia</strong> (❌):
+- <code>d2q4_slow.py</code>, <code>d2q4_array.py</code>, <code>d2q4_SA_array.py</code></p>
+<h3 id="physics-models-supported">Physics Models Supported</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Stress</th>
+<th>Multi-length</th>
+<th>Slope Stability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>d2q4_slow.py</td>
+<td>Partial</td>
+<td>No</td>
+<td>Gradient</td>
+</tr>
+<tr>
+<td>d2q4_array.py</td>
+<td>Yes</td>
+<td>No</td>
+<td>Gradient</td>
+</tr>
+<tr>
+<td>d2q4_array_v2.py</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Gradient/Stress</td>
+</tr>
+<tr>
+<td>d2q4_SA_array.py</td>
+<td>No</td>
+<td>No</td>
+<td>Angle-based</td>
+</tr>
+<tr>
+<td>core.cpp</td>
+<td>No</td>
+<td>No</td>
+<td>Gradient</td>
+</tr>
+</tbody>
+</table>
+<h3 id="performance-factors">Performance Factors</h3>
+<p><strong>Fast (50-200×)</strong>:
+- C++ compilation with -O3 -march=native
+- Efficient memory layout (flattened arrays)
+- No Python overhead
+- <strong>But</strong>: Single-threaded, no SIMD</p>
+<p><strong>Medium (10-50×)</strong>:
+- NumPy vectorization (BLAS/LAPACK)
+- Array operations instead of loops
+- Python overhead remains</p>
+<p><strong>Slow (1×)</strong>:
+- Nested Python loops
+- Individual element access
+- Good for debugging only</p>
+<h2 id="recommendations-for-stream_core">Recommendations for stream_core</h2>
+<h3 id="recommended-option-1-minimal-upgrade">🏆 Recommended: Option 1 - Minimal Upgrade</h3>
+<p><strong>Goal</strong>: Add essential inertia while maintaining performance</p>
+<p><strong>Changes Needed</strong>:</p>
+<ol>
+<li>
+<p><strong>Add velocity fields to function signature</strong>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">stream_core</span><span class="p">(</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">u_mean</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">v_mean</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="n">View3</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w">  </span><span class="c1">// NEW: full velocity field</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">View3</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">v</span><span class="p">,</span><span class="w">  </span><span class="c1">// NEW: full velocity field</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="n">View3</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">View2</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">mask</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">nu</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Params</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="p">);</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Include inertia in probability calculation</strong>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">double</span><span class="w"> </span><span class="n">P_u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mask</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="p">(</span><span class="n">v_mean</span><span class="p">[</span><span class="n">idx_up</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">inertia</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">v</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dy_over_dt</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Swap velocities with particles</strong>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">inertia</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">swap_occurred</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="c1">// Swap velocities</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="n">u</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">),</span><span class="w"> </span><span class="n">u</span><span class="p">(</span><span class="n">dest</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">dest</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">k</span><span class="p">));</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="n">v</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">),</span><span class="w"> </span><span class="n">v</span><span class="p">(</span><span class="n">dest</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">dest</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">k</span><span class="p">));</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="c1">// Zero void velocity</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="n">u</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="n">v</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">}</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Make swaps probabilistic when inertia enabled</strong>:</p>
+</li>
+<li>Non-inertial: Keep <code>N = floor(nu * P)</code> deterministic swaps</li>
+<li>Inertial: Use probabilistic like <code>move_voids_core</code></li>
+</ol>
+<p><strong>Benefits</strong>:
+- ✅ Maintains C++ performance
+- ✅ Adds critical missing feature
+- ✅ Simple to implement and test
+- ✅ Compatible with existing code</p>
+<p><strong>Validation</strong>:
+- Compare with <code>d2q4_array_v2.py</code> for simple test cases
+- Verify mass conservation
+- Verify momentum conservation (when inertia enabled)
+- Run standard benchmarks (collapse, segregation)</p>
+<h3 id="alternative-options">Alternative Options</h3>
+<p><strong>Option 2</strong>: Full feature parity with d2q4_array_v2.py
+- ➕ Most accurate physics
+- ➕ Enables advanced research
+- ➖ Complex, high memory, longer development</p>
+<p><strong>Option 3</strong>: Hybrid with compile-time switching
+- ➕ Optimal performance for each mode
+- ➕ Future-proof flexibility
+- ➖ More complex code structure</p>
+<h2 id="when-to-use-each-implementation">When to Use Each Implementation</h2>
+<h3 id="for-understanding-physics">For Understanding Physics</h3>
+<p>→ Use <code>d2q4_slow.py</code>
+- Clear, readable code
+- Easy to experiment
+- Good for learning</p>
+<h3 id="for-python-research">For Python Research</h3>
+<p>→ Use <code>d2q4_array_v2.py</code>
+- Full feature set
+- Inertia support
+- Stress models
+- Validated for research</p>
+<h3 id="for-production-simulations">For Production Simulations</h3>
+<p>→ Use <code>core.cpp</code>
+- Fastest performance
+- C++ efficiency
+- <strong>After adding inertia per recommendations</strong></p>
+<h3 id="for-validation">For Validation</h3>
+<p>→ Compare <code>d2q4_array_v2.py</code> and <code>core.cpp</code>
+- Python as reference
+- C++ for speed
+- Cross-validate results</p>
+<h2 id="key-physics-equations">Key Physics Equations</h2>
+<h3 id="upward-motion">Upward Motion</h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>P_u = (v_y * dt/dy) * (s_inv_bar_dest / s_dest)
+</code></pre></div>
+With inertia: <code>+ (dt/dy) * v_dest</code></p>
+<h3 id="lateral-motion">Lateral Motion</h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>P_l/r = alpha * v_y * (dt/dx²) * s_neighbor
+</code></pre></div>
+With inertia: <code>+ (dt/dy) * u_dest</code></p>
+<h3 id="characteristic-velocity">Characteristic Velocity</h3>
+<ul>
+<li>Average size: <code>v_y = sqrt(g * s_bar)</code></li>
+<li>Freefall: <code>v_y = sqrt(2 * g * dy)</code></li>
+<li>Stress: <code>v_y = sqrt(2 * pressure / rho)</code></li>
+</ul>
+<h3 id="slope-stability">Slope Stability</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>nu_neighbor - nu_current &gt; delta_limit
+</code></pre></div>
+<h2 id="testing-checklist">Testing Checklist</h2>
+<p>After implementing changes to <code>stream_core</code>:</p>
+<ul>
+<li>[ ] Unit test: probability calculation</li>
+<li>[ ] Unit test: velocity swap</li>
+<li>[ ] Integration test: mass conservation</li>
+<li>[ ] Integration test: momentum conservation (inertia mode)</li>
+<li>[ ] Benchmark: collapse test</li>
+<li>[ ] Benchmark: segregation test</li>
+<li>[ ] Comparison: match d2q4_array_v2.py results</li>
+<li>[ ] Performance: no significant regression</li>
+<li>[ ] Edge cases: boundaries, masked cells</li>
+<li>[ ] Edge cases: fully packed regions</li>
+</ul>
+<h2 id="references">References</h2>
+<ol>
+<li>Full analysis: <code>motion_models_analysis.pdf</code> (16 pages)</li>
+<li>LaTeX source: <code>motion_models_analysis.tex</code></li>
+<li>Code files in: <code>HGD/motion/</code></li>
+<li>Main documentation: See <code>MOTION_MODELS_README.md</code></li>
+</ol>
+<h2 id="questions">Questions?</h2>
+<p>For detailed physics derivations, implementation notes, and mathematical notation, see the full PDF document <code>motion_models_analysis.pdf</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>

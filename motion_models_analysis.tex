@@ -1,0 +1,711 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{Motion Models in HGD: Physics, Implementation, and Recommendations}
+\author{Analysis of Heterarchical Granular Dynamics Motion Models}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document provides a comprehensive analysis of the motion model implementations in the Heterarchical Granular Dynamics (HGD) package. We characterize the physics, implementation strategies, computational features, and the presence or absence of inertia in each model. Based on this analysis, we provide recommendations for the \texttt{stream\_core} function in \texttt{core.cpp}.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+The HGD package models granular flow by tracking the motion of voids through a granular medium. The fundamental approach is stochastic, where voids move according to probabilistic rules based on local conditions. Multiple implementations exist in the \texttt{motion/} subfolder, each with different trade-offs in terms of physical accuracy, computational efficiency, and implementation complexity.
+
+\subsection{Overview of HGD Physics}
+
+The core physics is based on:
+\begin{itemize}
+    \item \textbf{Void migration}: Voids (NaN values in the grain size array) swap positions with solid particles
+    \item \textbf{Probabilistic motion}: Swaps occur with probabilities based on gravity, local solid fraction, and particle sizes
+    \item \textbf{Three directions}: Voids can move upward, left, or right
+    \item \textbf{Mass conservation}: The total number of particles and voids is conserved
+\end{itemize}
+
+\subsection{Key Parameters}
+
+\begin{itemize}
+    \item $\nu$: Solid fraction (1 - void fraction)
+    \item $\nu_{cs}$: Critical solid fraction (typically 0.64, close-packed limit)
+    \item $s$: Particle size (NaN represents voids)
+    \item $\bar{s}$: Harmonic mean of particle sizes
+    \item $\bar{s}^{-1}$: Inverse harmonic mean (for upward motion)
+    \item $\alpha$: Lateral diffusion coefficient
+    \item $P_u, P_l, P_r$: Probabilities for upward, left, and right motion
+\end{itemize}
+
+\section{Motion Model Implementations}
+
+\subsection{d2q4\_slow.py - Original Reference Implementation}
+
+\subsubsection{Description}
+The original, straightforward Python implementation that processes each void individually. Named ``d2q4'' after the lattice Boltzmann nomenclature (2D with 4 directions, though only 3 are typically used).
+
+\subsubsection{Physics Implementation}
+
+\textbf{Upward probability:}
+\begin{equation}
+P_u = P_{u,\text{ref}} \frac{\bar{s}^{-1}_{i,j+1}}{s_{i,j+1,k}}
+\end{equation}
+
+\textbf{Lateral probabilities:}
+\begin{equation}
+P_l = P_{lr,\text{ref}} \frac{s_{l,j,k}}{\bar{s}_{l,j}}, \quad P_r = P_{lr,\text{ref}} \frac{s_{r,j,k}}{\bar{s}_{r,j}}
+\end{equation}
+
+where:
+\begin{equation}
+P_{u,\text{ref}} = v_y \frac{\Delta t}{\Delta y}, \quad P_{lr,\text{ref}} = \alpha P_{u,\text{ref}}
+\end{equation}
+
+with $v_y = \sqrt{g \bar{s}}$ for average\_size model or $v_y = \sqrt{2 g \Delta y}$ for freefall model.
+
+\textbf{Slope stability:} Lateral motion is prevented if the slope is stable:
+\begin{equation}
+\nu_{\text{neighbor}} - \nu_{\text{current}} \leq \text{scale\_ang} \cdot \nu_{cs}
+\end{equation}
+
+\subsubsection{Features}
+\begin{itemize}
+    \item \textbf{Inertia}: No
+    \item \textbf{Parallelization}: No
+    \item \textbf{Velocity tracking}: Simple counters ($u$, $v$) incremented when swaps occur
+    \item \textbf{Conflict resolution}: Random selection among destination conflicts
+    \item \textbf{Advection models}: Supports ``average\_size'', ``freefall'', and ``stress'' (not implemented)
+\end{itemize}
+
+\subsubsection{Pros}
+\begin{itemize}
+    \item Easy to understand and verify
+    \item Clear physics implementation
+    \item Good reference for debugging other implementations
+    \item Flexible for experimentation
+\end{itemize}
+
+\subsubsection{Cons}
+\begin{itemize}
+    \item Very slow ($O(n_x \cdot n_y \cdot n_m)$ with nested loops)
+    \item No vectorization
+    \item No inertia modeling
+    \item Random index selection can be inefficient
+\end{itemize}
+
+\subsection{d2q4\_array.py - Vectorized Array Implementation}
+
+\subsubsection{Description}
+A vectorized implementation using NumPy array operations to process all voids simultaneously for each direction of motion. Represents a significant performance improvement over the slow version.
+
+\subsubsection{Physics Implementation}
+
+The physics is similar to \texttt{d2q4\_slow.py}, but implemented with array operations:
+
+\textbf{For each direction} (up, left, right):
+\begin{enumerate}
+    \item Calculate probabilities for all cells simultaneously
+    \item Use \texttt{np.roll} to access neighbor values
+    \item Apply stability criteria using boolean masks
+    \item Generate random numbers for all positions at once
+    \item Perform swaps where $P_{\text{random}} < P_{\text{swap}}$
+    \item Prevent overfilling by limiting swaps based on $\nu_{cs}$
+\end{enumerate}
+
+\subsubsection{Features}
+\begin{itemize}
+    \item \textbf{Inertia}: No
+    \item \textbf{Parallelization}: Implicit through NumPy (BLAS/LAPACK)
+    \item \textbf{Velocity tracking}: Counters updated based on swap directions
+    \item \textbf{Conflict resolution}: Random permutation before processing
+    \item \textbf{Overfill prevention}: Checks against $\nu_{cs}$ and slope stability
+    \item \textbf{Stress model support}: Can use stress-based velocities
+\end{itemize}
+
+\subsubsection{Pros}
+\begin{itemize}
+    \item Much faster than \texttt{d2q4\_slow.py} (10-100x depending on problem size)
+    \item Vectorized operations utilize CPU efficiently
+    \item Clear separation of physics per direction
+    \item Easier to verify correctness by direction
+\end{itemize}
+
+\subsubsection{Cons}
+\begin{itemize}
+    \item No inertia implementation
+    \item Memory overhead from creating temporary arrays
+    \item Sequential processing of directions (not truly parallel)
+    \item Still relatively slow for large problems
+\end{itemize}
+
+\subsection{d2q4\_array\_v2.py - Advanced Array Implementation with Inertia}
+
+\subsubsection{Description}
+The most advanced Python implementation, extending \texttt{d2q4\_array.py} with inertia support, multiple diffusion lengths, and advanced slope stability models. This represents the state-of-the-art physics implementation in Python.
+
+\subsubsection{Physics Implementation}
+
+\textbf{Key enhancements:}
+
+\textbf{1. Inertia support:}
+\begin{equation}
+P_u = \frac{\Delta t}{\Delta y} U_{\text{dest}} \frac{\bar{s}^{-1}_{i,j+1}}{s_{i,j+1,k}} + \frac{\Delta t}{\Delta y} v_{i,j+1,k}
+\end{equation}
+
+for upward motion, and:
+
+\begin{equation}
+P_{l/r} = \alpha U_{\text{dest}} s_{\text{dest}} \frac{\Delta t}{\Delta y^2} W + \frac{\Delta t}{\Delta y} u_{\text{dest}}
+\end{equation}
+
+for lateral motion, where $W$ is a diffusion weighting factor and $u$, $v$ are the current velocities.
+
+\textbf{2. Multiple diffusion lengths:}
+Allows voids to swap across multiple cells (up to \texttt{max\_diff\_swap\_length}), with weighting:
+\begin{equation}
+W = \frac{n_{\max} (n_{\max} + 1) (2n_{\max} + 1)}{6}
+\end{equation}
+
+\textbf{3. Granular temperature damping:}
+\begin{equation}
+\beta = \exp\left(-P_{\text{stab}} \frac{\Delta t}{\Delta x / u}\right)
+\end{equation}
+
+\textbf{4. Slope stability models:}
+\begin{itemize}
+    \item ``gradient'': Based on local solid fraction gradient
+    \item ``stress'': Based on stress tensor from previous swaps
+\end{itemize}
+
+\subsubsection{Features}
+\begin{itemize}
+    \item \textbf{Inertia}: Yes (optional, controlled by \texttt{p.inertia})
+    \item \textbf{Parallelization}: NumPy vectorization
+    \item \textbf{Velocity tracking}: Full velocity field with momentum transfer
+    \item \textbf{Conflict resolution}: Sophisticated \texttt{prevent\_conflicts} and \texttt{prevent\_overfilling} functions
+    \item \textbf{Slope stability}: Multiple models (gradient/stress)
+    \item \textbf{Advection models}: average\_size, freefall, stress
+\end{itemize}
+
+\subsubsection{Pros}
+\begin{itemize}
+    \item Most complete physics (inertia, stress, extended diffusion)
+    \item Flexible and extensible
+    \item Well-tested for research applications
+    \item Handles complex phenomena (momentum transfer, granular temperature)
+    \item Good for validation of other implementations
+\end{itemize}
+
+\subsubsection{Cons}
+\begin{itemize}
+    \item Most complex implementation
+    \item Highest memory usage
+    \item Slower than C++ implementations
+    \item Conflict resolution can be expensive for dense systems
+    \item Some features (like stress model) may have issues (noted in comments)
+\end{itemize}
+
+\subsection{d2q4\_SA\_array.py - Alternative Vectorized Implementation}
+
+\subsubsection{Description}
+An alternative vectorized approach with a different formulation for probabilities and conflict resolution. This implementation explores a different mathematical formulation of the same physics.
+
+\subsubsection{Physics Implementation}
+
+\textbf{Probability formulation:}
+Pre-computes probability arrays for all three directions:
+\begin{align}
+P_{ups} &= P_{u,\text{ref}} \frac{\bar{s}^{-1}}{s} \text{ for upward} \\
+P_{ls} &= P_{lr,\text{ref}} \frac{s_{\text{left}}}{\bar{s}_{\text{left}}} \text{ for left} \\
+P_{rs} &= P_{lr,\text{ref}} \frac{s_{\text{right}}}{\bar{s}_{\text{right}}} \text{ for right}
+\end{align}
+
+\textbf{Total probability:}
+\begin{equation}
+P_{tot} = P_{ups} + P_{ls} + P_{rs}
+\end{equation}
+
+Swap direction chosen based on random value compared to cumulative probabilities.
+
+\textbf{Conflict resolution:}
+Uses explicit set operations to find and resolve conflicts:
+\begin{itemize}
+    \item Find $A \cap B \cap C$ (three-way conflicts)
+    \item Find pairwise conflicts $A \cap B$, $B \cap C$, $A \cap C$
+    \item Randomly select which swap to keep
+\end{itemize}
+
+\subsubsection{Features}
+\begin{itemize}
+    \item \textbf{Inertia}: No
+    \item \textbf{Parallelization}: NumPy vectorization
+    \item \textbf{Velocity tracking}: Not explicitly tracked
+    \item \textbf{Conflict resolution}: Explicit set-based approach
+    \item \textbf{Slope stability}: Angle-based criterion with \texttt{scale\_ang} factor
+\end{itemize}
+
+\subsubsection{Pros}
+\begin{itemize}
+    \item Mathematically elegant formulation
+    \item Explicit conflict resolution is conceptually clear
+    \item Pre-computation of probabilities
+    \item Good for understanding alternative formulations
+\end{itemize}
+
+\subsubsection{Cons}
+\begin{itemize}
+    \item No inertia
+    \item Set operations for conflict resolution are slow
+    \item Less tested than other implementations
+    \item Velocity tracking is minimal
+    \item Memory-intensive probability arrays
+\end{itemize}
+
+\subsection{core.cpp - Optimized C++ Implementation}
+
+\subsubsection{Description}
+The production C++ implementation, optimized for performance. This provides the best computational efficiency while maintaining accurate physics. It includes two main functions: \texttt{move\_voids\_core} (for void motion) and \texttt{stream\_core} (for mass streaming based on velocities).
+
+\subsubsection{Physics Implementation}
+
+\textbf{move\_voids\_core:} Implements the core void motion algorithm similar to \texttt{d2q4\_slow.py} but with:
+\begin{itemize}
+    \item Precomputed neighbor indices
+    \item Random shuffling of processing order
+    \item Efficient storage using flattened arrays
+\end{itemize}
+
+\textbf{stream\_core:} Implements mass advection based on mean velocities:
+\begin{equation}
+N_{u/l/r} = \lfloor \nu \cdot P_{u/l/r} \rfloor
+\end{equation}
+
+where $N$ is the number of particles to move in each direction. The function:
+\begin{enumerate}
+    \item Computes movement probabilities from mean velocities
+    \item Determines number of particles to swap in each direction
+    \item Performs deterministic swaps (not probabilistic)
+    \item Prevents swaps into solid regions ($\nu \geq \nu_{cs}$)
+\end{enumerate}
+
+\subsubsection{Features}
+\begin{itemize}
+    \item \textbf{Inertia}: Parameter available but not fully implemented in stream\_core
+    \item \textbf{Parallelization}: Single-threaded (could be parallelized)
+    \item \textbf{Velocity tracking}: Separate mean velocity arrays
+    \item \textbf{Memory efficiency}: Uses std::vector, flattened indexing
+    \item \textbf{Precomputation}: Neighbor indices cached in NeighborIndices struct
+    \item \textbf{Random number generation}: Modern C++ std::mt19937
+\end{itemize}
+
+\subsubsection{Pros}
+\begin{itemize}
+    \item Fast (10-100x faster than Python versions)
+    \item Memory efficient
+    \item Well-structured with helper functions
+    \item Compiled optimization (-O3, -march=native)
+    \item Low-level control over performance
+    \item Pybind11 integration for easy Python access
+\end{itemize}
+
+\subsubsection{Cons}
+\begin{itemize}
+    \item \texttt{stream\_core} is incomplete (inertia not implemented)
+    \item No vectorization (SIMD) used
+    \item Single-threaded (no OpenMP)
+    \item Less flexible than Python for experimentation
+    \item Debugging is harder than Python
+\end{itemize}
+
+\subsection{d2q4.cpp.dep - Deprecated C++ Implementation}
+
+\subsubsection{Description}
+An earlier C++ implementation that has been deprecated. It used Eigen for linear algebra and had OpenMP hooks (commented out). This file provides historical context but should not be used for new work.
+
+\subsubsection{Features}
+\begin{itemize}
+    \item \textbf{Inertia}: Yes (parameter \texttt{p.inertia})
+    \item \textbf{Parallelization}: OpenMP hooks (commented out)
+    \item \textbf{Eigen integration}: Used ArrayXXd types
+    \item \textbf{Status}: Deprecated
+\end{itemize}
+
+\subsubsection{Why Deprecated?}
+\begin{itemize}
+    \item Replaced by more efficient \texttt{core.cpp}
+    \item Eigen dependency added complexity
+    \item OpenMP parallelization was problematic (race conditions)
+    \item Less maintainable than current implementation
+\end{itemize}
+
+\section{Comparative Analysis}
+
+\subsection{Performance Comparison}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccc}
+\toprule
+Implementation & Relative Speed & Memory & Vectorization & Parallelization \\
+\midrule
+d2q4\_slow.py & 1$\times$ (baseline) & Low & No & No \\
+d2q4\_array.py & 10-50$\times$ & Medium & NumPy & Implicit \\
+d2q4\_array\_v2.py & 10-30$\times$ & High & NumPy & Implicit \\
+d2q4\_SA\_array.py & 5-20$\times$ & High & NumPy & Implicit \\
+core.cpp & 50-200$\times$ & Low & No & No \\
+d2q4.cpp.dep & 40-150$\times$ & Medium & Eigen & (Disabled) \\
+\bottomrule
+\end{tabular}
+\caption{Performance comparison of motion model implementations}
+\end{table}
+
+\subsection{Physics Feature Comparison}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccccc}
+\toprule
+Implementation & Inertia & Stress & Multi-length & Slope Model & Status \\
+\midrule
+d2q4\_slow.py & No & Partial & No & Gradient & Reference \\
+d2q4\_array.py & No & Yes & No & Gradient & Active \\
+d2q4\_array\_v2.py & Yes & Yes & Yes & Both & Active \\
+d2q4\_SA\_array.py & No & No & No & Angle & Experimental \\
+core.cpp & Partial & No & No & Gradient & Production \\
+d2q4.cpp.dep & Yes & No & No & Gradient & Deprecated \\
+\bottomrule
+\end{tabular}
+\caption{Physics features in each implementation}
+\end{table}
+
+\section{Inertia Implementation Details}
+
+\subsection{What is Inertia in HGD?}
+
+In the HGD context, ``inertia'' refers to momentum carried by particles/voids as they move. Without inertia:
+\begin{itemize}
+    \item Each void swap is independent
+    \item Velocities are just counters (statistics)
+    \item No momentum conservation
+    \item Instant response to force changes
+\end{itemize}
+
+With inertia:
+\begin{itemize}
+    \item Particles carry velocity $u$, $v$
+    \item Velocity swaps with particle during void migration
+    \item Probabilities depend on current velocity
+    \item Gradual acceleration/deceleration
+    \item More realistic dynamics
+\end{itemize}
+
+\subsection{Implementations with Inertia}
+
+\textbf{d2q4\_array\_v2.py:}
+\begin{itemize}
+    \item Most complete inertia implementation
+    \item Velocities stored in 3D arrays $u[i,j,k]$, $v[i,j,k]$
+    \item Velocities swap with particles: $(u[i,j,k], u[\text{dest}]) \gets (u[\text{dest}], u[i,j,k])$
+    \item Contribution to swap probability: $P += (\Delta t / \Delta y) \cdot v_{\text{dest}}$
+    \item Velocity of new void set to zero
+    \item Solid regions have zero velocity enforced
+\end{itemize}
+
+\textbf{d2q4.cpp.dep (deprecated):}
+\begin{itemize}
+    \item Similar approach to d2q4\_array\_v2.py
+    \item Used for inertial flows
+    \item Velocities tracked and swapped with particles
+    \item Commented out collision detection
+\end{itemize}
+
+\textbf{core.cpp:}
+\begin{itemize}
+    \item Parameter \texttt{p.inertia} exists but not used in \texttt{stream\_core}
+    \item \texttt{move\_voids\_core} updates velocities but doesn't use them for probability
+    \item \texttt{stream\_core} uses mean velocities but as deterministic advection, not probabilistic
+    \item Incomplete inertia implementation
+\end{itemize}
+
+\section{Recommendations for stream\_core}
+
+\subsection{Current Issues}
+
+The current \texttt{stream\_core} function in \texttt{core.cpp} has several limitations:
+
+\begin{enumerate}
+    \item \textbf{No probabilistic motion}: Uses deterministic particle counts $N = \lfloor \nu \cdot P \rfloor$
+    \item \textbf{Limited inertia}: Doesn't fully incorporate momentum into swap probabilities
+    \item \textbf{Simplified physics}: Lacks features from advanced Python implementations
+    \item \textbf{Sequential processing}: No attempt at vectorization or parallelization
+\end{enumerate}
+
+\subsection{Recommended Approach}
+
+Based on the analysis, I recommend the following for improving \texttt{stream\_core}:
+
+\subsubsection{Option 1: Minimal Upgrade (Recommended for Production)}
+
+\textbf{Goal:} Add inertia support while maintaining performance and simplicity.
+
+\textbf{Changes:}
+\begin{enumerate}
+    \item Add velocity fields $u[i,j,k]$ and $v[i,j,k]$ to the function signature
+    \item Include inertia contribution in swap probabilities:
+    \begin{equation}
+    P_u = \text{mask}(i,j+1) \cdot \left(v_{\text{mean}}[i,j+1] + v[i,j+1,k]\right) \frac{\Delta y}{\Delta t}
+    \end{equation}
+    \item Swap velocities with particles during streaming
+    \item Make the swap probabilistic (not deterministic) when inertia is enabled
+\end{enumerate}
+
+\textbf{Physics basis:} Follow \texttt{d2q4\_array\_v2.py} equations but in deterministic streaming context.
+
+\textbf{Pros:}
+\begin{itemize}
+    \item Maintains C++ performance
+    \item Adds critical inertia feature
+    \item Relatively simple to implement and test
+    \item Compatible with existing code structure
+\end{itemize}
+
+\textbf{Cons:}
+\begin{itemize}
+    \item Still missing advanced features (stress, multi-length)
+    \item Not as complete as d2q4\_array\_v2.py
+\end{itemize}
+
+\subsubsection{Option 2: Full Feature Parity with d2q4\_array\_v2.py}
+
+\textbf{Goal:} Implement all features from the most advanced Python implementation.
+
+\textbf{Changes:}
+\begin{enumerate}
+    \item Full inertia with momentum conservation
+    \item Multiple diffusion lengths
+    \item Stress-based slope stability
+    \item Granular temperature tracking
+    \item Advanced conflict resolution
+\end{enumerate}
+
+\textbf{Pros:}
+\begin{itemize}
+    \item Most accurate physics
+    \item Enables cutting-edge research
+    \item Future-proof
+\end{itemize}
+
+\textbf{Cons:}
+\begin{itemize}
+    \item Complex implementation
+    \item Higher memory usage
+    \item May sacrifice some performance
+    \item Longer development time
+    \item Harder to maintain
+\end{itemize}
+
+\subsubsection{Option 3: Hybrid Approach (Recommended for Long-term)}
+
+\textbf{Goal:} Create a flexible C++ implementation that can switch between modes.
+
+\textbf{Strategy:}
+\begin{enumerate}
+    \item Keep simple streaming for non-inertial flows
+    \item Add inertia mode with momentum transfer
+    \item Use template metaprogramming or compile-time flags
+    \item Optimize each mode separately
+\end{enumerate}
+
+\textbf{Example:}
+\begin{lstlisting}[language=C++]
+template<bool WithInertia>
+void stream_core_impl(...) {
+    if constexpr (WithInertia) {
+        // Full inertia implementation
+    } else {
+        // Simple streaming
+    }
+}
+\end{lstlisting}
+
+\textbf{Pros:}
+\begin{itemize}
+    \item Best performance for each mode
+    \item Flexible for different applications
+    \item No runtime overhead for non-inertial cases
+\end{itemize}
+
+\textbf{Cons:}
+\begin{itemize}
+    \item More complex code structure
+    \item Need to maintain two code paths
+\end{itemize}
+
+\subsection{Specific Implementation Details for Option 1}
+
+For the recommended minimal upgrade, here's the specific approach:
+
+\subsubsection{Modified Function Signature}
+\begin{lstlisting}[language=C++]
+void stream_core(
+    const std::vector<double>& u_mean,
+    const std::vector<double>& v_mean,
+    View3<double> u,  // Add full velocity field
+    View3<double> v,  // Add full velocity field
+    View3<double> s,
+    const View2<const uint8_t>& mask,
+    std::vector<double>& nu,
+    const Params& p);
+\end{lstlisting}
+
+\subsubsection{Key Algorithm Changes}
+
+\textbf{1. Probability computation with inertia:}
+\begin{lstlisting}[language=C++]
+double P_u = mask(i, j + 1) ? 
+    (v_mean[idx_up] + (p.inertia ? v(i, j+1, k) : 0.0)) 
+    * dy_over_dt : 0;
+\end{lstlisting}
+
+\textbf{2. Velocity swapping:}
+\begin{lstlisting}[language=C++]
+if (p.inertia && found) {
+    // Swap velocities with particle
+    double tmp_u = u(i, j, k);
+    u(i, j, k) = u(dest[0], dest[1], k);
+    u(dest[0], dest[1], k) = tmp_u;
+    
+    double tmp_v = v(i, j, k);
+    v(i, j, k) = v(dest[0], dest[1], k);
+    v(dest[0], dest[1], k) = tmp_v;
+    
+    // Set void velocity to zero
+    u(i, j, k) = 0.0;
+    v(i, j, k) = 0.0;
+}
+\end{lstlisting}
+
+\textbf{3. Probabilistic vs deterministic:}
+\begin{itemize}
+    \item Non-inertial: Keep deterministic $N = \lfloor \nu \cdot P \rfloor$
+    \item Inertial: Use probabilistic swap like \texttt{move\_voids\_core}
+\end{itemize}
+
+\subsection{Testing and Validation}
+
+To validate any changes to \texttt{stream\_core}:
+
+\begin{enumerate}
+    \item \textbf{Unit tests}: Test individual components (probability calculation, velocity swap)
+    \item \textbf{Comparison tests}: Compare with \texttt{d2q4\_array\_v2.py} for simple cases
+    \item \textbf{Conservation tests}: Verify mass, momentum conservation
+    \item \textbf{Physical tests}: Run standard benchmarks (collapse, segregation, hourglass)
+    \item \textbf{Performance tests}: Ensure no significant performance regression
+\end{enumerate}
+
+\section{Conclusion}
+
+The HGD motion models span a range of complexity and performance:
+
+\begin{itemize}
+    \item \textbf{For understanding physics}: Use \texttt{d2q4\_slow.py}
+    \item \textbf{For Python research}: Use \texttt{d2q4\_array\_v2.py}
+    \item \textbf{For production simulations}: Use \texttt{core.cpp}
+\end{itemize}
+
+The main gap in the current implementation is proper inertia support in \texttt{stream\_core}. The recommended approach is Option 1 (minimal upgrade), which adds essential inertia features while maintaining the performance and simplicity of the C++ implementation.
+
+Key recommendations for \texttt{stream\_core}:
+\begin{enumerate}
+    \item Add full velocity field support
+    \item Include inertia contribution to swap probabilities
+    \item Swap velocities with particles when inertia is enabled
+    \item Consider making swaps probabilistic in inertia mode
+    \item Validate against \texttt{d2q4\_array\_v2.py}
+    \item Maintain performance for non-inertial cases
+\end{enumerate}
+
+Future work could include stress-based models, multi-length diffusion, and parallelization, following Option 3 (hybrid approach) for maximum flexibility.
+
+\appendix
+
+\section{Mathematical Notation Summary}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ll}
+\toprule
+Symbol & Meaning \\
+\midrule
+$\nu$ & Solid fraction \\
+$\nu_{cs}$ & Critical solid fraction (close packing) \\
+$s$ & Particle size (NaN for voids) \\
+$\bar{s}$ & Harmonic mean of particle sizes \\
+$\bar{s}^{-1}$ & Inverse harmonic mean \\
+$P_u$ & Upward swap probability \\
+$P_l$ & Leftward swap probability \\
+$P_r$ & Rightward swap probability \\
+$\alpha$ & Lateral diffusion coefficient \\
+$v_y$ & Characteristic velocity scale \\
+$g$ & Gravitational acceleration \\
+$\Delta t$ & Time step \\
+$\Delta x, \Delta y$ & Grid spacing \\
+$u, v$ & Horizontal and vertical velocities \\
+$n_x, n_y$ & Grid dimensions \\
+$n_m$ & Number of particles per cell (microstructural coordinate) \\
+\bottomrule
+\end{tabular}
+\caption{Mathematical notation used throughout this document}
+\end{table}
+
+\section{Code Structure Reference}
+
+\subsection{File Organization}
+\begin{verbatim}
+HGD/motion/
+|-- __init__.py
+|-- bindings_py.cpp       # Pybind11 bindings
+|-- core.cpp              # Production C++ implementation
+|-- core.h                # Header for core.cpp
+|-- d2q4_slow.py          # Reference Python implementation
+|-- d2q4_array.py         # Vectorized Python
+|-- d2q4_array_v2.py      # Advanced Python with inertia
+|-- d2q4_SA_array.py      # Alternative formulation
+|-- d2q4.cpp.dep          # Deprecated C++ implementation
+|-- helpers.cpp           # Helper functions (deprecated)
++-- helpers.h             # Helper headers (deprecated)
+\end{verbatim}
+
+\subsection{Key Functions}
+
+\textbf{core.cpp:}
+\begin{itemize}
+    \item \texttt{move\_voids\_core}: Main void motion with probabilistic swaps
+    \item \texttt{stream\_core}: Mass streaming based on velocities
+    \item \texttt{compute\_solid\_fraction\_core}: Calculate $\nu$
+    \item \texttt{compute\_mean\_core}: Calculate $\bar{s}$
+    \item \texttt{compute\_s\_inv\_bar\_core}: Calculate $\bar{s}^{-1}$
+\end{itemize}
+
+\textbf{Python implementations:}
+\begin{itemize}
+    \item \texttt{move\_voids}: Main entry point for void motion
+    \item Various operator functions in \texttt{HGD.operators}
+    \item Stress calculation in \texttt{HGD.stress} (for d2q4\_array\_v2.py)
+\end{itemize}
+
+\end{document}
