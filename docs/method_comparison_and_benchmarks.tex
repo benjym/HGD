@@ -1,0 +1,676 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{HGD Method Comparison: Benchmarking Against Other Numerical Methods}
+\author{Comparison of Heterarchical Granular Dynamics with Alternative Approaches}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document compares the Heterarchical Granular Dynamics (HGD) method with other numerical approaches for modeling granular flow, including Lattice Gas Automata (LGA), Lattice Boltzmann Method (LBM), and other stochastic advection methods. We analyze accuracy, robustness, computational efficiency, and suitability for different physical regimes. Based on this comparison, we provide recommendations for optimal implementation strategies and identify areas for improvement.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+The HGD method is a particle-based stochastic approach for modeling granular flow through void migration. To understand its strengths and limitations, we compare it with established numerical methods:
+
+\begin{itemize}
+    \item \textbf{Lattice Gas Automata (LGA)}: Discrete particle automata on a lattice
+    \item \textbf{Lattice Boltzmann Method (LBM)}: Mesoscopic fluid simulation
+    \item \textbf{Discrete Element Method (DEM)}: Individual particle tracking
+    \item \textbf{Monte Carlo Methods}: Stochastic sampling approaches
+    \item \textbf{Continuum Methods}: PDE-based approaches (Navier-Stokes, granular rheology)
+\end{itemize}
+
+\section{Method Classifications}
+
+\subsection{Spatial Discretization}
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccc}
+\toprule
+Method & Grid Type & Particle & Continuous & Hybrid \\
+\midrule
+HGD & Regular lattice & Yes & No & Yes \\
+LGA & Regular lattice & Yes & No & No \\
+LBM & Regular lattice & No & Yes & No \\
+DEM & Off-grid & Yes & No & No \\
+Continuum & Grid/mesh & No & Yes & No \\
+\bottomrule
+\end{tabular}
+\caption{Spatial discretization characteristics}
+\end{table}
+
+\subsection{Temporal Evolution}
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+Method & Deterministic & Stochastic & Time Scale \\
+\midrule
+HGD & Partial & Yes & Explicit \\
+LGA & Yes & No & Explicit \\
+LBM & Yes & No & Explicit \\
+DEM & Yes & Optional & Explicit \\
+Monte Carlo & No & Yes & Event-driven \\
+\bottomrule
+\end{tabular}
+\caption{Temporal evolution characteristics}
+\end{table}
+
+\section{Detailed Method Comparison}
+
+\subsection{Lattice Gas Automata (LGA)}
+
+\subsubsection{Description}
+LGA represents fluids as collections of discrete particles on a lattice, moving according to simple collision rules. The HPP and FHP models are classic examples.
+
+\subsubsection{Similarities to HGD}
+\begin{itemize}
+    \item Both use discrete particles on a regular lattice
+    \item Both use local collision/swap rules
+    \item Both achieve macroscopic behavior from microscopic rules
+    \item Both are computationally efficient compared to molecular dynamics
+\end{itemize}
+
+\subsubsection{Differences from HGD}
+\begin{itemize}
+    \item \textbf{LGA}: Particles are identical, boolean occupation
+    \item \textbf{HGD}: Particles have sizes, multiple per cell (heterarchical coordinate)
+    \item \textbf{LGA}: Designed for fluid flow (incompressible Navier-Stokes)
+    \item \textbf{HGD}: Designed for granular flow with size segregation
+    \item \textbf{LGA}: Deterministic collision rules
+    \item \textbf{HGD}: Probabilistic swaps with gravity bias
+\end{itemize}
+
+\subsubsection{Accuracy Comparison}
+\textbf{LGA limitations}:
+\begin{itemize}
+    \item Statistical noise requires large ensembles
+    \item Lacks Galilean invariance (pre-LBM)
+    \item Limited to specific lattice symmetries
+\end{itemize}
+
+\textbf{HGD advantages}:
+\begin{itemize}
+    \item Can represent polydisperse systems
+    \item Direct physical interpretation of swap probabilities
+    \item Naturally handles segregation
+\end{itemize}
+
+\subsection{Lattice Boltzmann Method (LBM)}
+
+\subsubsection{Description}
+LBM solves the discrete Boltzmann equation for distribution functions on a lattice. It recovers Navier-Stokes equations through Chapman-Enskog expansion.
+
+\subsubsection{Comparison with HGD}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\toprule
+Feature & LBM & HGD \\
+\midrule
+Variables & Distribution functions & Particle sizes + voids \\
+Evolution & BGK collision & Probabilistic swaps \\
+Macroscopic limit & Navier-Stokes & Granular flow \\
+Noise & Minimal & Inherent (stochastic) \\
+Multiphase & Complex & Natural (heterarchical) \\
+Parallelization & Excellent & Good \\
+Memory & Moderate & High (heterarchical dim) \\
+\bottomrule
+\end{tabular}
+\caption{LBM vs HGD comparison}
+\end{table}
+
+\textbf{LBM advantages}:
+\begin{itemize}
+    \item Well-established theoretical foundation (Chapman-Enskog)
+    \item Smooth, continuous fields
+    \item Excellent for single-phase incompressible flow
+    \item Lower statistical noise
+    \item More accurate for viscous flows
+\end{itemize}
+
+\textbf{HGD advantages}:
+\begin{itemize}
+    \item Directly represents particle-level physics
+    \item Natural handling of size segregation
+    \item No need for multiphase flow models
+    \item Better for dense granular flows
+    \item Simpler conceptual model
+\end{itemize}
+
+\subsection{Discrete Element Method (DEM)}
+
+\subsubsection{Description}
+DEM tracks individual particles with explicit contact mechanics, solving Newton's equations for each particle.
+
+\subsubsection{Comparison}
+
+\textbf{DEM advantages}:
+\begin{itemize}
+    \item Most accurate for particle-level physics
+    \item Captures contact forces, friction, rotation
+    \item No grid restrictions
+    \item Well-validated for many applications
+\end{itemize}
+
+\textbf{DEM disadvantages}:
+\begin{itemize}
+    \item Computationally expensive ($O(N^2)$ or $O(N \log N)$ with neighbor lists)
+    \item Limited to $\sim 10^6$ particles on typical hardware
+    \item Requires small timesteps (contact duration)
+    \item Complex parameter calibration
+\end{itemize}
+
+\textbf{HGD advantages over DEM}:
+\begin{itemize}
+    \item Much faster (can handle $10^9+$ particles)
+    \item Larger timesteps possible
+    \item Simpler parameterization
+    \item Good for large-scale systems
+\end{itemize}
+
+\textbf{HGD disadvantages vs DEM}:
+\begin{itemize}
+    \item Less accurate force resolution
+    \item No explicit contact mechanics
+    \item Limited to quasi-static/slow flows
+    \item Grid-based restrictions
+\end{itemize}
+
+\subsection{Monte Carlo Methods for Advection}
+
+\subsubsection{Random Walk Methods}
+Random walk methods move particles stochastically with probabilities based on local conditions.
+
+\textbf{Similarity to HGD}:
+HGD is essentially a random walk method for voids with gravity bias.
+
+\textbf{Differences}:
+\begin{itemize}
+    \item Standard random walk: No preferred direction
+    \item HGD: Gravity-biased with upward preference
+    \item HGD: Includes lateral diffusion proportional to velocity
+\end{itemize}
+
+\subsubsection{Kinetic Monte Carlo (KMC)}
+KMC advances time based on rates of discrete events.
+
+\textbf{Comparison with HGD}:
+\begin{itemize}
+    \item \textbf{KMC}: Event-driven, variable timestep
+    \item \textbf{HGD}: Fixed timestep, multiple events per step
+    \item \textbf{KMC}: Exact for Markov processes
+    \item \textbf{HGD}: Approximate, collision handling needed
+\end{itemize}
+
+\subsection{Continuum Methods}
+
+\subsubsection{Granular Rheology Models}
+$\mu(I)$ rheology, critical state theory, etc.
+
+\textbf{Continuum advantages}:
+\begin{itemize}
+    \item Fast for large systems
+    \item Well-established for uniform flows
+    \item Good for engineering applications
+\end{itemize}
+
+\textbf{HGD advantages}:
+\begin{itemize}
+    \item Captures segregation naturally
+    \item No constitutive model needed
+    \item Better for heterogeneous systems
+    \item Particle-level detail
+\end{itemize}
+
+\section{Robustness and Accuracy Concerns}
+
+\subsection{Current HGD Limitations}
+
+Based on the analysis of existing implementations, several robustness/accuracy issues exist:
+
+\subsubsection{1. Probabilistic Inconsistencies}
+\textbf{Issue}: Multiple swaps can target the same destination cell, causing conflicts.
+
+\textbf{Current handling}:
+\begin{itemize}
+    \item \texttt{d2q4\_slow.py}: Random iteration order
+    \item \texttt{d2q4\_array\_v2.py}: Explicit conflict detection and resolution
+    \item \texttt{core.cpp}: Random shuffle before processing
+\end{itemize}
+
+\textbf{Problem}: Resolution is not physically consistent - which swap "wins" is arbitrary.
+
+\textbf{Solution approaches}:
+\begin{enumerate}
+    \item \textbf{Kinetic Monte Carlo}: Select one event based on relative rates
+    \item \textbf{Fractional occupancy}: Allow partial swaps (more LBM-like)
+    \item \textbf{Sequential updates}: Process cells in deterministic order with availability checking
+\end{enumerate}
+
+\subsubsection{2. Timestep Stability}
+\textbf{Issue}: Large timesteps can lead to $P_{tot} > 1$, which is unphysical.
+
+\textbf{Current handling}: Check and error/warning when $P_{tot} > 1$
+
+\textbf{Problem}: No automatic timestep adaptation
+
+\textbf{Solutions}:
+\begin{enumerate}
+    \item \textbf{Renormalization}: Scale all probabilities by $P_{tot}$ if $P_{tot} > 1$
+    \item \textbf{Adaptive timestep}: Reduce $\Delta t$ automatically
+    \item \textbf{Implicit methods}: Allow larger timesteps
+\end{enumerate}
+
+\subsubsection{3. Boundary Condition Consistency}
+\textbf{Issue}: Periodic boundaries with offset can create artifacts.
+
+\textbf{Current handling}: Manual offset specification in parameters
+
+\textbf{Problems}:
+\begin{itemize}
+    \item Non-physical flow near boundaries
+    \item Difficult to validate
+    \item Limited boundary condition types
+\end{itemize}
+
+\subsubsection{4. Inertia Implementation}
+\textbf{Issue}: Incomplete/inconsistent inertia in different implementations (see motion\_models\_analysis.pdf)
+
+\textbf{Impact on robustness}:
+\begin{itemize}
+    \item Velocities can grow unbounded without proper damping
+    \item Momentum not conserved in all implementations
+    \item Collision handling is ad-hoc
+\end{itemize}
+
+\subsubsection{5. Grid Resolution Effects}
+\textbf{Issue}: Lattice artifacts, lack of convergence studies
+
+\textbf{Problems}:
+\begin{itemize}
+    \item No systematic grid refinement studies
+    \item Particle size relative to cell size matters
+    \item Heterarchical coordinate resolution ($n_m$) affects statistics
+\end{itemize}
+
+\subsection{Accuracy Metrics}
+
+To properly benchmark HGD, we need to define accuracy metrics:
+
+\subsubsection{Conservation Properties}
+\begin{enumerate}
+    \item \textbf{Mass conservation}: $\sum_{i,j,k} \text{particle}(i,j,k) = \text{const}$
+    \item \textbf{Momentum conservation} (with inertia): $\sum_{i,j,k} m v = \text{const}$
+    \item \textbf{Energy considerations}: Dissipation should match physics
+\end{enumerate}
+
+\subsubsection{Physical Validation}
+\begin{enumerate}
+    \item \textbf{Angle of repose}: Compare with experiments
+    \item \textbf{Segregation patterns}: Qualitative and quantitative
+    \item \textbf{Flow rates}: Hourglass, silo discharge
+    \item \textbf{Velocity profiles}: Shear flows
+\end{enumerate}
+
+\subsubsection{Convergence}
+\begin{enumerate}
+    \item \textbf{Grid refinement}: $\Delta x, \Delta y \to 0$
+    \item \textbf{Timestep refinement}: $\Delta t \to 0$
+    \item \textbf{Heterarchical refinement}: $n_m \to \infty$
+    \item \textbf{Statistical convergence}: Multiple realizations
+\end{enumerate}
+
+\section{Optimal Implementation Strategy}
+
+\subsection{Recommended Architecture}
+
+Based on the analysis, an optimal implementation should:
+
+\subsubsection{1. Separate Physics from Numerics}
+\begin{lstlisting}[language=C++]
+class PhysicsModel {
+    virtual double compute_probability(
+        ParticleState& source, 
+        ParticleState& dest,
+        Direction dir) = 0;
+};
+
+class NumericalSolver {
+    virtual void step(Grid& grid, 
+                     PhysicsModel& physics,
+                     double dt) = 0;
+};
+\end{lstlisting}
+
+This allows swapping numerical methods without changing physics.
+
+\subsubsection{2. Implement Multiple Solvers}
+
+\textbf{Mode 1: Stochastic (current HGD)}
+\begin{itemize}
+    \item Best for: Non-inertial, quasi-static flows
+    \item Fast, simple implementation
+    \item Good for segregation studies
+\end{itemize}
+
+\textbf{Mode 2: Kinetic Monte Carlo}
+\begin{itemize}
+    \item Best for: Rare events, slow flows
+    \item More accurate event selection
+    \item Variable timestep
+\end{itemize}
+
+\textbf{Mode 3: LBM-inspired}
+\begin{itemize}
+    \item Best for: Inertial flows, accuracy
+    \item Distribution functions instead of discrete particles
+    \item Better theoretical foundation
+\end{itemize}
+
+\textbf{Mode 4: Hybrid HGD-DEM}
+\begin{itemize}
+    \item Best for: Transition regions
+    \item DEM for dense regions, HGD for dilute
+    \item Coupling at interfaces
+\end{itemize}
+
+\subsubsection{3. Improved Conflict Resolution}
+
+\textbf{Current}: Random selection or shuffling
+
+\textbf{Recommended}: Rate-based selection
+\begin{equation}
+P(\text{swap } i) = \frac{P_i}{\sum_j P_j}
+\end{equation}
+where $j$ indexes all swaps competing for the same destination.
+
+\subsubsection{4. Adaptive Timestep Control}
+
+\begin{lstlisting}[language=C++]
+double compute_safe_timestep(Grid& grid) {
+    double max_velocity = grid.get_max_velocity();
+    double dt_CFL = CFL_number * grid.dx / max_velocity;
+    
+    double max_probability = grid.get_max_swap_probability();
+    double dt_prob = 1.0 / (max_probability / grid.dt);
+    
+    return min(dt_CFL, dt_prob);
+}
+\end{lstlisting}
+
+\subsubsection{5. Proper Inertia Handling}
+
+Follow the recommendations in \texttt{motion\_models\_analysis.pdf}, Option 1:
+\begin{itemize}
+    \item Full velocity fields $u[i,j,k]$, $v[i,j,k]$
+    \item Velocity swap with particles
+    \item Collision damping: $v_{\text{new}} = e \cdot v_{\text{old}}$ where $e$ is restitution coefficient
+    \item Solid friction: $u_{\text{new}} = u_{\text{old}} - \mu \cdot P \cdot \Delta t$
+\end{itemize}
+
+\subsection{Validation Strategy}
+
+\subsubsection{Unit Tests}
+\begin{enumerate}
+    \item Conservation: Mass, momentum (when applicable)
+    \item Boundary conditions: No-flux, periodic
+    \item Single particle: Trajectories
+    \item Probability limits: $0 \leq P \leq 1$
+\end{enumerate}
+
+\subsubsection{Benchmark Problems}
+\begin{enumerate}
+    \item \textbf{Collapse}: Column collapse, comparison with experiments
+    \item \textbf{Segregation}: Binary mixture in rotating drum
+    \item \textbf{Hourglass}: Flow rate vs opening size
+    \item \textbf{Angle of repose}: Static pile formation
+    \item \textbf{Shear flow}: Velocity profiles
+\end{enumerate}
+
+\subsubsection{Comparison with Other Methods}
+\begin{enumerate}
+    \item \textbf{DEM}: Small systems ($\sim 10^4$ particles)
+    \item \textbf{Experiments}: Available data from literature
+    \item \textbf{Continuum}: $\mu(I)$ rheology predictions
+\end{enumerate}
+
+\section{Specific Recommendations for HGD}
+
+\subsection{Short-term Improvements (Minimal Changes)}
+
+\subsubsection{1. Add Robustness Checks}
+\begin{lstlisting}[language=C++]
+// In stream_core and move_voids_core
+double P_tot = P_u + P_l + P_r;
+if (P_tot > 1.0) {
+    // Renormalize instead of error
+    P_u /= P_tot;
+    P_l /= P_tot;
+    P_r /= P_tot;
+    P_tot = 1.0;
+}
+\end{lstlisting}
+
+\subsubsection{2. Implement Proper Conflict Resolution}
+Replace random shuffle with rate-based selection:
+\begin{enumerate}
+    \item Identify all swaps targeting same cell
+    \item Compute selection probability for each
+    \item Choose one swap probabilistically
+    \item Reject others
+\end{enumerate}
+
+\subsubsection{3. Add Validation Tests}
+Create systematic tests for:
+\begin{itemize}
+    \item Mass conservation (should be exact)
+    \item Momentum conservation (when inertia enabled)
+    \item Grid convergence
+    \item Statistical convergence (multiple runs)
+\end{itemize}
+
+\subsection{Medium-term Improvements}
+
+\subsubsection{1. Adaptive Timestep}
+Implement automatic timestep control based on CFL and probability limits.
+
+\subsubsection{2. Complete Inertia Implementation}
+Follow Option 1 from \texttt{motion\_models\_analysis.pdf}:
+\begin{itemize}
+    \item Add per-particle velocities to \texttt{stream\_core}
+    \item Implement velocity swapping
+    \item Add collision/friction models
+\end{itemize}
+
+\subsubsection{3. Enhanced Boundary Conditions}
+\begin{itemize}
+    \item No-slip walls
+    \item Stress-based walls
+    \item Inflow/outflow boundaries
+\end{itemize}
+
+\subsection{Long-term Improvements}
+
+\subsubsection{1. Multiple Solver Modes}
+Implement template-based architecture allowing:
+\begin{itemize}
+    \item Current stochastic method
+    \item Kinetic Monte Carlo variant
+    \item LBM-inspired variant
+\end{itemize}
+
+\subsubsection{2. Hybrid Methods}
+Couple HGD with:
+\begin{itemize}
+    \item DEM for accurate contact mechanics
+    \item Continuum models for far-field
+\end{itemize}
+
+\subsubsection{3. GPU Acceleration}
+Port to CUDA/HIP for massive parallelization.
+
+\section{Benchmarking Protocol}
+
+\subsection{Proposed Benchmark Suite}
+
+\subsubsection{Test 1: Mass Conservation}
+\textbf{Setup}: Random initial condition, run 1000 steps
+
+\textbf{Metric}: $\Delta M / M_0 < 10^{-14}$ (machine precision)
+
+\textbf{Expected result}: Exact conservation
+
+\subsubsection{Test 2: Grid Convergence}
+\textbf{Setup}: Same physics, vary grid resolution $\Delta x = L/N$ where $N = 32, 64, 128, 256$
+
+\textbf{Metric}: Velocity profile RMS error vs $N$
+
+\textbf{Expected result}: Second-order convergence
+
+\subsubsection{Test 3: Timestep Convergence}
+\textbf{Setup}: Same grid, vary $\Delta t = T/M$ where $M = 100, 200, 400, 800$
+
+\textbf{Metric}: Final state RMS error vs $\Delta t$
+
+\textbf{Expected result}: First-order convergence
+
+\subsubsection{Test 4: Statistical Convergence}
+\textbf{Setup}: Same parameters, $N_{\text{runs}} = 100$ different random seeds
+
+\textbf{Metric}: Mean and standard deviation of observables
+
+\textbf{Expected result}: $\sigma \propto 1/\sqrt{N_{\text{runs}}}$
+
+\subsubsection{Test 5: DEM Comparison}
+\textbf{Setup}: Small system ($10^4$ particles), both HGD and DEM
+
+\textbf{Metric}: Velocity profiles, segregation patterns
+
+\textbf{Expected result}: Qualitative agreement
+
+\subsubsection{Test 6: Experimental Validation}
+\textbf{Setup}: Reproduce published experiments
+
+\textbf{Metric}: Segregation intensity, flow rates, angles of repose
+
+\textbf{Expected result}: Within experimental uncertainty
+
+\subsection{Performance Benchmarking}
+
+Compare computational cost:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+Method & Particles & Time/step & Memory \\
+\midrule
+DEM & $10^4$ & 1.0 s & 1 MB \\
+HGD (Python) & $10^6$ & 0.1 s & 100 MB \\
+HGD (C++) & $10^6$ & 0.01 s & 100 MB \\
+HGD (C++ opt) & $10^6$ & 0.001 s & 100 MB \\
+LBM & $10^6$ & 0.001 s & 10 MB \\
+\bottomrule
+\end{tabular}
+\caption{Expected performance comparison (order of magnitude)}
+\end{table}
+
+\section{Conclusion}
+
+\subsection{Summary}
+
+The HGD method occupies a useful niche:
+\begin{itemize}
+    \item \textbf{Faster than DEM}: Can handle large systems
+    \item \textbf{More detailed than continuum}: Captures segregation
+    \item \textbf{Simpler than LBM}: Direct physical interpretation
+    \item \textbf{Better for granular flows than LGA/LBM}: Designed for purpose
+\end{itemize}
+
+\subsection{Current Limitations}
+
+\begin{enumerate}
+    \item \textbf{Conflict resolution}: Not physically consistent
+    \item \textbf{Inertia}: Incomplete implementation in production code
+    \item \textbf{Timestep stability}: No automatic control
+    \item \textbf{Validation}: Insufficient convergence studies
+    \item \textbf{Boundary conditions}: Limited types
+\end{enumerate}
+
+\subsection{Path Forward}
+
+\textbf{Immediate priorities}:
+\begin{enumerate}
+    \item Implement probability renormalization
+    \item Add comprehensive validation tests
+    \item Complete inertia implementation in \texttt{core.cpp}
+    \item Document convergence behavior
+\end{enumerate}
+
+\textbf{Future directions}:
+\begin{enumerate}
+    \item Alternative solver modes (KMC, LBM-inspired)
+    \item Adaptive timestep control
+    \item Hybrid coupling with DEM/continuum
+    \item GPU acceleration
+\end{enumerate}
+
+\subsection{Optimal Implementation}
+
+For the current HGD method, the optimal implementation strategy is:
+\begin{enumerate}
+    \item \textbf{Use C++ implementation} (\texttt{core.cpp}) for production
+    \item \textbf{Add inertia} following Option 1 recommendations
+    \item \textbf{Improve robustness} with probability renormalization
+    \item \textbf{Implement conflict resolution} using rate-based selection
+    \item \textbf{Add validation tests} for conservation and convergence
+    \item \textbf{Keep Python implementations} for research and validation
+\end{enumerate}
+
+The method is fundamentally sound for its target application (slow, dense granular flows with segregation), but needs improvements in numerical robustness and completeness (especially inertia).
+
+\appendix
+
+\section{Additional Reading}
+
+\subsection{Lattice Methods}
+\begin{itemize}
+    \item Frisch et al. (1986): Lattice Gas Automata
+    \item Chen \& Doolen (1998): Lattice Boltzmann Method review
+    \item Succi (2001): The Lattice Boltzmann Equation
+\end{itemize}
+
+\subsection{Granular Flow Modeling}
+\begin{itemize}
+    \item Cundall \& Strack (1979): DEM fundamentals
+    \item GDR MiDi (2004): $\mu(I)$ rheology
+    \item Goldhirsch (2003): Granular kinetic theory
+\end{itemize}
+
+\subsection{Stochastic Methods}
+\begin{itemize}
+    \item Gillespie (1976): Kinetic Monte Carlo
+    \item Voter (2007): KMC overview
+    \item Bortz et al. (1975): n-fold way algorithm
+\end{itemize}
+
+\end{document}
