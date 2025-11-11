@@ -63,6 +63,12 @@
         "stack": "cpp",
         "unordered_map": "cpp",
         "unordered_set": "cpp",
-        "core": "cpp"
+        "core": "cpp",
+        "ranges": "cpp",
+        "cctype": "cpp",
+        "clocale": "cpp",
+        "cstdarg": "cpp",
+        "locale": "cpp",
+        "ostream": "cpp"
     }
 }

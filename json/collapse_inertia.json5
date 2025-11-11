@@ -5,8 +5,8 @@
     nm : 20,  // number of simultaneous simulations
 
     // geometry
-    H : 1, // (m)
-    P_stab : 0.5,
+    H : [0.1,1,10], // (m)
+    P_stab : 0.01,
 
     // material properties
     repose_angle : 30, // (degrees)
@@ -19,7 +19,7 @@
     nu_fill : 0.5,
     IC_mode : "left_column",
 
-    motion_model : "d2q4_cpp",
+    motion_model : "d2q4_array_v2",
     inertia: [false, true],
     // inertia: true,
     

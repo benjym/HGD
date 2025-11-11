@@ -181,12 +181,12 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
     // Generate indices for randomized iteration - mimic what was done in d2q4.cpp
     // Store i, j, k directly and the 2D flattened index for efficiency
     std::vector<int> i_cache, j_cache, k_cache, idx_cache;
-    i_cache.reserve((nx - 2) * (ny - 1) * nm);
-    j_cache.reserve((nx - 2) * (ny - 1) * nm);
-    k_cache.reserve((nx - 2) * (ny - 1) * nm);
-    idx_cache.reserve((nx - 2) * (ny - 1) * nm);
+    i_cache.reserve(nx * (ny - 1) * nm);
+    j_cache.reserve(nx * (ny - 1) * nm);
+    k_cache.reserve(nx * (ny - 1) * nm);
+    idx_cache.reserve(nx * (ny - 1) * nm);
     
-    for (int i = 1; i < nx - 1; i++) {
+    for (int i = 0; i < nx; i++) {
         for (int j = 0; j < ny - 1; j++) {
             int idx = i * ny + j;
             for (int k = 0; k < nm; k++) {

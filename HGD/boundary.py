@@ -220,23 +220,106 @@ def slope(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
         for k in range(p.nm):
             if not np.isnan(s[i, j, k]):
                 # MOVE UP TO FIRST VOID --- THIS GENERATES SHEARING WHEN INCLINED!
-                # if (
-                #     np.random.rand() < (p.void_introduction_rate * p.H) / (p.free_fall_velocity * p.dt)
-                #     and np.sum(np.isnan(s[i, :, k]))
-                # ) > 0:  # Tg is relative height (out of the maximum depth) that voids should rise to before being filled
-                #     nu = HGD.operators.get_solid_fraction(s)
-                #     stable = nu[i, j:] < p.nu_cs
-                #     first_void = (np.isnan(s[i, j:, k]) & stable).nonzero()[0][0]
-                #     v[i, j : first_void + 1, k] += np.isnan(s[i, j : first_void + 1, k])
-                #     s[i, j : first_void + 1, k] = np.roll(s[i, j : first_void + 1, k], 1)
-                # MOVE EVERYTHING UP
                 if (
-                    np.random.rand() < p.void_introduction_rate * p.dt / p.dy and np.sum(np.isnan(s[i, :, k]))
-                ) > 0:
-                    if np.isnan(s[i, -1, k]):
-                        v[i, j:] += 1  # np.isnan(s[i,:,k])
-                        s[i, j:, k] = np.roll(s[i, j:, k], 1)
+                    np.random.rand() < (p.void_introduction_rate * p.H) / (p.free_fall_velocity * p.dt)
+                    and np.sum(np.isnan(s[i, :, k]))
+                ) > 0:  # Tg is relative height (out of the maximum depth) that voids should rise to before being filled
+                    nu = HGD.operators.get_solid_fraction(s)
+                    stable = nu[i, j:] < p.nu_cs
+                    valid_voids = (np.isnan(s[i, j:, k]) & stable).nonzero()[0]
+                    if len(valid_voids) > 0:
+                        first_void_relative = valid_voids[0]
+                        first_void = j + first_void_relative
+                        v[i, j : first_void + 1, k] += np.isnan(s[i, j : first_void + 1, k])
+                        s[i, j : first_void + 1, k] = np.roll(s[i, j : first_void + 1, k], 1)
+                # MOVE EVERYTHING UP
+                # if (
+                #     np.random.rand() < p.void_introduction_rate * p.dt / p.dy and np.sum(np.isnan(s[i, :, k]))
+                # ) > 0:
+                #     if np.isnan(s[i, -1, k]):
+                #         v[i, j:] += 1  # np.isnan(s[i,:,k])
+                #         s[i, j:, k] = np.roll(s[i, j:, k], 1)
     # plt.show()
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
+
+
+# Move up to first void
+def slope_everywhere_to_first(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
+    nu = HGD.operators.get_solid_fraction(s)
+    for i in range(p.nx):
+        j0 = np.nonzero(~p.boundary_mask[i])[0][0]  # first solid
+        for j in range(j0, p.ny):
+            for k in range(p.nm):
+                if not np.isnan(s[i, j, k]):
+                    if (np.random.rand() < p.void_introduction_rate * p.dt) > 0:
+                        valid_voids = np.isnan(s[i, j:, k]).nonzero()[0]
+                        if len(valid_voids) > 0:
+                            first_void_relative = valid_voids[0]
+                            first_void = j + first_void_relative
+                            v[i, j : first_void + 1, k] -= np.isnan(s[i, j : first_void + 1, k])
+                            moving_voids = np.isnan(s[i, j : first_void + 1, k]).astype(int)
+                            changing_voids = np.roll(moving_voids, 1) - moving_voids
+                            s[i, j : first_void + 1, k] = np.roll(s[i, j : first_void + 1, k], 1)
+                            nu[i, j : first_void + 1] += changing_voids / p.nm
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
+
+
+# Move up to first location that has solid fraction less than some value (currently nu_cs)
+def slope_everywhere_to_fraction(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
+    nu = HGD.operators.get_solid_fraction(s)
+    for i in range(p.nx):
+        j0 = np.nonzero(~p.boundary_mask[i])[0][0]  # first solid
+        for j in range(j0, p.ny):
+            for k in range(p.nm):
+                if not np.isnan(s[i, j, k]):
+                    # MOVE UP TO FIRST VOID --- THIS GENERATES SHEARING WHEN INCLINED!
+                    if (
+                        # np.random.rand() < (p.void_introduction_rate * p.H) / (p.free_fall_velocity * p.dt)
+                        np.random.rand()
+                        < p.void_introduction_rate * p.dt * chi[i, j] * p.free_fall_velocity / s[i, j, k]
+                        and np.sum(np.isnan(s[i, :, k]))
+                    ) > 0:
+                        stable = nu[i, j:] < p.nu_cs
+                        valid_voids = (np.isnan(s[i, j:, k]) & stable).nonzero()[0]
+                        if len(valid_voids) > 0:
+                            first_void_relative = valid_voids[0]
+                            first_void = j + first_void_relative
+                            v[i, j : first_void + 1, k] -= np.isnan(
+                                s[i, j : first_void + 1, k]
+                            )  # DOES THIS ACTUALLY GENERATE MOTION???
+                            moving_voids = np.isnan(s[i, j : first_void + 1, k]).astype(int)
+                            changing_voids = np.roll(moving_voids, 1) - moving_voids
+                            s[i, j : first_void + 1, k] = np.roll(s[i, j : first_void + 1, k], 1)
+                            nu[i, j : first_void + 1] += changing_voids / p.nm
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
+
+
+def slope_everywhere_to_empty(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
+    nu = HGD.operators.get_solid_fraction(s)
+    for i in range(p.nx):
+        j0 = np.nonzero(~p.boundary_mask[i])[0][0]  # first solid
+        for j in range(j0, p.ny):
+            for k in range(p.nm):
+                if not np.isnan(s[i, j, k]):
+                    # MOVE UP TO FIRST VOID --- THIS GENERATES SHEARING WHEN INCLINED!
+                    if (
+                        # np.random.rand() < (p.void_introduction_rate * p.H) / (p.free_fall_velocity * p.dt)
+                        # np.random.rand() < p.void_introduction_rate * p.dt * chi[i, j] * p.free_fall_velocity / s[i, j, k]
+                        np.random.rand() < p.void_introduction_rate * p.dt
+                        and np.sum(np.isnan(s[i, :, k]))
+                    ) > 0:
+                        empty = nu[i, j:] == 0
+                        valid_voids = (np.isnan(s[i, j:, k]) & empty).nonzero()[0]
+                        if len(valid_voids) > 0:
+                            first_void_relative = valid_voids[0]
+                            first_void = j + first_void_relative
+                            v[i, j : first_void + 1, k] -= np.isnan(
+                                s[i, j : first_void + 1, k]
+                            )  # DOES THIS ACTUALLY GENERATE MOTION???
+                            moving_voids = np.isnan(s[i, j : first_void + 1, k]).astype(int)
+                            changing_voids = np.roll(moving_voids, 1) - moving_voids
+                            s[i, j : first_void + 1, k] = np.roll(s[i, j : first_void + 1, k], 1)
+                            nu[i, j : first_void + 1] += changing_voids / p.nm
     return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 

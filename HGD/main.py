@@ -20,6 +20,7 @@ from HGD import operators
 
 def init(p, cycles=None):
     p.move_voids = importlib.import_module(f"HGD.motion.{p.motion_model}").move_voids
+    p.stream = importlib.import_module(f"HGD.motion.{p.motion_model}").stream
 
     plotter.set_plot_size(p)
 
@@ -142,11 +143,16 @@ def time_step(p, state):
     if len(p.cycles) > 0:
         p = cycles.update(p, state)
 
-    u_new, v_new, s, c, T, chi, last_swap = p.move_voids(u, v, s, p, 0, c, T, chi, last_swap)
+    u_new, v_new, s, c, T, chi_new, last_swap = p.move_voids(u, v, s, p, 0, c, T, chi, last_swap)
+    if p.time_average_chi:
+        beta = np.exp(-p.dt / (p.dx / np.sqrt(p.g * p.dy)))
+        chi = beta * chi + (1 - beta) * chi_new
+    else:
+        chi = chi_new
 
     if p.inertia:
         # u, v, s = operators.stream(u_new, v_new, s, p)
-        u, v, s = operators.stream(u, v, s, p)
+        u, v, s = p.stream(u, v, s, p)
     else:
         pass
         # u, v = u_new, v_new
@@ -271,7 +277,8 @@ if __name__ == "__main__":
     all_sims = list(product(*p_init.lists))
 
     folderNames = []
-    with concurrent.futures.ProcessPoolExecutor(max_workers=p_init.max_workers) as executor:
+    max_workers = p_init.max_workers if p_init.max_workers != -1 else None  # use all available cores if -1
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         results = list(
             tqdm(
                 executor.map(run_simulation, enumerate(all_sims)),

@@ -26,6 +26,7 @@
     close_voids : false, // should the voids be closed after some time
     max_diff_swap_length : 1, // maximum length of a diffusion swap
     slope_stability_model : 'gradient', // 'stress' or 'gradient'
+    time_average_chi : true, // should the chi field be time averaged
 
     // material properties
     repose_angle : 30, // (degrees)
