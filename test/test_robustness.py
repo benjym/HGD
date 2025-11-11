@@ -67,7 +67,8 @@ class TestMassConservation(unittest.TestCase):
         # Perform a single swap
         src = [0, 0, 0]
         dst = [1, 1, 0]
-        [s_new, None], nu_new = operators.swap(src, dst, [s, None], nu, self.p)
+        arrays_new, nu_new = operators.swap(src, dst, [s, None], nu, self.p)
+        s_new = arrays_new[0]
         
         mass_final = np.sum(~np.isnan(s_new))
         
