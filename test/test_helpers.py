@@ -11,7 +11,7 @@ s[s < 0.2] = np.nan  # Introduce NaNs to simulate missing values
 # Compute using C++ functions
 nu_cpp = np.array(d2q4_cpp.compute_solid_fraction(s)).reshape(nx, ny)
 s_inv_bar_cpp = np.array(d2q4_cpp.compute_s_inv_bar(s)).reshape(nx, ny)
-s_bar_cpp = np.array(d2q4_cpp.compute_s_bar(s)).reshape(nx, ny)
+s_bar_cpp = np.array(d2q4_cpp.compute_mean(s)).reshape(nx, ny)
 
 # Compute reference values using NumPy
 nu_np = HGD.operators.get_solid_fraction(s)

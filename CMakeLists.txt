@@ -5,7 +5,7 @@ project(move_voids_module LANGUAGES CXX)
 find_package(pybind11 REQUIRED)
 
 # Create platform-agnostic core library
-add_library(core STATIC HGD/motion/core.cpp)
+add_library(core STATIC HGD/motion/core.cpp HGD/motion/stress.cpp)
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/HGD/motion)
 target_compile_features(core PUBLIC cxx_std_14)
 

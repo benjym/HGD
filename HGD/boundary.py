@@ -251,21 +251,42 @@ def slope(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
 # Move up to first void
 def slope_everywhere_to_first(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     nu = HGD.operators.get_solid_fraction(s)
+    v_y = np.sqrt(p.g * p.dy)
+    P_u_bar = v_y * p.dt / p.dy
+
+    if p.advection_model == "stress":
+        sigma = HGD.stress.calculate_stress(s, last_swap, p)
+        v_y_vec = HGD.stress.get_pressure(sigma, p) / (2.0 * p.solid_density)
+
+    excess_mu = np.tan(np.radians(p.cyclic_BC_y_angle)) - np.tan(np.radians(p.repose_angle))
+    # print(f"slope angle: {p.cyclic_BC_y_angle}, excess mu: {excess_mu}")
+    P_tau = p.void_creation_param * np.sqrt(excess_mu) * P_u_bar
+
     for i in range(p.nx):
         j0 = np.nonzero(~p.boundary_mask[i])[0][0]  # first solid
         for j in range(j0, p.ny):
+            if p.advection_model == "stress":
+                P_u_bar_local = v_y_vec[i, j] * p.dt / p.dy
+                P_tau = p.void_creation_param * np.sqrt(excess_mu) * P_u_bar_local
             for k in range(p.nm):
                 if not np.isnan(s[i, j, k]):
-                    if (np.random.rand() < p.void_introduction_rate * p.dt) > 0:
+                    # if (np.random.rand() < p.void_introduction_rate * p.dt) > 0:
+                    if (np.random.rand() < P_tau) > 0:
                         valid_voids = np.isnan(s[i, j:, k]).nonzero()[0]
                         if len(valid_voids) > 0:
                             first_void_relative = valid_voids[0]
                             first_void = j + first_void_relative
-                            v[i, j : first_void + 1, k] -= np.isnan(s[i, j : first_void + 1, k])
+
                             moving_voids = np.isnan(s[i, j : first_void + 1, k]).astype(int)
                             changing_voids = np.roll(moving_voids, 1) - moving_voids
                             s[i, j : first_void + 1, k] = np.roll(s[i, j : first_void + 1, k], 1)
                             nu[i, j : first_void + 1] += changing_voids / p.nm
+
+                            # Move any existing velocity with the solids
+                            v[i, j : first_void + 1, k] = np.roll(v[i, j : first_void + 1, k], 1)
+                            # Add velocity the moved solids from being pushed up by the void creation
+                            moved_solids = np.roll(1 - moving_voids, 1)
+                            v[i, j : first_void + 1, k] += moved_solids * p.dy / p.dt
     return s, u, v, c, T, last_swap, chi, sigma, outlet
 
 

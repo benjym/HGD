@@ -19,7 +19,7 @@
     nu_fill : 0.5,
     IC_mode : "left_column",
 
-    motion_model : "d2q4_array_v2",
+    motion_model : "d2q4_cpp",
     inertia: [false, true],
     // inertia: true,
     

@@ -7,10 +7,13 @@
 
 struct Params {
     double g, dt, dx, dy, alpha, nu_cs, P_stab, delta_limit;
+    double solid_density;
     bool cyclic_BC;
     bool inertia;
     int cyclic_BC_y_offset;
     int nx, ny, nm;
+    std::vector<double> y;
+    std::string advection_model;
 };
 
 template<typename T>
@@ -59,9 +62,7 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                      std::vector<double>& nu,
                      std::vector<double>& chi_out);
 
-void stream_core(const std::vector<double>& u_mean,
-                 const std::vector<double>& v_mean,
-                 View3<double> s,
+void stream_core(View3<double> u, View3<double> v, View3<double> s,
                  const View2<const uint8_t>& mask,
                  std::vector<double>& nu,
                  const Params& p);

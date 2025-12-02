@@ -1,4 +1,5 @@
 #include "core.h"
+#include "stress.h"
 #include <random>
 #include <cmath>
 #include <algorithm>
@@ -149,6 +150,60 @@ std::tuple<int, int, int, int> get_lr_core(int i, int j, int nx, int ny, int cyc
     return std::make_tuple(l, r, j_l, j_r);
 }
 
+// Cache structure for shuffled indices
+struct ShuffledIndicesCache {
+    std::vector<int> i_cache;
+    std::vector<int> j_cache;
+    std::vector<int> k_cache;
+    std::vector<int> idx_cache;
+    std::vector<size_t> shuffle_indices;
+    int cached_nx = -1;
+    int cached_ny = -1;
+    int cached_nm = -1;
+    
+    void initialize(int nx, int ny, int nm, std::mt19937& gen) {
+        // Only regenerate if dimensions changed
+        if (cached_nx == nx && cached_ny == ny && cached_nm == nm) {
+            // Just reshuffle the existing indices
+            // std::shuffle(shuffle_indices.begin(), shuffle_indices.end(), gen);
+            return;
+        }
+        
+        // Dimensions changed, regenerate everything
+        cached_nx = nx;
+        cached_ny = ny;
+        cached_nm = nm;
+        
+        size_t total_size = nx * (ny - 1) * nm;
+        i_cache.clear();
+        j_cache.clear();
+        k_cache.clear();
+        idx_cache.clear();
+        i_cache.reserve(total_size);
+        j_cache.reserve(total_size);
+        k_cache.reserve(total_size);
+        idx_cache.reserve(total_size);
+        
+        for (int i = 0; i < nx; i++) {
+            for (int j = 0; j < ny - 1; j++) {
+                int idx = i * ny + j;
+                for (int k = 0; k < nm; k++) {
+                    i_cache.push_back(i);
+                    j_cache.push_back(j);
+                    k_cache.push_back(k);
+                    idx_cache.push_back(idx);
+                }
+            }
+        }
+        
+        shuffle_indices.resize(total_size);
+        for (size_t i = 0; i < total_size; i++) {
+            shuffle_indices[i] = i;
+        }
+        std::shuffle(shuffle_indices.begin(), shuffle_indices.end(), gen);
+    }
+};
+
 void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                      const View2<const uint8_t>& mask,
                      Params p,
@@ -166,7 +221,22 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
     std::vector<double> s_inv_bar = compute_s_inv_bar_core(View3<const double>{s.data, nx, ny, nm, s.sx, s.sy, s.sz});
     std::vector<bool> some_particles = compute_some_particles_core(nu, mask, nx, ny);
 
+    // FROM PYTHON VERSION:
+    // if p.advection_model == "freefall":
+    //     u_here = U_dest = np.sqrt(p.g * p.dy)
+    // elif p.advection_model == "stress":
+    //     sigma = stress.calculate_stress(s, last_swap, p)
+    //     pressure = np.abs(
+    //         stress.get_pressure(sigma, p)
+    //     )  # HACK: PRESSURE SHOULD BE POSITIVE BUT I HAVE ISSUES WITH THE STRESS MODEL
+    //     u_here = np.sqrt(2 * pressure / p.solid_density)
+    //     U = np.repeat(u_here[:, :, np.newaxis], p.nm, axis=2)
+    //     U_dest = np.roll(
+    //         U, d, axis=axis
+    //     )  # NEED TO TAKE DESTINATION VALUE
+
     double v_y = std::sqrt(p.g * p.dy);
+    double v_x = v_y;  // assuming isotropic velocity fluctuations
     double P_u_bar = v_y * p.dt / p.dy;  // P_u = P_u_bar * (s_inv_bar/s)
     double P_lr_ref = p.alpha * v_y * p.dt / p.dx / p.dx;
     double delta_nu_limit = p.delta_limit;
@@ -175,48 +245,38 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
     double dy_over_dt = p.dy / p.dt;
     double dx_over_dt = p.dx / p.dt;
 
+    std::vector<double> v_y_vec(nx * ny, 0.0);
+    
+    if (p.advection_model == "stress") {
+        StressResult sigma = harr_substep_core(View3<const double>{s.data, nx, ny, nm, s.sx, s.sy, s.sz}, p);
+        
+        for (int idx = 0; idx < nx * ny; idx++) {
+            double pressure = 0.5 * (sigma.sigma_xx[idx] + sigma.sigma_yy[idx]);
+            v_y_vec[idx] = std::sqrt(2.0 * std::abs(pressure) / p.solid_density);
+            // Use pressure to calculate velocity: v_y = sqrt(2 * |pressure| / solid_density)
+            // Then update P_u_bar accordingly
+        }
+    }
+
     // storage arrays
     std::array<int, 3> dest = {0, 0, 0};
     std::vector<double> N_swap_arr(nx * ny, 0.0);
 
-    // Generate indices for randomized iteration - mimic what was done in d2q4.cpp
-    // Store i, j, k directly and the 2D flattened index for efficiency
-    std::vector<int> i_cache, j_cache, k_cache, idx_cache;
-    i_cache.reserve(nx * (ny - 1) * nm);
-    j_cache.reserve(nx * (ny - 1) * nm);
-    k_cache.reserve(nx * (ny - 1) * nm);
-    idx_cache.reserve(nx * (ny - 1) * nm);
-    
-    for (int i = 0; i < nx; i++) {
-        for (int j = 0; j < ny - 1; j++) {
-            int idx = i * ny + j;
-            for (int k = 0; k < nm; k++) {
-                i_cache.push_back(i);
-                j_cache.push_back(j);
-                k_cache.push_back(k);
-                idx_cache.push_back(idx);
-            }
-        }
-    }
-    
     // Thread-safe PRNG
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> rand_dist(0.0, 1.0);
     
-    // Shuffle indices for random processing order
-    std::vector<size_t> shuffle_indices(i_cache.size());
-    for (size_t i = 0; i < shuffle_indices.size(); i++) {
-        shuffle_indices[i] = i;
-    }
-    std::shuffle(shuffle_indices.begin(), shuffle_indices.end(), gen);
+    // Cache shuffled indices across calls
+    static ShuffledIndicesCache cache;
+    cache.initialize(nx, ny, nm, gen);
 
-    for (size_t idx_pos = 0; idx_pos < shuffle_indices.size(); idx_pos++) {
-        size_t index = shuffle_indices[idx_pos];
-        int i = i_cache[index];
-        int j = j_cache[index];
-        int k = k_cache[index];
-        int idx = idx_cache[index];
+    for (size_t idx_pos = 0; idx_pos < cache.shuffle_indices.size(); idx_pos++) {
+        size_t index = cache.shuffle_indices[idx_pos];
+        int i = cache.i_cache[index];
+        int j = cache.j_cache[index];
+        int k = cache.k_cache[index];
+        int idx = cache.idx_cache[index];
         int idx_up = idx + 1;  // i * ny + j + 1
 
         if (some_particles[idx]) {
@@ -224,6 +284,18 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                 if (nu[idx] < p.nu_cs) {
                     if (mask(i, j)) {
                         continue;
+                    }
+
+                    if (p.advection_model == "stress") {
+                        v_y = v_y_vec[idx];
+                        P_u_bar = v_y * p.dt / p.dy;
+                        P_lr_ref = p.alpha * v_y * p.dt / p.dx / p.dx;
+                    }
+
+                    if (p.advection_model == "stress") {
+                        v_y = v_y_vec[idx];
+                        P_u_bar = v_y * p.dt / p.dy;
+                        P_lr_ref = p.alpha * v_y * p.dt / p.dx / p.dx;
                     }
 
                     double P_u = std::isnan(s(i, j + 1, k)) ? 0 : P_u_bar * std::pow(s_inv_bar[idx_up] / s(i, j + 1, k), seg_exponent);
@@ -269,19 +341,31 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                             dest = {i, j + 1, k};
                             dest_idx = idx_up;
                             found = true;
-                            v(i, j, k) += dy_over_dt;
+                            // Particle moves DOWN from (i,j+1) to (i,j), velocity stored at new location (i,j)
+                            u(i, j, k) = u(dest[0], dest[1], k);
+                            v(i, j, k) = v(dest[0], dest[1], k) - dy_over_dt;
+                            u(dest[0], dest[1], k) = 0.0; // Reset velocity at void
+                            v(dest[0], dest[1], k) = 0.0; // Reset velocity at void
                         }
                         else if (rand_val < (P_l + P_u)) {
                             dest = {l, j_l, k};
                             dest_idx = idx_l;
                             found = true;
-                            u(i, j, k) += dx_over_dt;
+                            // Particle moves RIGHT from (l,j_l) to (i,j), velocity stored at new location (i,j)
+                            u(i, j, k) = u(dest[0], dest[1], k) + dx_over_dt;
+                            v(i, j, k) = v(dest[0], dest[1], k);
+                            u(dest[0], dest[1], k) = 0.0; // Reset velocity at void
+                            v(dest[0], dest[1], k) = 0.0; // Reset velocity at void
                         }
                         else if (rand_val < P_tot) {
                             dest = {r, j_r, k};
                             dest_idx = idx_r;
                             found = true;
-                            u(i, j, k) -= dx_over_dt;
+                            // Particle moves LEFT from (r,j_r) to (i,j), velocity stored at new location (i,j)
+                            u(i, j, k) = u(dest[0], dest[1], k) - dx_over_dt;
+                            v(i, j, k) = v(dest[0], dest[1], k);
+                            u(dest[0], dest[1], k) = 0.0; // Reset velocity at void
+                            v(dest[0], dest[1], k) = 0.0; // Reset velocity at void
                         }
 
                         if (found) {
@@ -308,8 +392,7 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
     }
 }
 
-void stream_core(const std::vector<double>& u_mean,
-                 const std::vector<double>& v_mean,
+void stream_core(View3<double> u, View3<double> v, 
                  View3<double> s,
                  const View2<const uint8_t>& mask,
                  std::vector<double>& nu,
@@ -317,64 +400,211 @@ void stream_core(const std::vector<double>& u_mean,
     
     int nx = p.nx, ny = p.ny, nm = p.nm;
     double inverse_nm = 1.0 / nm;
-    double dy_over_dt = p.dy / p.dt;
+    double dt_over_dy = p.dt / p.dy;
+    double dt_over_dx = p.dt / p.dx;
+
+    // printf("Streaming step started\n");
     
     // Precompute neighbor indices once
     NeighborIndices neighbors(nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
 
-    for (int i = 0; i < nx; i++) {
-        for (int j = 0; j < ny; j++) {
-            int idx = i * ny + j;
-            int idx_up = idx + 1;
-            
-            // Use precomputed neighbor indices
-            int l = neighbors.left[idx];
-            int r = neighbors.right[idx];
-            int j_l = neighbors.j_left[idx];
-            int j_r = neighbors.j_right[idx];
-            int idx_l = neighbors.idx_left[idx];
-            int idx_r = neighbors.idx_right[idx];
+    // Thread-safe PRNG
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> rand_dist(0.0, 1.0);
 
-            double P_u = mask(i, j + 1) ? v_mean[idx_up] * dy_over_dt : 0;
-            double u_left = (u_mean[idx_l] < 0) ? u_mean[idx_l] : 0;
-            double P_l = mask(l, j_l) ? u_left * dy_over_dt : 0;
-            double u_right = (u_mean[idx_r] > 0) ? u_mean[idx_r] : 0;
-            double P_r = mask(r, j_r) ? u_right * dy_over_dt : 0;
+    static ShuffledIndicesCache cache;
+    cache.initialize(nx, ny, nm, gen);
 
-            int N_u = static_cast<int>(nu[idx] * P_u);
-            int N_l = static_cast<int>(nu[idx] * P_l);
-            int N_r = static_cast<int>(nu[idx] * P_r);
+    for (size_t idx_pos = 0; idx_pos < cache.shuffle_indices.size(); idx_pos++) {
+        size_t index = cache.shuffle_indices[idx_pos];
+        int i = cache.i_cache[index];
+        int j = cache.j_cache[index];
+        if (j == 0) continue; // Skip bottom row
+        if (j >= ny - 1) continue; // Skip top row
+        int k = cache.k_cache[index];
+        int idx = i * ny + j;
+        int idx_up = idx + 1;
+        int idx_down = idx - 1;
+        
+        // Use precomputed neighbor indices
+        int l = neighbors.left[idx];
+        int r = neighbors.right[idx];
+        int j_l = neighbors.j_left[idx];
+        int j_r = neighbors.j_right[idx];
+        int idx_l = neighbors.idx_left[idx];
+        int idx_r = neighbors.idx_right[idx];
 
-            std::vector<int> N_arr = {N_u, N_l, N_r};
-            std::vector<int> dests = {i, j + 1, l, j_l, r, j_r};
-            int k = 0;
-            
-            for (int d = 0; d < 3; d += 1) {
-                std::array<int, 2> dest = {dests[2 * d], dests[2 * d + 1]};
-                int dest_idx = dest[0] * ny + dest[1];
-                int N_added = 0;
+        std::array<int, 2> dest = {i, j}; // Default to current position
+        int dest_idx;
+
+        for (int k = 0; k < nm; k++) {
+            if (!std::isnan(s(i, j, k))) {
+                // Use the velocity at the CURRENT particle location, not neighbor locations
+                double v_current = v(i, j, k);
+                double u_current = u(i, j, k);
                 
-                while (N_added < N_arr[d] && k < nm) {
-                    if (!std::isnan(s(i, j, k)) && !std::isnan(s(dest[0], dest[1], k))) {
-                        // check if the destination is not a solid
-                        if (nu[dest_idx] < p.nu_cs) {
-                            double tmp = s(i, j, k);
-                            s(i, j, k) = s(dest[0], dest[1], k);
-                            s(dest[0], dest[1], k) = tmp;
+                // Particle moves up if it has positive vertical velocity
+                double P_u = (mask(i, j + 1) || v_current <= 0) ? 0 : v_current * dt_over_dy;
+                // Particle moves down if it has negative vertical velocity
+                double P_d = (mask(i, j - 1) || v_current >= 0) ? 0 : -v_current * dt_over_dy;
+                // Particle moves left if it has negative horizontal velocity
+                double P_l = (mask(l, j_l) || u_current >= 0) ? 0 : -u_current * dt_over_dx;
+                // Particle moves right if it has positive horizontal velocity
+                double P_r = (mask(r, j_r) || u_current <= 0) ? 0 : u_current * dt_over_dx;
+                
+                double P_tot = P_u + P_d + P_l + P_r;
+                if (P_tot > 1.0) {
+                    printf("WARNING: Cell (%d,%d): P_u=%.3f, P_d=%.3f, P_l=%.3f, P_r=%.3f, P_tot=%.3f\n", i, j, P_u, P_d, P_l, P_r, P_tot);
+                }
 
-                            nu[idx] += inverse_nm;
-                            nu[dest_idx] -= inverse_nm;
-                            
-                            N_added += 1;
+                bool moved = false;
+                double rand_val = static_cast<double>(rand()) / RAND_MAX;                  
+                
+                if (rand_val < P_u && P_u > 0) {
+                    dest = {i, j + 1};
+                    dest_idx = idx_up;
+                    moved = true;
+                    // printf("Particle moves UP from (%d,%d,%d) to (%d,%d,%d)\n", i, j + 1, k, i, j, k);
+                }
+                else if (rand_val < (P_u + P_d)) {
+                    dest = {i, j - 1};
+                    dest_idx = idx_down;
+                    moved = true;
+                    // printf("Particle moves DOWN from (%d,%d,%d) to (%d,%d,%d)\n", i, j - 1, k, i, j, k);
+                }
+                else if (rand_val < (P_u + P_d + P_l)) {
+                    dest = {l, j_l};
+                    dest_idx = idx_l;
+                    moved = true;
+                    // printf("Particle moves LEFT from (%d,%d,%d) to (%d,%d,%d)\n", l, j_l, k, i, j, k);
+                }
+                else if (rand_val < (P_u + P_d + P_l + P_r)) {
+                    dest = {r, j_r};
+                    dest_idx = idx_r;
+                    moved = true;
+                    // printf("Particle moves RIGHT from (%d,%d,%d) to (%d,%d,%d)\n", r, j_r, k, i, j, k);
+                }
 
-                            if (k == nm) {
-                                break; // exit the loop if we have swapped all particles
-                            }
-                        }
+                if (moved) {
+                    // printf("Streaming particle from (%d,%d,%d) to (%d,%d,%d)\n", i, j, k, dest[0], dest[1], k);
+                    // check if the destination is not a solid
+                    if (nu[dest_idx] < p.nu_cs) {
+
+                        // printf("  Successful move\n");
+                        double tmp = s(i, j, k);
+                        s(i, j, k) = s(dest[0], dest[1], k);
+                        s(dest[0], dest[1], k) = tmp;
+
+                        double tmp_u = u(i, j, k);
+                        double tmp_v = v(i, j, k);
+                        u(i, j, k) = 0.;//u(dest[0], dest[1], k); // Reset velocity at void
+                        v(i, j, k) = 0.;//v(dest[0], dest[1], k); // Reset velocity at void
+                        u(dest[0], dest[1], k) = tmp_u; // Move velocity to new location
+                        v(dest[0], dest[1], k) = tmp_v; // Move velocity to new location
+
+                        nu[idx] += inverse_nm;
+                        nu[dest_idx] -= inverse_nm;
                     }
-                    k += 1;
+                    else {
+                        // printf("  Move blocked, destination solid\n");
+                        // Destination is solid, break the while loop
+                        break;
+                    }
                 }
             }
         }
     }
 }
+
+// void stream_core_dep(View3<double> u, View3<double> v, 
+//                  View3<double> s,
+//                  const View2<const uint8_t>& mask,
+//                  std::vector<double>& nu,
+//                  const Params& p) {
+    
+//     int nx = p.nx, ny = p.ny, nm = p.nm;
+//     double inverse_nm = 1.0 / nm;
+//     double dy_over_dt = p.dy / p.dt;
+//     double dx_over_dt = p.dx / p.dt;
+
+//     // printf("Streaming step started\n");
+    
+//     // Precompute neighbor indices once
+//     NeighborIndices neighbors(nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
+
+//     for (int i = 0; i < nx; i++) {
+//         for (int j = 0; j < ny - 1; j++) {  // Stop before ny-1 to avoid j+1 out of bounds
+//             int idx = i * ny + j;
+//             int idx_up = idx + 1;
+            
+//             // Use precomputed neighbor indices
+//             int l = neighbors.left[idx];
+//             int r = neighbors.right[idx];
+//             int j_l = neighbors.j_left[idx];
+//             int j_r = neighbors.j_right[idx];
+//             int idx_l = neighbors.idx_left[idx];
+//             int idx_r = neighbors.idx_right[idx];
+
+//             double u_up = (v_mean[idx_up] > 0) ? v_mean[idx_up] : 0;
+//             double P_u = mask(i, j + 1) ? 0 : u_up * dy_over_dt;
+//             double u_down = (v_mean[idx] < 0) ? v_mean[idx] : 0;
+//             double P_d = mask(i, j) ? 0 : -u_down * dy_over_dt;
+//             double u_left = (u_mean[idx_l] < 0) ? u_mean[idx_l] : 0;
+//             double P_l = mask(l, j_l) ? 0 : u_left * dx_over_dt;
+//             double u_right = (u_mean[idx_r] > 0) ? u_mean[idx_r] : 0;
+//             double P_r = mask(r, j_r) ? 0 : u_right * dx_over_dt;
+
+//             int N_u = static_cast<int>(nu[idx] * P_u * nm);
+//             int N_d = static_cast<int>(nu[idx] * P_d * nm);
+//             int N_l = static_cast<int>(nu[idx] * P_l * nm);
+//             int N_r = static_cast<int>(nu[idx] * P_r * nm);
+
+//             // printf("Cell (%d,%d): N_u=%d, N_l=%d, N_r=%d\n", i, j, N_u, N_l, N_r);
+
+//             std::vector<int> N_arr = {N_u, N_d, N_l, N_r};
+//             std::vector<int> dests = {i, j + 1, i, j - 1, l, j_l, r, j_r};
+//             int k = 0;
+            
+//             for (int d = 0; d < 4; d += 1) {
+//                 std::array<int, 2> dest = {dests[2 * d], dests[2 * d + 1]};
+//                 int dest_idx = dest[0] * ny + dest[1];
+//                 int N_added = 0;
+                
+//                 while (N_added < N_arr[d] && k < nm) {
+//                     // if this is a solid and the dest is a void
+//                     if (!std::isnan(s(i, j, k)) && std::isnan(s(dest[0], dest[1], k))) {
+
+//                         // printf("Streaming particle from (%d,%d,%d) to (%d,%d,%d)\n", i, j, k, dest[0], dest[1], k);
+                        
+//                         // check if the destination is not a solid
+//                         if (nu[dest_idx] < p.nu_cs) {
+
+//                             // printf("  Successful move\n");
+//                             double tmp = s(i, j, k);
+//                             s(i, j, k) = s(dest[0], dest[1], k);
+//                             s(dest[0], dest[1], k) = tmp;
+
+//                             u(dest[0], dest[1], k) = u(i, j, k); // Move velocity to new location
+//                             v(dest[0], dest[1], k) = v(i, j, k); // Move velocity to new location
+//                             u(i, j, k) = 0.0; // Reset velocity at void
+//                             v(i, j, k) = 0.0; // Reset velocity at void
+                            
+
+//                             nu[idx] += inverse_nm;
+//                             nu[dest_idx] -= inverse_nm;
+                            
+//                             N_added += 1;
+//                         }
+//                         else {
+//                             // printf("  Move blocked, destination solid\n");
+//                             // Destination is solid, break the while loop
+//                             break;
+//                         }
+//                     }
+//                     k += 1;
+//                 }
+//             }
+//         }
+//     }
+// }

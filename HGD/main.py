@@ -147,12 +147,14 @@ def time_step(p, state):
     if len(p.cycles) > 0:
         p = cycles.update(p, state)
 
-    u_new, v_new, s, c, T, chi_new, last_swap = p.move_voids(u, v, s, p, 0, c, T, chi, last_swap)
-    if p.time_average_chi:
-        beta = np.exp(-p.dt / (p.dx / np.sqrt(p.g * p.dy)))
-        chi = beta * chi + (1 - beta) * chi_new
+    if p.inertia:
+        u_new = u.copy()
+        v_new = v.copy()
     else:
-        chi = chi_new
+        u_new = np.zeros_like(u)
+        v_new = np.zeros_like(v)
+
+    u_new, v_new, s, c, T, chi_new, last_swap = p.move_voids(u_new, v_new, s, p, 0, c, T, chi, last_swap)
 
     if p.inertia:
         # u, v, s = operators.stream(u_new, v_new, s, p)
@@ -161,6 +163,16 @@ def time_step(p, state):
     else:
         pass
         # u, v = u_new, v_new
+
+    if p.time_average:
+        beta = np.exp(-p.dt / (p.dx / np.sqrt(p.g * p.dy)))
+        chi = beta * chi + (1 - beta) * chi_new
+        u = beta * u + (1 - beta) * u_new
+        v = beta * v + (1 - beta) * v_new
+    else:
+        chi = chi_new
+        u = u_new
+        v = v_new
 
     state = (
         s,

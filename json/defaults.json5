@@ -26,7 +26,7 @@
     close_voids : false, // should the voids be closed after some time
     max_diff_swap_length : 1, // maximum length of a diffusion swap
     slope_stability_model : 'gradient', // 'stress' or 'gradient'
-    time_average_chi : true, // should the chi field be time averaged
+    time_average : true, // should the chi, u and v fields be time averaged with exponential averaging
 
     // material properties
     repose_angle : 30, // (degrees)
@@ -36,6 +36,7 @@
     nu_cs : 0.5, // critical state solid volume fraction
     alpha : 4, // diffusivity parameter
     seg_exponent : 1.0, // exponent used in segmentation probability
+    void_creation_param : 0.52, // void creation parameter - default taken from fitting linear lines to Fig 5c/d from https://www.annualreviews.org/docserver/fulltext/fl/40/1/annurev.fluid.40.111406.102142.pdf and taking ratio of slopes
     
     // initial condition
     fill_ratio : 0.25, // ratio of the domain that is filled with particles
