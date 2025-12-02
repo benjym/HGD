@@ -35,6 +35,7 @@
     s_m : 0.0005, // minimum particle size (m)
     nu_cs : 0.5, // critical state solid volume fraction
     alpha : 4, // diffusivity parameter
+    seg_exponent : 1.0, // exponent used in segmentation probability
     
     // initial condition
     fill_ratio : 0.25, // ratio of the domain that is filled with particles
@@ -82,7 +83,6 @@
     cycle_forever : false, // should the cycles be repeated indefinitely
     charge_rate : 1, // rate of charge zone filling (kg/s)
     sigma_charge : 0.1, // relative width of charge zone
-    elutriation : false, // should elutriation be used
     
     // stopping
     stop_event : null, // this is None in Python, but null in JavaScript

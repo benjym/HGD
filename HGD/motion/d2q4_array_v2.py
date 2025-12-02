@@ -97,7 +97,7 @@ def move_voids(
             S_inv_bar = np.repeat(s_inv_bar[:, :, np.newaxis], p.nm, axis=2)
             S_inv_bar_dest = np.roll(S_inv_bar, d, axis=axis)
 
-            P = (p.dt / p.dy) * U_dest * (S_inv_bar_dest / s_dest)
+            P = (p.dt / p.dy) * U_dest * (S_inv_bar_dest / s_dest) ** 0.1
 
             if p.inertia is not False:
                 P += (p.dt / p.dy) * np.roll(v, d, axis=axis)

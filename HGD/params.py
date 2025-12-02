@@ -101,7 +101,12 @@ class dict_to_class:
                 self.s_M = 1
 
         if hasattr(self, "cyclic_BC_y_angle"):
-            self.cyclic_BC_y_offset = int(np.tan(np.radians(self.cyclic_BC_y_angle)) * self.nx)
+            if isinstance(self.nx, list):
+                self.cyclic_BC_y_offset = [
+                    int(np.tan(np.radians(self.cyclic_BC_y_angle)) * nx) for nx in self.nx
+                ]
+            else:
+                self.cyclic_BC_y_offset = int(np.tan(np.radians(self.cyclic_BC_y_angle)) * self.nx)
 
         # user can define mu or repose_angle. If both defined, mu takes precedence.
         if hasattr(self, "mu"):

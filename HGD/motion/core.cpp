@@ -156,6 +156,7 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                      std::vector<double>& chi_out) {
     
     int nx = p.nx, ny = p.ny, nm = p.nm;
+    double seg_exponent = p.seg_exponent;
     
     // Precompute neighbor indices once
     NeighborIndices neighbors(nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
@@ -225,7 +226,7 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                         continue;
                     }
 
-                    double P_u = std::isnan(s(i, j + 1, k)) ? 0 : P_u_bar * (s_inv_bar[idx_up] / s(i, j + 1, k));
+                    double P_u = std::isnan(s(i, j + 1, k)) ? 0 : P_u_bar * std::pow(s_inv_bar[idx_up] / s(i, j + 1, k), seg_exponent);
 
                     // Use precomputed neighbor indices
                     int l = neighbors.left[idx];

@@ -39,7 +39,7 @@ def is_ffmpeg_installed():
         return False
 
 
-cdict = {
+grainsize_cdict = {
     "red": ((0.0, 1.0, 1.0), (0.25, 1.0, 1.0), (0.5, 1.0, 1.0), (0.75, 0.902, 0.902), (1.0, 0.0, 0.0)),
     "green": (
         (0.0, 0.708, 0.708),
@@ -56,9 +56,21 @@ cdict = {
         (1.0, 1.0, 1.0),
     ),
 }
-orange_blue_cmap = LinearSegmentedColormap("grainsize", cdict, 256)
+
+blue_pink_cdict = {
+    "red": ((0.0, 1.0, 1.0), (1.0, 0.0, 0.0)),
+    "green": ((0.0, 0.0, 0.0), (1.0, 0.0, 0.0)),
+    "blue": ((0.0, 0.5, 0.5), (1.0, 1.0, 1.0)),
+}
+
+orange_blue_cmap = LinearSegmentedColormap("grainsize", grainsize_cdict, 256)
 orange_blue_cmap.set_bad("w", 1.0)
 orange_blue_cmap.set_under("w", 1.0)
+
+blue_pink_cmap = LinearSegmentedColormap("blue_pink", blue_pink_cdict, 256)
+blue_pink_cmap.set_bad("k", 1.0)
+blue_pink_cmap.set_under("k", 1.0)
+
 grey = cm.get_cmap("gray")
 grey.set_bad("w", 0.0)
 bwr = cm.get_cmap("bwr")
@@ -84,11 +96,12 @@ def size_colormap():
     return orange_blue_cmap
 
 
-global fig, summary_fig, triple_fig, quad_fig
+global fig, summary_fig, triple_fig, quad_fig, blue_pink_fig
 fig = plt.figure(1)
 summary_fig = plt.figure(2)
 triple_fig = plt.figure(3)
 quad_fig = plt.figure(4)
+blue_pink_fig = plt.figure(5)
 
 replacements = {
     "repose_angle": "φ",
@@ -152,7 +165,7 @@ def replace_strings(text, replacements):
 
 
 def set_plot_size(p):
-    global fig, summary_fig, triple_fig, quad_fig
+    global fig, summary_fig, triple_fig, quad_fig, blue_pink_fig
 
     # wipe any existing figures
     for i in plt.get_fignums():
@@ -162,6 +175,7 @@ def set_plot_size(p):
     triple_fig = plt.figure(2, figsize=[p.nx / _dpi, 3 * p.ny / _dpi])
     quad_fig = plt.figure(3, figsize=[p.nx / _dpi, 4 * p.ny / _dpi])
     summary_fig = plt.figure(4)
+    blue_pink_fig = plt.figure(5, facecolor="k", figsize=[p.nx / _dpi, p.ny / _dpi])
 
 
 def check_folders_exist(p):
@@ -255,6 +269,8 @@ def update(p, state, *args):
                 plot_s(s, p, *args)
             else:
                 plot_s(s, p)
+        if "s_blue_pink" in p.plot:
+            plot_s_blue_pink(s, p)
         if "nu" in p.plot:
             plot_nu(s, p)
         if "rel_nu" in p.plot:
@@ -667,6 +683,23 @@ def save_permeability(s, p):
     np.savetxt(
         p.folderName + "data/permeability_" + str(p.tstep).zfill(6) + ".csv", permeability, delimiter=","
     )
+
+
+def plot_s_blue_pink(s, p, *args):
+    plt.figure(blue_pink_fig)
+    plt.clf()
+
+    s_bar = operators.get_average(s)
+    nu = operators.get_solid_fraction(s)
+    alpha = np.clip(nu / p.nu_cs, 0, 1)
+
+    plt.pcolormesh(p.x, p.y, s_bar.T, cmap=blue_pink_cmap, vmin=p.s_m, vmax=p.s_M, alpha=alpha.T)
+
+    plt.axis("off")
+    plt.xlim(p.x[0], p.x[-1])
+    plt.ylim(p.y[0], p.y[-1])
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    plt.savefig(p.folderName + "s_" + str(p.tstep).zfill(6) + ".png")
 
 
 def plot_s(s, p, *args):

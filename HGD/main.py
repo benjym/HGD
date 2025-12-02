@@ -20,7 +20,11 @@ from HGD import operators
 
 def init(p, cycles=None):
     p.move_voids = importlib.import_module(f"HGD.motion.{p.motion_model}").move_voids
-    p.stream = importlib.import_module(f"HGD.motion.{p.motion_model}").stream
+
+    if hasattr(importlib.import_module(f"HGD.motion.{p.motion_model}"), "stream"):
+        p.stream = importlib.import_module(f"HGD.motion.{p.motion_model}").stream
+    else:
+        p.stream = None
 
     plotter.set_plot_size(p)
 
@@ -152,7 +156,8 @@ def time_step(p, state):
 
     if p.inertia:
         # u, v, s = operators.stream(u_new, v_new, s, p)
-        u, v, s = p.stream(u, v, s, p)
+        if p.stream is not None:
+            u, v, s = p.stream(u, v, s, p)
     else:
         pass
         # u, v = u_new, v_new

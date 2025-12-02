@@ -1,0 +1,37 @@
+{
+    // resolution
+    // nx : [30,40,50,100], // width
+    nx : 50,
+    aspect_ratio_y : 0.6857142857,  // copied from video
+    aspect_ratio_m : 5,  // nm = aspect_ratio * nx
+    // nm : 2,
+
+    // geometry
+    H : 0.1, // m
+    boundaries : ["charge"],
+
+    charge_rate : 5e-4,  // rate of charging inlet
+    sigma_charge : 0.1,  // width of charging region
+    
+    // material properties
+    alpha : 4.0,
+    repose_angle : 12,  // friction angle, degrees
+    // P_stab : 0.5,
+
+    s_m : 0.0003, // minimum particle size (m)
+    s_M : 0.001, // maximum particle size (m)
+    gsd_mode : 'bi',
+    nu_cs : 0.5,  // critical density above which motion stops
+
+    // initial conditions
+    IC_mode : "empty",
+
+    // temporal stuff
+    t_f : 10,  // final time
+    
+    // saving
+    save_inc : 50,  // how often to save
+    plot : ['s_blue_pink'],  // what to plot
+    videos : ['s'],  // what to save videos of
+    // save : ['s'],
+}

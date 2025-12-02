@@ -61,31 +61,36 @@ def charge(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
                     if topmost_solid < p.ny - 1:
                         to_fill.append((i, topmost_solid + 1, k))
                         p.inlet += fill_mass
+                else:
+                    # No solid found, fill at the bottom
+                    to_fill.append((i, 0, k))
+                    p.inlet += fill_mass
 
     if len(to_fill) > 0:
-        fill_sizes = np.random.choice(p.size_choices, size=len(to_fill), p=p.size_weights)
+        # fill_sizes = np.random.choice(p.size_choices, size=len(to_fill), p=p.size_weights)
+        fill_sizes = np.random.choice([0.0003, 0.001], size=len(to_fill))  # , p=p.size_weights)
         i, j, k = np.array(to_fill).T
 
-        if p.elutriation:
-            # Sort the array in ascending order
-            fill_sizes = np.sort(fill_sizes)
+        # if p.elutriation:
+        #     # Sort the array in ascending order
+        #     fill_sizes = np.sort(fill_sizes)
 
-            # Split the sorted array into two parts
-            first_half = fill_sizes[::2]  # Pick every second element starting from index 0 (smallest values)
-            second_half = fill_sizes[1::2][
-                ::-1
-            ]  # Pick every second element starting from index 1 (largest values, reversed)
+        #     # Split the sorted array into two parts
+        #     first_half = fill_sizes[::2]  # Pick every second element starting from index 0 (smallest values)
+        #     second_half = fill_sizes[1::2][
+        #         ::-1
+        #     ]  # Pick every second element starting from index 1 (largest values, reversed)
 
-            # Create an empty array to hold the result
-            fill_sizes_sorted = np.empty_like(fill_sizes)
+        #     # Create an empty array to hold the result
+        #     fill_sizes_sorted = np.empty_like(fill_sizes)
 
-            # Place smaller values at both ends
-            fill_sizes_sorted[: len(first_half)] = first_half
-            fill_sizes_sorted[len(first_half) :] = second_half
+        #     # Place smaller values at both ends
+        #     fill_sizes_sorted[: len(first_half)] = first_half
+        #     fill_sizes_sorted[len(first_half) :] = second_half
 
-            s[i, j, k] = fill_sizes_sorted
-        else:
-            s[i, j, k] = fill_sizes
+        #     s[i, j, k] = fill_sizes_sorted
+        # else:
+        s[i, j, k] = fill_sizes
 
     return s, u, v, c, T, last_swap, chi, sigma, outlet
 
