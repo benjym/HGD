@@ -21,3 +21,8 @@ std::vector<double> get_depth_core(const std::vector<double>& nu, int nx, int ny
 // Main stress calculation function using Harr method with substeps
 StressResult harr_substep_core(const View3<const double>& s,
                                const Params& p);
+
+// Check if stress state exceeds Mohr-Coulomb failure criterion
+// Returns a flattened array (nx * ny) where true indicates failure, false indicates safe
+std::vector<bool> check_mohr_coulomb_core(const StressResult& sigma,
+                                             const Params& p);

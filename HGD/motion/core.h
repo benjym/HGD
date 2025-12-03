@@ -7,7 +7,8 @@
 
 struct Params {
     double g, dt, dx, dy, alpha, nu_cs, P_stab, delta_limit;
-    double solid_density;
+    double solid_density, seg_exponent;
+    double cohesion, repose_angle;
     bool cyclic_BC;
     bool inertia;
     int cyclic_BC_y_offset;
@@ -45,6 +46,21 @@ struct View2 {
         return data[i*sx + j*sy]; 
     }
 };
+
+// Helper struct to store precomputed neighbor indices
+struct NeighborIndices {
+    std::vector<int> left;      // left neighbor i-index for each (i,j)
+    std::vector<int> right;     // right neighbor i-index for each (i,j)
+    std::vector<int> j_left;    // j-index when accessing left neighbor
+    std::vector<int> j_right;   // j-index when accessing right neighbor
+    std::vector<int> idx_left;  // flattened index for left neighbor
+    std::vector<int> idx_right; // flattened index for right neighbor
+    
+    NeighborIndices(int nx, int ny, int cyclic_BC_y_offset, bool cyclic_BC);
+};
+
+// Cached singleton accessor for NeighborIndices
+const NeighborIndices& get_cached_neighbours(int nx, int ny, int cyclic_BC_y_offset, bool cyclic_BC);
 
 // Core function declarations
 std::vector<double> compute_solid_fraction_core(const View3<const double>& s);

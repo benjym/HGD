@@ -96,6 +96,7 @@
         "text_encoding": "cpp",
         "thread": "cpp",
         "typeindex": "cpp",
-        "execution": "cpp"
+        "execution": "cpp",
+        "*.inc": "cpp"
     }
 }

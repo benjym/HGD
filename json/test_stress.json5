@@ -3,13 +3,13 @@
     // testing
     nx : 30, // width
     ny : 30, // height
-    nm : 30,
+    nm : 100,
 
     // geometry
     H : 1, // (m)
     
     // material properties
-    repose_angle : 90, // (degrees)
+    repose_angle : [30,35,40,45,50,55,60,65,70], // (degrees)
     gsd_mode : 'mono',
     s_m : 0.01, // minimum particle size (m)
     s_M : 0.01, // maximum particle size (m)
@@ -22,17 +22,18 @@
     IC_mode : "column",
 
     // stress
-    calculate_stress : true, // should the stress be calculated
+    // calculate_stress : true, // should the stress be calculated
+    advection_model : 'stress',
 
     // saving
-    saves : 100,   // how many saves to make
-    t_f : 150,  // s
-    plot : ['nu','stress'],
-    videos : ['nu','stress'],
-    save : ['nu'],
+    saves : 10,   // how many saves to make
+    t_f : 20,  // s
+    plot : ['nu','stress','sigma_xx','sigma_yy','sigma_xy'],
+    videos : ['nu'],
+    save : [''],
     mask_s_bar : false,
+    plot_colorbar: false,
 
     // parallel
     max_workers : 7, // leave some cores on my poor little laptop
-    vectorized : true
 }

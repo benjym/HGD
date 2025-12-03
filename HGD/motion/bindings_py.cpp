@@ -125,12 +125,17 @@ py::tuple move_voids_py(py::array_t<double> u, py::array_t<double> v, py::array_
         p.attr("P_stab").cast<double>(),
         p.attr("delta_limit").cast<double>(),
         p.attr("solid_density").cast<double>(),
+        p.attr("seg_exponent").cast<double>(),
+        p.attr("cohesion").cast<double>(),
+        p.attr("repose_angle").cast<double>(),
         p.attr("cyclic_BC").cast<bool>(),
         p.attr("inertia").cast<bool>(),
         p.attr("cyclic_BC_y_offset").cast<int>(),
         p.attr("nx").cast<int>(),
         p.attr("ny").cast<int>(),
-        p.attr("nm").cast<int>()
+        p.attr("nm").cast<int>(),
+        p.attr("y").cast<std::vector<double>>(),
+        p.attr("advection_model").cast<std::string>()
     };
     
     auto vU = as_view3(u);
@@ -164,12 +169,17 @@ py::tuple stream_py(py::array_t<double> u, py::array_t<double> v, py::array_t<do
         p.attr("P_stab").cast<double>(),
         p.attr("delta_limit").cast<double>(),
         p.attr("solid_density").cast<double>(),
+        p.attr("seg_exponent").cast<double>(),
+        p.attr("cohesion").cast<double>(),
+        p.attr("repose_angle").cast<double>(),
         p.attr("cyclic_BC").cast<bool>(),
         p.attr("inertia").cast<bool>(),
         p.attr("cyclic_BC_y_offset").cast<int>(),
         p.attr("nx").cast<int>(),
         p.attr("ny").cast<int>(),
-        p.attr("nm").cast<int>()
+        p.attr("nm").cast<int>(),
+        p.attr("y").cast<std::vector<double>>(),
+        p.attr("advection_model").cast<std::string>()
     };
     
     auto vU = as_view3(u);
@@ -189,7 +199,7 @@ py::tuple stream_py(py::array_t<double> u, py::array_t<double> v, py::array_t<do
     return py::make_tuple(u, v, s);
 }
 
-py::tuple harr_substep_py(py::array_t<double> s, py::object p) {
+py::array_t<double> harr_substep_py(py::array_t<double> s, py::object p) {
     // Extract parameters from Python object
     Params P{
         p.attr("g").cast<double>(),
@@ -201,12 +211,17 @@ py::tuple harr_substep_py(py::array_t<double> s, py::object p) {
         p.attr("P_stab").cast<double>(),
         p.attr("delta_limit").cast<double>(),
         p.attr("solid_density").cast<double>(),
+        p.attr("seg_exponent").cast<double>(),
+        p.attr("cohesion").cast<double>(),
+        p.attr("repose_angle").cast<double>(),
         p.attr("cyclic_BC").cast<bool>(),
         p.attr("inertia").cast<bool>(),
         p.attr("cyclic_BC_y_offset").cast<int>(),
         p.attr("nx").cast<int>(),
         p.attr("ny").cast<int>(),
-        p.attr("nm").cast<int>()
+        p.attr("nm").cast<int>(),
+        p.attr("y").cast<std::vector<double>>(),
+        p.attr("advection_model").cast<std::string>()
     };
     
     auto vS = as_view3_const(s);
@@ -227,7 +242,61 @@ py::tuple harr_substep_py(py::array_t<double> s, py::object p) {
         }
     }
     
-    return py::make_tuple(sigma_out);
+    return sigma_out;
+}
+
+py::array_t<bool> check_mohr_coulomb_py(py::array_t<double> sigma_array, py::object p) {
+    // Extract parameters from Python object
+    Params P{
+        p.attr("g").cast<double>(),
+        p.attr("dt").cast<double>(),
+        p.attr("dx").cast<double>(),
+        p.attr("dy").cast<double>(),
+        p.attr("alpha").cast<double>(),
+        p.attr("nu_cs").cast<double>(),
+        p.attr("P_stab").cast<double>(),
+        p.attr("delta_limit").cast<double>(),
+        p.attr("solid_density").cast<double>(),
+        p.attr("seg_exponent").cast<double>(),
+        p.attr("cohesion").cast<double>(),
+        p.attr("repose_angle").cast<double>(),
+        p.attr("cyclic_BC").cast<bool>(),
+        p.attr("inertia").cast<bool>(),
+        p.attr("cyclic_BC_y_offset").cast<int>(),
+        p.attr("nx").cast<int>(),
+        p.attr("ny").cast<int>(),
+        p.attr("nm").cast<int>(),
+        p.attr("y").cast<std::vector<double>>(),
+        p.attr("advection_model").cast<std::string>()
+    };
+    
+    // Extract stress tensor from input array (nx, ny, 3)
+    auto sigma_buf = sigma_array.unchecked<3>();
+    
+    StressResult sigma(P.nx, P.ny);
+    for (int i = 0; i < P.nx; i++) {
+        for (int j = 0; j < P.ny; j++) {
+            int idx = i * P.ny + j;
+            sigma.sigma_xy[idx] = sigma_buf(i, j, 0);
+            sigma.sigma_yy[idx] = sigma_buf(i, j, 1);
+            sigma.sigma_xx[idx] = sigma_buf(i, j, 2);
+        }
+    }
+    
+    // Call the C++ Mohr-Coulomb check
+    std::vector<bool> failure = check_mohr_coulomb_core(sigma, P);
+    
+    // Create output array (nx, ny)
+    py::array_t<double> failure_out({P.nx, P.ny});
+    auto failure_buf = failure_out.mutable_unchecked<2>();
+    
+    for (int i = 0; i < P.nx; i++) {
+        for (int j = 0; j < P.ny; j++) {
+            failure_buf(i, j) = failure[i * P.ny + j];
+        }
+    }
+    
+    return failure_out;
 }
 
 PYBIND11_MODULE(d2q4_cpp, m) {
@@ -244,4 +313,6 @@ PYBIND11_MODULE(d2q4_cpp, m) {
           py::arg("u"), py::arg("v"), py::arg("s"), py::arg("p"));
     m.def("harr_substep", &harr_substep_py, "Calculate stress using Harr method with substeps",
           py::arg("s"), py::arg("p"));
+    m.def("check_mohr_coulomb", &check_mohr_coulomb_py, "Check if stress state exceeds Mohr-Coulomb failure criterion",
+          py::arg("sigma"), py::arg("p"));
 }

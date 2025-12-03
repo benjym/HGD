@@ -466,10 +466,12 @@ def plot_s_bar(y, s_bar, nu_time, p):
 
 def plot_sigma_xx(s, sigma, last_swap, p):
     if sigma is None:
-        sigma = stress.calculate_stress(s, last_swap, p)
-    # sigma_xx = stress.get_sigma_xx(sigma, p)
-    # sigma_xx = np.ma.masked_where(sigma_xx == 0.0, sigma_xx)
+        # sigma = stress.calculate_stress(s, last_swap, p)
+        from HGD.motion import d2q4_cpp
+
+        sigma = d2q4_cpp.harr_substep(s, p)
     sigma_xx = np.ma.masked_where(sigma[:, :, 2] == 0.0, sigma[:, :, 2])
+
     plt.figure(fig)
     plt.clf()
     plt.pcolormesh(p.x, p.y, sigma_xx.T)
@@ -483,7 +485,10 @@ def plot_sigma_xx(s, sigma, last_swap, p):
 
 def plot_sigma_yy(s, sigma, last_swap, p):
     if sigma is None:
-        sigma = stress.calculate_stress(s, last_swap, p)
+        #     sigma = stress.calculate_stress(s, last_swap, p)
+        from HGD.motion import d2q4_cpp
+
+        sigma = d2q4_cpp.harr_substep(s, p)
     sigma_yy = np.ma.masked_where(sigma[:, :, 1] == 0.0, sigma[:, :, 1])
     plt.figure(fig)
     plt.clf()
@@ -498,7 +503,10 @@ def plot_sigma_yy(s, sigma, last_swap, p):
 
 def plot_sigma_xy(s, sigma, last_swap, p):
     if sigma is None:
-        sigma = stress.calculate_stress(s, last_swap, p)
+        #     sigma = stress.calculate_stress(s, last_swap, p)
+        from HGD.motion import d2q4_cpp
+
+        sigma = d2q4_cpp.harr_substep(s, p)
     sigma_xy = np.ma.masked_where(sigma[:, :, 0] == 0.0, sigma[:, :, 0])
     plt.figure(fig)
     plt.clf()

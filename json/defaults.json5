@@ -37,6 +37,7 @@
     alpha : 4, // diffusivity parameter
     seg_exponent : 1.0, // exponent used in segmentation probability
     void_creation_param : 0.52, // void creation parameter - default taken from fitting linear lines to Fig 5c/d from https://www.annualreviews.org/docserver/fulltext/fl/40/1/annurev.fluid.40.111406.102142.pdf and taking ratio of slopes
+    cohesion : 0.0, // cohesion between particles (Pa)
     
     // initial condition
     fill_ratio : 0.25, // ratio of the domain that is filled with particles
@@ -49,7 +50,7 @@
 
     // stress
     calculate_stress : false, // should the stress be calculated
-    stress_mode : 'active', // 'isotropic', 'active', 'passive', 'K_0' or 'anisotropic'
+    stress_mode : 'active', // 'isotropic', 'active', 'passive', 'K_0', 'anisotropic' or 'harr'
     solid_density : 2700, // density of the solid particles (kg/m^3/m)
     wall_friction_angle : 30, // friction coefficient between the walls and the particles
     

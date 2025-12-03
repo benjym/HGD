@@ -101,7 +101,11 @@ class dict_to_class:
                 self.s_M = 1
 
         if hasattr(self, "cyclic_BC_y_angle"):
-            if isinstance(self.nx, list):
+            if isinstance(self.cyclic_BC_y_angle, list):
+                self.cyclic_BC_y_offset = [
+                    int(np.tan(np.radians(angle)) * self.nx) for angle in self.cyclic_BC_y_angle
+                ]
+            elif isinstance(self.nx, list):
                 self.cyclic_BC_y_offset = [
                     int(np.tan(np.radians(self.cyclic_BC_y_angle)) * nx) for nx in self.nx
                 ]

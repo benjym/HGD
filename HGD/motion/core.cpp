@@ -5,35 +5,49 @@
 #include <algorithm>
 #include <array>
 
-// Helper struct to store precomputed neighbor indices
-struct NeighborIndices {
-    std::vector<int> left;      // left neighbor i-index for each (i,j)
-    std::vector<int> right;     // right neighbor i-index for each (i,j)
-    std::vector<int> j_left;    // j-index when accessing left neighbor
-    std::vector<int> j_right;   // j-index when accessing right neighbor
-    std::vector<int> idx_left;  // flattened index for left neighbor
-    std::vector<int> idx_right; // flattened index for right neighbor
+// NeighborIndices constructor implementation
+NeighborIndices::NeighborIndices(int nx, int ny, int cyclic_BC_y_offset, bool cyclic_BC) 
+    : left(nx * ny), right(nx * ny), j_left(nx * ny), j_right(nx * ny),
+      idx_left(nx * ny), idx_right(nx * ny) {
     
-    NeighborIndices(int nx, int ny, int cyclic_BC_y_offset, bool cyclic_BC) 
-        : left(nx * ny), right(nx * ny), j_left(nx * ny), j_right(nx * ny),
-          idx_left(nx * ny), idx_right(nx * ny) {
-        
-        for (int i = 0; i < nx; i++) {
-            for (int j = 0; j < ny; j++) {
-                int idx = i * ny + j;
-                int l, r, j_l, j_r;
-                std::tie(l, r, j_l, j_r) = get_lr_core(i, j, nx, ny, cyclic_BC_y_offset, cyclic_BC);
-                
-                left[idx] = l;
-                right[idx] = r;
-                j_left[idx] = j_l;
-                j_right[idx] = j_r;
-                idx_left[idx] = l * ny + j_l;
-                idx_right[idx] = r * ny + j_r;
-            }
+    for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+            int idx = i * ny + j;
+            int l, r, j_l, j_r;
+            std::tie(l, r, j_l, j_r) = get_lr_core(i, j, nx, ny, cyclic_BC_y_offset, cyclic_BC);
+            
+            left[idx] = l;
+            right[idx] = r;
+            j_left[idx] = j_l;
+            j_right[idx] = j_r;
+            idx_left[idx] = l * ny + j_l;
+            idx_right[idx] = r * ny + j_r;
         }
     }
-};
+}
+
+// Cached singleton accessor for NeighborIndices
+const NeighborIndices& get_cached_neighbours(int nx, int ny, int cyclic_BC_y_offset, bool cyclic_BC) {
+    static int cached_nx = -1;
+    static int cached_ny = -1;
+    static int cached_offset = -1;
+    static bool cached_cyclic = false;
+    static NeighborIndices* cached_neighbours = nullptr;
+    
+    if (cached_neighbours == nullptr || 
+        cached_nx != nx || cached_ny != ny || 
+        cached_offset != cyclic_BC_y_offset || cached_cyclic != cyclic_BC) {
+        
+        delete cached_neighbours;
+        cached_neighbours = new NeighborIndices(nx, ny, cyclic_BC_y_offset, cyclic_BC);
+        cached_nx = nx;
+        cached_ny = ny;
+        cached_offset = cyclic_BC_y_offset;
+        cached_cyclic = cyclic_BC;
+    }
+    
+    return *cached_neighbours;
+}
 
 std::vector<double> compute_solid_fraction_core(const View3<const double>& s) {
     int nx = s.nx, ny = s.ny, nm = s.nm;
@@ -214,7 +228,7 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
     double seg_exponent = p.seg_exponent;
     
     // Precompute neighbor indices once
-    NeighborIndices neighbors(nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
+    NeighborIndices neighbours(nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
     
     // Precompute useful quantities
     std::vector<double> s_bar = compute_mean_core(View3<const double>{s.data, nx, ny, nm, s.sx, s.sy, s.sz});
@@ -245,7 +259,10 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
     double dy_over_dt = p.dy / p.dt;
     double dx_over_dt = p.dx / p.dt;
 
+    bool unstable_left, unstable_right;
+
     std::vector<double> v_y_vec(nx * ny, 0.0);
+    std::vector<bool> unstable;
     
     if (p.advection_model == "stress") {
         StressResult sigma = harr_substep_core(View3<const double>{s.data, nx, ny, nm, s.sx, s.sy, s.sz}, p);
@@ -253,9 +270,12 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
         for (int idx = 0; idx < nx * ny; idx++) {
             double pressure = 0.5 * (sigma.sigma_xx[idx] + sigma.sigma_yy[idx]);
             v_y_vec[idx] = std::sqrt(2.0 * std::abs(pressure) / p.solid_density);
-            // Use pressure to calculate velocity: v_y = sqrt(2 * |pressure| / solid_density)
-            // Then update P_u_bar accordingly
         }
+
+        unstable = check_mohr_coulomb_core(
+            sigma,
+            p
+        );
     }
 
     // storage arrays
@@ -286,34 +306,34 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                         continue;
                     }
 
-                    if (p.advection_model == "stress") {
-                        v_y = v_y_vec[idx];
-                        P_u_bar = v_y * p.dt / p.dy;
-                        P_lr_ref = p.alpha * v_y * p.dt / p.dx / p.dx;
-                    }
-
-                    if (p.advection_model == "stress") {
-                        v_y = v_y_vec[idx];
-                        P_u_bar = v_y * p.dt / p.dy;
-                        P_lr_ref = p.alpha * v_y * p.dt / p.dx / p.dx;
-                    }
+                    // if (p.advection_model == "stress") {
+                    //     v_y = v_y_vec[idx];
+                    //     P_u_bar = v_y * p.dt / p.dy;
+                    //     P_lr_ref = p.alpha * v_y * p.dt / p.dx / p.dx;
+                    //     printf("i=%d, j=%d, v_y=%.4f, P_u_bar=%.4f, P_lr_ref=%.4f\n", i, j, v_y, P_u_bar, P_lr_ref);
+                    // }
 
                     double P_u = std::isnan(s(i, j + 1, k)) ? 0 : P_u_bar * std::pow(s_inv_bar[idx_up] / s(i, j + 1, k), seg_exponent);
 
                     // Use precomputed neighbor indices
-                    int l = neighbors.left[idx];
-                    int r = neighbors.right[idx];
-                    int j_l = neighbors.j_left[idx];
-                    int j_r = neighbors.j_right[idx];
-                    int idx_l = neighbors.idx_left[idx];
-                    int idx_r = neighbors.idx_right[idx];
+                    int l = neighbours.left[idx];
+                    int r = neighbours.right[idx];
+                    int j_l = neighbours.j_left[idx];
+                    int j_r = neighbours.j_right[idx];
+                    int idx_l = neighbours.idx_left[idx];
+                    int idx_r = neighbours.idx_right[idx];
                     
                     double nu_here = nu[idx];
                     double nu_left = nu[idx_l];
                     double nu_right = nu[idx_r];
-                    bool unstable_left = nu_left - nu_here > delta_nu_limit;
-                    bool unstable_right = nu_right - nu_here > delta_nu_limit;
-
+                    if (p.advection_model == "stress") {
+                        unstable_left = unstable[idx_l];
+                        unstable_right = unstable[idx_r];
+                    }
+                    else {
+                        unstable_left = nu_left - nu_here > delta_nu_limit;
+                        unstable_right = nu_right - nu_here > delta_nu_limit;
+                    }
                     double P_l = (!std::isnan(s(l, j_l, k)) && unstable_left) ? P_lr_ref * s(l, j_l, k) : 0;
                     double P_r = (!std::isnan(s(r, j_r, k)) && unstable_right) ? P_lr_ref * s(r, j_r, k) : 0;
 
@@ -406,7 +426,7 @@ void stream_core(View3<double> u, View3<double> v,
     // printf("Streaming step started\n");
     
     // Precompute neighbor indices once
-    NeighborIndices neighbors(nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
+    NeighborIndices neighbours(nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
 
     // Thread-safe PRNG
     std::random_device rd;
@@ -428,12 +448,12 @@ void stream_core(View3<double> u, View3<double> v,
         int idx_down = idx - 1;
         
         // Use precomputed neighbor indices
-        int l = neighbors.left[idx];
-        int r = neighbors.right[idx];
-        int j_l = neighbors.j_left[idx];
-        int j_r = neighbors.j_right[idx];
-        int idx_l = neighbors.idx_left[idx];
-        int idx_r = neighbors.idx_right[idx];
+        int l = neighbours.left[idx];
+        int r = neighbours.right[idx];
+        int j_l = neighbours.j_left[idx];
+        int j_r = neighbours.j_right[idx];
+        int idx_l = neighbours.idx_left[idx];
+        int idx_r = neighbours.idx_right[idx];
 
         std::array<int, 2> dest = {i, j}; // Default to current position
         int dest_idx;
@@ -531,7 +551,7 @@ void stream_core(View3<double> u, View3<double> v,
 //     // printf("Streaming step started\n");
     
 //     // Precompute neighbor indices once
-//     NeighborIndices neighbors(nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
+//     NeighborIndices neighbours(nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
 
 //     for (int i = 0; i < nx; i++) {
 //         for (int j = 0; j < ny - 1; j++) {  // Stop before ny-1 to avoid j+1 out of bounds
@@ -539,12 +559,12 @@ void stream_core(View3<double> u, View3<double> v,
 //             int idx_up = idx + 1;
             
 //             // Use precomputed neighbor indices
-//             int l = neighbors.left[idx];
-//             int r = neighbors.right[idx];
-//             int j_l = neighbors.j_left[idx];
-//             int j_r = neighbors.j_right[idx];
-//             int idx_l = neighbors.idx_left[idx];
-//             int idx_r = neighbors.idx_right[idx];
+//             int l = neighbours.left[idx];
+//             int r = neighbours.right[idx];
+//             int j_l = neighbours.j_left[idx];
+//             int j_r = neighbours.j_right[idx];
+//             int idx_l = neighbours.idx_left[idx];
+//             int idx_r = neighbours.idx_right[idx];
 
 //             double u_up = (v_mean[idx_up] > 0) ? v_mean[idx_up] : 0;
 //             double P_u = mask(i, j + 1) ? 0 : u_up * dy_over_dt;
