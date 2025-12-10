@@ -18,6 +18,10 @@ A python package for simulating the motion of a granular material as a result of
 
 You can [read the docs here](https://benjym.github.io/HGD/).
 
+# Support
+
+You can contact the development team [here](https://matrix.to/#/!UZnyhaLhQymfFbLJYI:matrix.org?via=matrix.org).
+
 # Authors
 
 - [Benjy Marks](mailto:benjy.marks@sydney.edu.au)
