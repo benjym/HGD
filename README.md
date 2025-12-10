@@ -1,5 +1,7 @@
 # Heterarchical Granular Dynamics
 
+**Disclaimer: This code is under development and is likely to have significant breaking changes in the near future. Many features are incomplete or redundant. Please contact the development team if you would like a tour.**
+
 A python package for simulating the motion of a granular material as a result of the motion of voids. In particular, it (currently) models non-inertial problems quite well. In particular, segregation is well modelled for several systems.
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
