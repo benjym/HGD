@@ -184,28 +184,34 @@ class dict_to_class:
                 P_ratio = self.alpha * self.s_M * P_n / self.dy
                 print(f"n = {n}, n*P_diff/P_adv = {n*P_ratio}")
 
-        while not safe:
-            self.P_adv_ref = stability
-            self.dt = self.P_adv_ref * self.dy / self.free_fall_velocity
+        if self.inertia:
+            # === Inertia Mode: Use fixed time step ===
+            self.dt = self.defined_time_step_size
+        else:
+            # === Non-Inertia Mode: Original automatic stability loop ===
+            safe = False  # Initialize loop condition
+            while not safe:
+                self.P_adv_ref = stability
+                self.dt = self.P_adv_ref * self.dy / self.free_fall_velocity
 
-            # self.P_diff_ref = self.alpha * self.P_adv_ref
-            self.P_diff_max = (
-                self.alpha
-                * self.s_M
-                * self.free_fall_velocity
-                * self.dt
-                / self.dy
-                / self.dy
-                * self.P_diff_weighting
-            )
+                # self.P_diff_ref = self.alpha * self.P_adv_ref
+                self.P_diff_max = (
+                    self.alpha
+                    * self.s_M
+                    * self.free_fall_velocity
+                    * self.dt
+                    / self.dy
+                    / self.dy
+                    * self.P_diff_weighting
+                )
 
-            self.P_adv_max = self.P_adv_ref * (self.s_M / self.s_m)
-            # self.P_diff_max = self.P_diff_ref * (self.s_M / self.s_m)
+                self.P_adv_max = self.P_adv_ref * (self.s_M / self.s_m)
+                # self.P_diff_max = self.P_diff_ref * (self.s_M / self.s_m)
 
-            if self.P_adv_max + (2 * self.max_diff_swap_length) * self.P_diff_max <= self.P_stab:
-                safe = True
-            else:
-                stability *= 0.95
+                if self.P_adv_max + (2 * self.max_diff_swap_length) * self.P_diff_max <= self.P_stab:
+                    safe = True
+                else:
+                    stability *= 0.95
 
         if self.t_f is None:
             self.nt = 0

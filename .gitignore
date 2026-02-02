@@ -8,4 +8,5 @@ output/
 build/
 .vscode/
 venv/
-*.so
+venv_dry/
+*.mp4

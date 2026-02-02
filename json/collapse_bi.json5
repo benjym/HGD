@@ -13,10 +13,12 @@
     repose_angle : 30, // (degrees)
     gsd_mode : 'bi',
     large_concentration: 0.5,
-    s_m : [0.0001,0.0003,0.0005], // minimum particle size (m)
+    s_m : [0.0001], // minimum particle size (m)
     s_M : 0.001, // maximum particle size (m)
     nu_cs : 0.5,
     alpha : 1,
+    inertia: [true,false],
+
     
     // initial condition:
     fill_ratio : 0.25,
@@ -27,6 +29,14 @@
     save_inc : 100,
     t_f : null,  // s
     videos : ['nu','s'],
-    save : ['nu','s'],
-    mask_s_bar : true
+    // save : ['nu','s'],
+    plot : ['combined_plot'],
+
+    mask_s_bar : true,
+    motion_model : 'd2q4_array_v3', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
+    t_f:100,
+
+
+    defined_time_step_size:1e-3,
+
 }

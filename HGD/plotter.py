@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.cm as cm
-
+import matplotlib.colors as mcolors
 from PIL import Image
 from HGD import operators
 from HGD import stress
@@ -271,6 +271,8 @@ def update(p, state, *args):
                 plot_s(s, p)
         if "s_blue_pink" in p.plot:
             plot_s_blue_pink(s, p)
+        if "combined_plot" in p.plot:
+            plot_combined(s, p, p.tstep, p.t_f / p.nt, v, u)
         if "nu" in p.plot:
             plot_nu(s, p)
         if "rel_nu" in p.plot:
@@ -1172,3 +1174,134 @@ def stack_videos(paths, name, p):
 # buffer = generate_colormap_image(256, 256)
 # with open('colormap.png', 'wb') as f:
 #     f.write(buffer.read())
+
+
+def plot_combined(s, p, t, dt, v, u):
+    """
+    Plots the Solid Fraction (left) and Particle Size (right) side-by-side.
+    Boundary masks have been removed.
+    """
+
+    # Create a figure with 1 row and 2 columns
+    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+
+    # Set figure and axes backgrounds to white
+    fig.patch.set_facecolor("white")
+    axs[0].set_facecolor("white")
+    axs[1].set_facecolor("white")
+
+    # Scale factors for display units
+    scale_factor = 1_000_000  # Convert meters to micrometers (µm)
+    scale_factor_nu = 1  # Solid fraction is dimensionless
+
+    # ---- Left Plot: Solid Fraction (nu) ----
+
+    # Calculate solid fraction: 1 minus the average void fraction
+    nu_raw = (1 - np.mean(np.isnan(s), axis=2).T) * scale_factor_nu  # shape (ny, nx)
+
+    # Mask cells where solid fraction is exactly 0 so the background remains white
+    nu = np.ma.masked_where(nu_raw == 0.0, nu_raw)
+
+    # Define grid coordinates
+    x = np.linspace(0, p.W, p.nx)
+    y = np.linspace(0, p.H, p.ny)
+
+    # Plot solid fraction heatmap
+    c1 = axs[0].pcolormesh(
+        x,
+        y,
+        nu,
+        cmap="inferno_r",
+        vmin=0,
+        vmax=scale_factor_nu,
+        shading="auto",
+    )
+
+    # Set labels and aspect ratio for the left plot
+    axs[0].set_xlabel("X (m)")
+    axs[0].set_ylabel("Y (m)")
+    axs[0].set_aspect("equal", adjustable="box")
+
+    # ---- Right Plot: Particle Size (s_plot) ----
+
+    # Calculate average particle size, ignoring NaNs (voids)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        s_plot = np.nanmean(s, axis=2).T * scale_factor
+
+    # Prepare data for plotting (mask NaNs so they show as background)
+    s_plot = np.ma.masked_where(np.isnan(s_plot), s_plot)
+
+    # Create a custom colormap (Pink to Blue)
+    # pink_blue_cmap = mcolors.LinearSegmentedColormap.from_list(
+    #     "pink_blue", ["#ff69b4", "#0000ff"], N=256
+    # )
+
+    # # Select colormap based on parameters
+    # if getattr(p, "orange_blue_cmap", False):
+    #     # Assuming orange_blue_cmap is defined elsewhere globally or in imports
+    #     # If not, you might need to define it or pass it in.
+    #     # For safety, falling back to pink_blue if variable not found is safer,
+    #     # but adhering to original logic here.
+    #     try:
+    #         cmap_to_use = orange_blue_cmap
+    #     except NameError:
+    #         cmap_to_use = pink_blue_cmap
+    # else:
+    #     cmap_to_use = pink_blue_cmap
+
+    # Plot particle size heatmap
+    c2 = axs[1].pcolormesh(
+        x,
+        y,
+        s_plot,
+        cmap=orange_blue_cmap,
+        vmin=np.nanmin(s) * 1e6,
+        vmax=np.nanmax(s) * 1e6,
+        shading="auto",
+    )
+
+    # Set labels and aspect ratio for the right plot
+    axs[1].set_xlabel("X (m)")
+    axs[1].set_ylabel("Y (m)")
+    axs[1].set_aspect("equal", adjustable="box")
+
+    # ---- Titles and Colorbars ----
+
+    # Set global title with simulation time
+    time = t * dt
+    fig.suptitle(f"Time = {time:.2f} s", fontsize=12, y=1.05)
+
+    # Add colorbar for Solid Fraction (Top Left)
+    cbar_ax1 = fig.add_axes([0.1, 0.92, 0.35, 0.02])
+    cbar1 = fig.colorbar(c1, cax=cbar_ax1, orientation="horizontal")
+    cbar1.ax.xaxis.set_ticks_position("top")
+    cbar1.ax.xaxis.set_label_position("top")
+    cbar1.set_label("Solid fraction (-)", labelpad=10)
+
+    # Add colorbar for Particle Size (Top Right)
+    cbar_ax2 = fig.add_axes([0.55, 0.92, 0.35, 0.02])
+    cbar2 = fig.colorbar(c2, cax=cbar_ax2, orientation="horizontal")
+    cbar2.ax.xaxis.set_ticks_position("top")
+    cbar2.ax.xaxis.set_label_position("top")
+    cbar2.set_label("Particle size (µm)", labelpad=10)
+
+    # Adjust layout spacing
+    plt.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.88, wspace=0.4)
+
+    # ---- Save Output ----
+
+    # Define output path
+    output_folder = os.path.join(p.folderName, "combined")
+    os.makedirs(output_folder, exist_ok=True)
+
+    # Save figure
+    plt.savefig(
+        os.path.join(output_folder, "combined" + str(t).zfill(8) + ".png"),
+        bbox_inches="tight",
+        dpi=100,
+    )
+
+    # Close plots to free memory
+    plt.close(fig)
+    plt.close()
