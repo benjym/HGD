@@ -147,13 +147,13 @@ def IC(p):
         return s
     elif p.IC_mode == "column":  # just middle full to top
         mask = np.ones([p.nx, p.ny, p.nm], dtype=bool)
-        mask[
-            p.nx // 2 - int(p.fill_ratio / 4 * p.nx) : p.nx // 2 + int(p.fill_ratio / 4 * p.nx), :, :
-        ] = False
+        mask[p.nx // 2 - int(p.fill_ratio / 4 * p.nx) : p.nx // 2 + int(p.fill_ratio / 4 * p.nx), :, :] = (
+            False
+        )
 
-        mask[
-            :, -1, :
-        ] = True  # top row can't be filled for algorithmic reasons - could solve this if we need to
+        mask[:, -1, :] = (
+            True  # top row can't be filled for algorithmic reasons - could solve this if we need to
+        )
 
     elif p.IC_mode == "empty":  # completely empty
         mask = np.ones([p.nx, p.ny, p.nm], dtype=bool)
@@ -162,9 +162,9 @@ def IC(p):
         mask = np.ones([p.nx, p.ny, p.nm], dtype=bool)
         mask[: int(p.fill_ratio * p.nx), :, :] = False
 
-        mask[
-            :, -1, :
-        ] = True  # top row can't be filled for algorithmic reasons - could solve this if we need to
+        mask[:, -1, :] = (
+            True  # top row can't be filled for algorithmic reasons - could solve this if we need to
+        )
     # create alternating layers of two densities
     elif p.IC_mode == "layers":
         layer_thickness = 20
@@ -199,6 +199,31 @@ def IC(p):
         X, Y = np.meshgrid(x, y, indexing="ij")
         top = p.cyclic_BC_y_offset + p.fill_ratio * p.ny
         mask = Y > (-p.cyclic_BC_y_offset / p.nx * X + top)
+
+    elif p.IC_mode == "small_over_large":
+        # small particles on top of large particles, both at nu_fill
+        s = np.nan * np.ones([p.nx, p.ny, p.nm])
+        mid_y = int(p.ny // 2)
+        for i in range(p.nx):
+            for j in range(mid_y):
+                fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
+                s[i, j, fill] = p.s_M
+            # now fill the second half p.large_concentration of the available height
+            top = mid_y + int(p.large_concentration * (p.ny - mid_y))
+            for k in range(mid_y, top):
+                fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
+                s[i, k, fill] = p.s_m
+        mask = np.zeros([p.nx, p.ny, p.nm], dtype=bool)
+
+    elif p.IC_mode == "bottom_large":
+        # large particles at the bottom, nothing at the top
+        s = np.nan * np.ones([p.nx, p.ny, p.nm])
+        mid_y = int(p.ny // 2)
+        for i in range(p.nx):
+            for j in range(mid_y):
+                fill = rng.choice(p.nm, size=int(p.nm * p.nu_fill), replace=False)
+                s[i, j, fill] = p.s_M
+        mask = np.zeros([p.nx, p.ny, p.nm], dtype=bool)
 
     else:
         raise ValueError(f"Unrecognised IC_mode: {p.IC_mode}")

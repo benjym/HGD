@@ -123,12 +123,15 @@ py::tuple move_voids_py(py::array_t<double> u, py::array_t<double> v, py::array_
         p.attr("nu_cs").cast<double>(),
         p.attr("P_stab").cast<double>(),
         p.attr("delta_limit").cast<double>(),
+        p.attr("seg_exponent").cast<double>(),
+        p.attr("beta").cast<double>(),
         p.attr("cyclic_BC").cast<bool>(),
         p.attr("inertia").cast<bool>(),
         p.attr("cyclic_BC_y_offset").cast<int>(),
         p.attr("nx").cast<int>(),
         p.attr("ny").cast<int>(),
-        p.attr("nm").cast<int>()
+        p.attr("nm").cast<int>(),
+        p.attr("move_type").cast<std::string>()
     };
     
     auto vU = as_view3(u);
@@ -141,7 +144,7 @@ py::tuple move_voids_py(py::array_t<double> u, py::array_t<double> v, py::array_
     std::vector<double> nu = compute_solid_fraction_core(View3<const double>{vS.data, vS.nx, vS.ny, vS.nm, vS.sx, vS.sy, vS.sz});
     std::vector<double> chi_out;
     
-    move_voids_core(vU, vV, vS, vM, P, nu, chi_out);
+    move_core(vU, vV, vS, vM, P, nu, chi_out);
 
     // Return chi as a new NumPy array (nx, ny)
     py::array_t<double> chi_py({P.nx, P.ny}, chi_out.data());
@@ -152,7 +155,7 @@ py::array_t<double> stream_py(std::vector<double> u_mean, std::vector<double> v_
                               py::array_t<double> s, py::array_t<double> mask_array,
                               std::vector<double> nu, int nx, int ny, int nm, double nu_cs,
                               int cyclic_BC_y_offset, bool cyclic_BC,
-                              double dx, double dy, double dt) {
+                              double dx, double dy, double dt, double beta, std::string move_type) {
     
     auto vS = as_view3(s);
     auto mask_buf = mask_array.unchecked<2>();
@@ -166,7 +169,7 @@ py::array_t<double> stream_py(std::vector<double> u_mean, std::vector<double> v_
     }
     View2<const uint8_t> vM{mask_data.data(), nx, ny, ny, 1};
     
-    Params p{0, dt, dx, dy, 0, nu_cs, 0, 0, cyclic_BC, false, cyclic_BC_y_offset, nx, ny, nm};
+    Params p{0, dt, dx, dy, 0, nu_cs, 0, 0, 1.0, beta, cyclic_BC, false, cyclic_BC_y_offset, nx, ny, nm, move_type};
     
     stream_core(u_mean, v_mean, vS, vM, nu, p);
     
@@ -183,5 +186,9 @@ PYBIND11_MODULE(d2q4_cpp, m) {
           py::arg("u"), py::arg("v"), py::arg("s"), py::arg("p"), py::arg("dummy"),
           py::arg("c") = py::none(), py::arg("T") = py::none(),
           py::arg("chi") = py::none(), py::arg("last_swap") = py::none());
-    m.def("stream", &stream_py, "Stream mass based on inertia");
+        m.def("stream", &stream_py, "Stream mass based on inertia",
+            py::arg("u_mean"), py::arg("v_mean"), py::arg("s"), py::arg("mask_array"),
+            py::arg("nu"), py::arg("nx"), py::arg("ny"), py::arg("nm"), py::arg("nu_cs"),
+            py::arg("cyclic_BC_y_offset"), py::arg("cyclic_BC"),
+            py::arg("dx"), py::arg("dy"), py::arg("dt"), py::arg("beta") = 0.0, py::arg("move_type") = "void");
 }

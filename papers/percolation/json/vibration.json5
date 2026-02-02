@@ -1,0 +1,37 @@
+{
+    // resolution
+    nx : 20, // width
+    ny : 20, // height
+    nm : 100,  // number of simultaneous simulations
+
+    // geometry
+    H : 1, // (m)
+    // P_stab : 0.01,
+
+    // material properties
+    repose_angle : 30, // (degrees)
+    gsd_mode : 'bi',
+    s_m : 0.001, // minimum particle size (m)
+    s_M : [0.002,0.005], // maximum particle size (m)
+    beta : 6,
+    large_concentration : [0.0,0.2,0.4,0.6,0.8,1.0],
+    
+    boundaries : ["diffuse_voids"],
+    applied_swap_rate : 0.1,
+    
+    // initial condition:
+    nu_fill : 0.7,
+    // IC_mode : "full",
+    IC_mode : "small_over_large",
+
+    // inertia: [true, false],
+    inertia: false,
+    
+    plot : ['nu','s'],
+    videos : ['nu','s'],
+    save : ['nu','s'],
+
+    // saving
+    saves : 10,
+    t_f : 10,  // s
+}

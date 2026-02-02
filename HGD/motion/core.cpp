@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <array>
 
+double inf = std::numeric_limits<double>::infinity();
+
 // Helper struct to store precomputed neighbor indices
 struct NeighborIndices {
     std::vector<int> left;      // left neighbor i-index for each (i,j)
@@ -129,6 +131,39 @@ std::vector<bool> compute_locally_fluid_core(const std::vector<double>& nu, int 
     return locally_fluid;
 }
 
+// static inline double compute_pore_size(double s_a, double s_b, double s_c,
+                                    //    double void_ratio, double beta_on_6) {
+static inline double compute_pore_size(View3<double>& s, int i, int j, int k, int k_range, double void_ratio, double beta_on_6, int nm) {
+    double numerator = 0.0;
+    double denominator = 0.0;
+    for (int offset = -k_range; offset <= k_range; offset++) {
+        int k_idx = (k + offset + nm) % nm; // wrap around
+        if (!std::isnan(s(i, j, k_idx))) {
+            numerator += std::pow(s(i, j, k_idx), 3);
+            denominator += std::pow(s(i, j, k_idx), 2);    
+        }
+    }
+
+    if (denominator <= 0.0) {
+        return inf;
+    }
+
+    double sauter_mean_diameter = numerator / denominator;
+    if (std::isnan(sauter_mean_diameter)) {
+        return inf;
+    }
+
+    return beta_on_6 * void_ratio * sauter_mean_diameter;
+}
+
+static inline int wrap_index(int idx, int n) {
+    if (n <= 0) {
+        return 0;
+    }
+    int wrapped = idx % n;
+    return (wrapped < 0) ? (wrapped + n) : wrapped;
+}
+
 std::tuple<int, int, int, int> get_lr_core(int i, int j, int nx, int ny, int cyclic_BC_y_offset, bool cyclic_BC) {
     int l = (i == 0) ? (cyclic_BC ? nx - 1 : 0) : i - 1;
     int r = (i == nx - 1) ? (cyclic_BC ? 0 : nx - 1) : i + 1;
@@ -147,6 +182,182 @@ std::tuple<int, int, int, int> get_lr_core(int i, int j, int nx, int ny, int cyc
         j_l = j;
     }
     return std::make_tuple(l, r, j_l, j_r);
+}
+
+void move_core(View3<double> u, View3<double> v, View3<double> s,
+                     const View2<const uint8_t>& mask,
+                     Params p,
+                     std::vector<double>& nu,
+                     std::vector<double>& chi_out) {
+
+    if (p.move_type == "void") {
+        move_voids_core(u, v, s, mask, p, nu, chi_out);
+    } else if (p.move_type == "particle") {
+        move_particles_core(u, v, s, mask, p, nu, chi_out);
+    } else {
+        throw std::invalid_argument("Invalid move_type: " + p.move_type);
+    }
+}
+
+void move_particles_core(View3<double> u, View3<double> v, View3<double> s,
+                     const View2<const uint8_t>& mask,
+                     Params p,
+                     std::vector<double>& nu,
+                     std::vector<double>& chi_out) {
+
+    int nx = p.nx, ny = p.ny, nm = p.nm;
+    double seg_exponent = p.seg_exponent;
+    
+    // Precompute neighbor indices once
+    NeighborIndices neighbors(nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
+    
+    // Precompute useful quantities
+    std::vector<double> s_bar = compute_mean_core(View3<const double>{s.data, nx, ny, nm, s.sx, s.sy, s.sz});
+    std::vector<double> s_inv_bar = compute_s_inv_bar_core(View3<const double>{s.data, nx, ny, nm, s.sx, s.sy, s.sz});
+    std::vector<bool> some_particles = compute_some_particles_core(nu, mask, nx, ny);
+
+    double v_y = std::sqrt(p.g * p.dy);
+    double P_ud_bar = v_y * p.dt / p.dy;  // P_u = P_u_bar * (s_inv_bar/s)
+    double P_lr_ref = p.alpha * v_y * p.dt / p.dx / p.dx;
+    double delta_nu_limit = p.delta_limit;
+
+    double inverse_nm = 1.0 / nm;
+    double dy_over_dt = p.dy / p.dt;
+    double dx_over_dt = p.dx / p.dt;
+    double beta_on_6 = p.beta / 6.0;
+
+    // storage arrays
+    std::array<int, 3> dest = {0, 0, 0};
+    std::vector<double> N_swap_arr(nx * ny, 0.0);
+    
+    // Thread-safe PRNG
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> rand_dist(0.0, 1.0);
+    
+    for (int k = 0; k < nm; k++) {
+        for (int i = 0; i < nx; i++) {
+            for (int j = 1; j < ny; j++) {
+                int idx = i * ny + j;
+
+                if (some_particles[idx]) {
+                    if (!std::isnan(s(i, j, k))) { // particle present
+
+                        if (mask(i, j)) {
+                            continue;
+                        }
+
+                        // Use precomputed neighbor indices
+                        int l = neighbors.left[idx];
+                        int r = neighbors.right[idx];
+                        int j_l = neighbors.j_left[idx];
+                        int j_r = neighbors.j_right[idx];
+                        int idx_l = neighbors.idx_left[idx];
+                        int idx_r = neighbors.idx_right[idx];
+                        // int idx_up = idx + 1;
+                        int idx_down = idx - 1;
+
+                        double void_ratio_here = (1.0 - nu[idx]) / (nu[idx] + 1e-10);
+                        double void_ratio_down = (1.0 - nu[idx_down])/(nu[idx_down] + 1e-10);
+                        double void_ratio_right = (1.0 - nu[idx_r]) / (nu[idx_r] + 1e-10);
+                        double void_ratio_left = (1.0 - nu[idx_l]) / (nu[idx_l] + 1e-10);
+
+                        double s_here = s(i, j, k);
+                        double s_down = s(i, j - 1, k);
+                        double s_right = s(r, j_r, k);
+                        double s_left = s(l, j_l, k);
+
+                        int k_range = 1; // consider particles k-1, k, k+1 for pore size calculation
+                        double d_pore_here = compute_pore_size(s, i, j, k, k_range, void_ratio_here, beta_on_6, nm);
+                        double d_pore_down = compute_pore_size(s, i, j-1, k, k_range, void_ratio_down, beta_on_6, nm);
+                        double d_pore_right = compute_pore_size(s, r, j_r, k, k_range, void_ratio_right, beta_on_6, nm);
+                        double d_pore_left = compute_pore_size(s, l, j_l, k, k_range, void_ratio_left, beta_on_6, nm);
+
+                        double P_d = (std::isnan(s_down) && s_here <= d_pore_down)
+                                         ? P_ud_bar * std::pow(s_inv_bar[idx] / s_here, seg_exponent)
+                                         : 0.0;
+
+                        // if (s_here > d_pore_down) P_d = 0; // Prevent downward movement if particle is larger than pore size
+                        
+                        double nu_here = nu[idx];
+                        double nu_left = nu[idx_l];
+                        double nu_right = nu[idx_r];
+                        // Determine if left/right moves are unstable based on delta_nu_limit
+                        // Limits slopes via geometrical constraint on density gradients
+
+                        bool unstable_left = (std::abs(nu_here - nu_left) > delta_nu_limit);
+                        bool unstable_right = (std::abs(nu_here - nu_right) > delta_nu_limit);
+
+                        // 
+                        double P_l = (std::isnan(s_left) && unstable_left && s_here <= d_pore_left) ? P_lr_ref * s_here : 0.0;
+                        double P_r = (std::isnan(s_right) && unstable_right && s_here <= d_pore_right) ? P_lr_ref * s_here : 0.0;
+
+                        // if (s_here > d_pore_left) P_l = 0;  // Pore-size gate for left move
+                        // if (s_here > d_pore_right) P_r = 0;  // Pore-size gate for right move
+
+                        if (mask(i, j - 1)) {
+                            P_d = 0; // Prevent downward movement into a masked cell
+                        }
+
+                        if (mask(l, j_l)) {
+                            P_l = 0; // Prevent leftward movement into a masked cell
+                        }
+
+                        if (mask(r, j_r)) {
+                            P_r = 0; // Prevent rightward movement into a masked cell
+                        }
+
+                        double P_tot = P_d + P_l + P_r;
+
+                        if (P_tot > 0) {
+                            double rand_val = rand_dist(gen);
+
+                            bool found = false;
+                            int dest_idx = -1;
+
+                            if (rand_val < P_d && P_d > 0) {
+                                dest = {i, j - 1, k};
+                                dest_idx = idx_down;
+                                found = true;
+                                v(i, j, k) -= dy_over_dt;
+                            }
+                            else if (rand_val < (P_l + P_d)) {
+                                dest = {l, j_l, k};
+                                dest_idx = idx_l;
+                                found = true;
+                                u(i, j, k) -= dx_over_dt;
+                            }
+                            else if (rand_val < P_tot) {
+                                dest = {r, j_r, k};
+                                dest_idx = idx_r;
+                                found = true;
+                                u(i, j, k) += dx_over_dt;
+                            }
+
+                            if (found) {
+                                double tmp = s(i, j, k);
+                                s(i, j, k) = s(dest[0], dest[1], dest[2]);
+                                s(dest[0], dest[1], dest[2]) = tmp;
+
+                                nu[idx] -= inverse_nm;
+                                nu[dest_idx] += inverse_nm;
+
+                                N_swap_arr[idx] += 1;
+                                N_swap_arr[dest_idx] += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Normalize chi_out
+    chi_out.resize(nx * ny);
+    for (size_t i = 0; i < N_swap_arr.size(); i++) {
+        chi_out[i] = N_swap_arr[i] / (nm * p.P_stab);
+    }
+
 }
 
 void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
@@ -174,6 +385,7 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
     double inverse_nm = 1.0 / nm;
     double dy_over_dt = p.dy / p.dt;
     double dx_over_dt = p.dx / p.dt;
+    double beta_on_6 = p.beta / 6.0;
 
     // storage arrays
     std::array<int, 3> dest = {0, 0, 0};
@@ -221,12 +433,10 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
 
         if (some_particles[idx]) {
             if (std::isnan(s(i, j, k))) {
-                if (nu[idx] < p.nu_cs) {
+                // if (nu[idx] < p.nu_cs) {
                     if (mask(i, j)) {
                         continue;
                     }
-
-                    double P_u = std::isnan(s(i, j + 1, k)) ? 0 : P_u_bar * std::pow(s_inv_bar[idx_up] / s(i, j + 1, k), seg_exponent);
 
                     // Use precomputed neighbor indices
                     int l = neighbors.left[idx];
@@ -235,6 +445,36 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                     int j_r = neighbors.j_right[idx];
                     int idx_l = neighbors.idx_left[idx];
                     int idx_r = neighbors.idx_right[idx];
+                    int idx_up = idx + 1;
+
+                    double void_ratio_here = (1.0 - nu[idx]) / (nu[idx] + 1e-10);
+                    double void_ratio_up = (1.0-nu[idx_up])/(nu[idx_up] + 1e-10);
+                    double void_ratio_right = (1.0 - nu[idx_r]) / (nu[idx_r] + 1e-10);
+                    double void_ratio_left = (1.0 - nu[idx_l]) / (nu[idx_l] + 1e-10);
+
+                    int l_up, r_up, j_l_up, j_r_up;
+                    std::tie(l_up, r_up, j_l_up, j_r_up) = get_lr_core(i, j + 1, nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
+
+                    int l_down, r_down, j_l_down, j_r_down;
+                    std::tie(l_down, r_down, j_l_down, j_r_down) = get_lr_core(i, j - 1, nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
+
+                    double s_up = s(i, j + 1, k);
+                    double s_right = s(r, j_r, k);
+                    double s_left = s(l, j_l, k);
+
+                    int k_range = 1; // consider particles k-1, k, k+1 for pore size calculation
+                    double d_pore_here = compute_pore_size(s, i, j, k, k_range, void_ratio_here, beta_on_6, nm);
+                    double d_pore_up = compute_pore_size(s, i, j+1, k, k_range, void_ratio_here, beta_on_6, nm);
+                    double d_pore_right = compute_pore_size(s, r, j_r, k, k_range, void_ratio_right, beta_on_6, nm);
+                    double d_pore_left = compute_pore_size(s, l, j_l, k, k_range, void_ratio_left, beta_on_6, nm);
+
+                    double P_u = std::isnan(s_up) ? 0 : P_u_bar * std::pow(s_inv_bar[idx_up] / s_up, seg_exponent);
+
+                    double d_pore_up_eff = (d_pore_here > 0.0) ? d_pore_here : d_pore_up;
+                    double d_pore_right_eff = (d_pore_here > 0.0) ? d_pore_here : d_pore_right;
+                    double d_pore_left_eff = (d_pore_here > 0.0) ? d_pore_here : d_pore_left;
+
+                    if (s_up > d_pore_up_eff) P_u = 0; // Prevent upward movement of void if particle is larger than pore size
                     
                     double nu_here = nu[idx];
                     double nu_left = nu[idx_l];
@@ -242,8 +482,11 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                     bool unstable_left = nu_left - nu_here > delta_nu_limit;
                     bool unstable_right = nu_right - nu_here > delta_nu_limit;
 
-                    double P_l = (!std::isnan(s(l, j_l, k)) && unstable_left) ? P_lr_ref * s(l, j_l, k) : 0;
-                    double P_r = (!std::isnan(s(r, j_r, k)) && unstable_right) ? P_lr_ref * s(r, j_r, k) : 0;
+                    double P_l = (!std::isnan(s_left) && unstable_left) ? P_lr_ref * s_left : 0;
+                    double P_r = (!std::isnan(s_right) && unstable_right) ? P_lr_ref * s_right : 0;
+
+                    if (!unstable_right && s_right > d_pore_right_eff) P_r = 0; // Prevent rightward movement of void if particle is larger than pore size
+                    if (!unstable_left && s_left > d_pore_left_eff) P_l = 0;   // Prevent leftward movement of void if particle is larger than pore size
 
                     if (mask(i, j + 1)) {
                         P_u = 0; // Prevent upward movement into a masked cell
@@ -296,7 +539,7 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                             N_swap_arr[dest_idx] += 1;
                         }
                     }
-                }
+                // }
             }
         }
     }

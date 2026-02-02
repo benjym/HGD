@@ -39,6 +39,30 @@ def update(p, state):
     return state
 
 
+def diffuse_voids(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
+    for i in range(p.nx):
+        for j in range(p.ny):
+            for k in range(p.nm):
+                if np.isnan(s[i, j, k]):
+                    if np.random.rand() < p.applied_swap_rate:
+                        direction = np.random.choice([-1, 1], p=[0.5, 0.5])
+                        idx = (k + direction + p.nm) % p.nm
+                        # if s[i, j, idx] == p.s_m:  # only swap with small particles!!!
+                        s[i, j, k], s[i, j, idx] = s[i, j, idx], s[i, j, k]
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
+
+
+def inlet_small(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
+    # add mass at the top centre
+    for i in range(p.nx):
+        for k in range(p.nm):
+            if np.isnan(s[i, p.ny - 1, k]):
+                if np.random.rand() < p.inlet_rate:
+                    s[i, p.ny - 1, k] = p.s_m
+                    # p.inlet += fill_mass
+    return s, u, v, c, T, last_swap, chi, sigma, outlet
+
+
 def charge(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
     fill_mass = p.dx * p.dy / p.nm * p.solid_density
     to_fill = []
@@ -163,34 +187,6 @@ def right_outlet(p, s, u, v, c, T, last_swap, chi, sigma, outlet):
                         s[i, 0, k] = np.nan
                     outlet[-1] += 1
     return s, u, v, c, T, last_swap, chi, sigma, outlet
-
-    # elif temp_mode == "temperature":  # Remove at central outlet
-    #     for i in range(nx // 2 - half_width, nx // 2 + half_width + 1):
-    #         for k in range(nm):
-    #             # if np.random.rand() < Tg:
-    #             if not np.isnan(s[i, 0, k]):
-    #                 if refill:
-    #                     if np.sum(np.isnan(s[nx // 2 - half_width : nx // 2 + half_width + 1, -1, k])) > 0:
-    #                         if internal_geometry:
-    #                             target = (
-    #                                 nx // 2
-    #                                 - half_width
-    #                                 + np.random.choice(
-    #                                     np.nonzero(
-    #                                         np.isnan(
-    #                                             s[nx // 2 - half_width : nx // 2 + half_width + 1, -1, k]
-    #                                         )
-    #                                     )[0]
-    #                                 )
-    #                             )  # HACK
-    #                         else:
-    #                             target = np.random.choice(np.nonzero(np.isnan(s[:, -1, k]))[0])
-    #                         s[target, -1, k], s[i, 0, k] = s[i, 0, k], s[target, -1, k]
-    #                         T[target, -1, k] = inlet_temperature
-    #                         outlet_T.append(T[i, 0, k])
-    #                 else:
-    #                     s[i, 0, k] = np.nan
-    #                 outlet[-1] += 1
 
 
 def multiple_outlets(p, s, u, v, c, T, last_swap, chi, sigma, outlet):

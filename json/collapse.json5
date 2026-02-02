@@ -1,31 +1,33 @@
 {
     // resolution
-    nx : 40, // width
-    ny : 20, // height
-    nm : 20,  // number of simultaneous simulations
+    nx : 100, // width
+    ny : 50, // height
+    nm : 200,  // number of simultaneous simulations
 
     // geometry
     H : 1, // (m)
-    P_stab : 0.01,
+    // P_stab : 0.01,
 
     // material properties
     repose_angle : 30, // (degrees)
     gsd_mode : 'mono',
     s_m : 0.001, // minimum particle size (m)
     // s_M : 0.01, // maximum particle size (m)
-    nu_cs : 0.5,
+    nu_cs : 0.5, // critical state void ratio --- STILL NEEDED FOR DELTA_NU_LIMIT CALCULATION
+    beta : 6,
     
     // initial condition:
-    nu_fill : 0.25,
+    nu_fill : 0.4,
     IC_mode : "column",
 
-    inertia: [true, false],
-    // inertia: false,
+    // inertia: [true, false],
+    inertia: false,
+    move_type: ["void", "particle"],
     
     plot : ['nu'],
     videos : ['nu'],
 
     // saving
     saves : 20,
-    t_f : 5,  // s
+    t_f : 20,  // s
 }

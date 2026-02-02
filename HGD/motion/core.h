@@ -6,11 +6,13 @@
 #include <tuple>
 
 struct Params {
-    double g, dt, dx, dy, alpha, nu_cs, P_stab, delta_limit;
+    double g, dt, dx, dy, alpha, nu_cs, P_stab, delta_limit, seg_exponent, beta;
     bool cyclic_BC;
     bool inertia;
     int cyclic_BC_y_offset;
     int nx, ny, nm;
+    // move type, "void" or "particle"
+    std::string move_type;
 };
 
 template<typename T>
@@ -53,7 +55,19 @@ std::vector<bool> compute_locally_fluid_core(const std::vector<double>& nu, int 
 
 std::tuple<int, int, int, int> get_lr_core(int i, int j, int nx, int ny, int cyclic_BC_y_offset, bool cyclic_BC);
 
+void move_core(View3<double> u, View3<double> v, View3<double> s,
+                     const View2<const uint8_t>& mask,
+                     Params p,
+                     std::vector<double>& nu,
+                     std::vector<double>& chi_out);
+
 void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
+                     const View2<const uint8_t>& mask,
+                     Params p,
+                     std::vector<double>& nu,
+                     std::vector<double>& chi_out);
+
+void move_particles_core(View3<double> u, View3<double> v, View3<double> s,
                      const View2<const uint8_t>& mask,
                      Params p,
                      std::vector<double>& nu,
