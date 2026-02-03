@@ -53,12 +53,16 @@
     stress_mode : 'active', // 'isotropic', 'active', 'passive', 'K_0', 'anisotropic' or 'harr'
     solid_density : 2700, // density of the solid particles (kg/m^3/m)
     wall_friction_angle : 30, // friction coefficient between the walls and the particles
+
+    // gas
+    gas_density:1.225,
+    gas_viscosity:1.8e-5,
     
     // saving
     folderName : "output/", // name of the folder to save the data in
     save_inc : 1, // how often to save the state of the system (timesteps)
     t_f : 5,  // final time to end the simulation (s)
-    plot : ['nu', 's'], // which variables to plot. Should at least include the ones to make videos.
+    plot : ['nu', 's', 'combined_plot'], // which variables to plot. Should at least include the ones to make videos.
     videos : ['nu','s'], // which variables to save videos of.
     save : [], // which variables to save. By default none.
     mask_s_bar : false, // should the images of s_bar be masked to hide areas of low density

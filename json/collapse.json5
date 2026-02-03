@@ -28,4 +28,6 @@
     // saving
     saves : 20,
     t_f : 5,  // s
+    motion_model : 'd2q4_array_v3', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
+
 }
