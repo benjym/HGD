@@ -131,7 +131,8 @@ py::tuple move_voids_py(py::array_t<double> u, py::array_t<double> v, py::array_
         p.attr("nx").cast<int>(),
         p.attr("ny").cast<int>(),
         p.attr("nm").cast<int>(),
-        p.attr("move_type").cast<std::string>()
+        p.attr("move_type").cast<std::string>(),
+        p.attr("max_threads").cast<int>()
     };
     
     auto vU = as_view3(u);
@@ -151,29 +152,44 @@ py::tuple move_voids_py(py::array_t<double> u, py::array_t<double> v, py::array_
     return py::make_tuple(u, v, s, c, T, chi_py, last_swap);
 }
 
-py::array_t<double> stream_py(std::vector<double> u_mean, std::vector<double> v_mean,
-                              py::array_t<double> s, py::array_t<double> mask_array,
-                              std::vector<double> nu, int nx, int ny, int nm, double nu_cs,
-                              int cyclic_BC_y_offset, bool cyclic_BC,
-                              double dx, double dy, double dt, double beta, std::string move_type) {
-    
+py::tuple stream_py(py::array_t<double> u, py::array_t<double> v,
+                    py::array_t<double> s, py::object p) {
+
+    auto vU = as_view3_const(u);
+    auto vV = as_view3_const(v);
     auto vS = as_view3(s);
-    auto mask_buf = mask_array.unchecked<2>();
-    
-    // Convert mask to uint8_t view
-    std::vector<uint8_t> mask_data(nx * ny);
-    for (int i = 0; i < nx; i++) {
-        for (int j = 0; j < ny; j++) {
-            mask_data[i * ny + j] = static_cast<uint8_t>(mask_buf(i, j));
-        }
-    }
-    View2<const uint8_t> vM{mask_data.data(), nx, ny, ny, 1};
-    
-    Params p{0, dt, dx, dy, 0, nu_cs, 0, 0, 1.0, beta, cyclic_BC, false, cyclic_BC_y_offset, nx, ny, nm, move_type};
-    
-    stream_core(u_mean, v_mean, vS, vM, nu, p);
-    
-    return s;
+
+    auto mask = p.attr("boundary_mask").cast<py::array_t<bool>>();
+    auto vM = as_view2u8(mask);
+
+    std::vector<double> u_mean = compute_mean_core(vU);
+    std::vector<double> v_mean = compute_mean_core(vV);
+    std::vector<double> nu = compute_solid_fraction_core(View3<const double>{vS.data, vS.nx, vS.ny, vS.nm, vS.sx, vS.sy, vS.sz});
+
+    Params P{
+        p.attr("g").cast<double>(),
+        p.attr("dt").cast<double>(),
+        p.attr("dx").cast<double>(),
+        p.attr("dy").cast<double>(),
+        p.attr("alpha").cast<double>(),
+        p.attr("nu_cs").cast<double>(),
+        p.attr("P_stab").cast<double>(),
+        p.attr("delta_limit").cast<double>(),
+        p.attr("seg_exponent").cast<double>(),
+        p.attr("beta").cast<double>(),
+        p.attr("cyclic_BC").cast<bool>(),
+        p.attr("inertia").cast<bool>(),
+        p.attr("cyclic_BC_y_offset").cast<int>(),
+        p.attr("nx").cast<int>(),
+        p.attr("ny").cast<int>(),
+        p.attr("nm").cast<int>(),
+        p.attr("move_type").cast<std::string>(),
+        p.attr("max_threads").cast<int>()
+    };
+
+    stream_core(u_mean, v_mean, vS, vM, nu, P);
+
+    return py::make_tuple(u, v, s);
 }
 
 PYBIND11_MODULE(d2q4_cpp, m) {
@@ -187,8 +203,5 @@ PYBIND11_MODULE(d2q4_cpp, m) {
           py::arg("c") = py::none(), py::arg("T") = py::none(),
           py::arg("chi") = py::none(), py::arg("last_swap") = py::none());
         m.def("stream", &stream_py, "Stream mass based on inertia",
-            py::arg("u_mean"), py::arg("v_mean"), py::arg("s"), py::arg("mask_array"),
-            py::arg("nu"), py::arg("nx"), py::arg("ny"), py::arg("nm"), py::arg("nu_cs"),
-            py::arg("cyclic_BC_y_offset"), py::arg("cyclic_BC"),
-            py::arg("dx"), py::arg("dy"), py::arg("dt"), py::arg("beta") = 0.0, py::arg("move_type") = "void");
+            py::arg("u"), py::arg("v"), py::arg("s"), py::arg("p"));
 }

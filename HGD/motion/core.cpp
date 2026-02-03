@@ -194,6 +194,8 @@ void move_core(View3<double> u, View3<double> v, View3<double> s,
         move_voids_core(u, v, s, mask, p, nu, chi_out);
     } else if (p.move_type == "particle") {
         move_particles_core(u, v, s, mask, p, nu, chi_out);
+    } else if (p.move_type == "particle_tiled") {
+        move_particles_core_tiled(u, v, s, mask, p, nu, chi_out);
     } else {
         throw std::invalid_argument("Invalid move_type: " + p.move_type);
     }
@@ -578,7 +580,10 @@ void stream_core(const std::vector<double>& u_mean,
             int idx_l = neighbors.idx_left[idx];
             int idx_r = neighbors.idx_right[idx];
 
-            double P_u = mask(i, j + 1) ? v_mean[idx_up] * dy_over_dt : 0;
+            double v_up = (v_mean[idx_up] < 0) ? -v_mean[idx_up] : 0;
+            double P_u = mask(i, j + 1) ? v_up * dy_over_dt : 0;
+            double v_down = (v_mean[idx] > 0) ? v_mean[idx] : 0;
+            double P_d = mask(i, j) ? v_down * dy_over_dt : 0;
             double u_left = (u_mean[idx_l] < 0) ? u_mean[idx_l] : 0;
             double P_l = mask(l, j_l) ? u_left * dy_over_dt : 0;
             double u_right = (u_mean[idx_r] > 0) ? u_mean[idx_r] : 0;
@@ -591,6 +596,8 @@ void stream_core(const std::vector<double>& u_mean,
             std::vector<int> N_arr = {N_u, N_l, N_r};
             std::vector<int> dests = {i, j + 1, l, j_l, r, j_r};
             int k = 0;
+
+            printf("At cell (%d, %d): N_u=%d, N_l=%d, N_r=%d\n", i, j, N_u, N_l, N_r);
             
             for (int d = 0; d < 3; d += 1) {
                 std::array<int, 2> dest = {dests[2 * d], dests[2 * d + 1]};
@@ -598,9 +605,13 @@ void stream_core(const std::vector<double>& u_mean,
                 int N_added = 0;
                 
                 while (N_added < N_arr[d] && k < nm) {
-                    if (!std::isnan(s(i, j, k)) && !std::isnan(s(dest[0], dest[1], k))) {
+                    if (!std::isnan(s(i, j, k)) && std::isnan(s(dest[0], dest[1], k))) {
                         // check if the destination is not a solid
-                        if (nu[dest_idx] < p.nu_cs) {
+                        // if (nu[dest_idx] < p.nu_cs) {
+                        double d_pore_dest = compute_pore_size(s, dest[0], dest[1], k, 1, (1.0 - nu[dest_idx])/(nu[dest_idx] + 1e-10), p.beta / 6.0, nm);
+
+                        printf("d_pore_dest: %f, s: %f\n", d_pore_dest, s(i, j, k));
+                        if (s(i, j, k) < d_pore_dest) {
                             double tmp = s(i, j, k);
                             s(i, j, k) = s(dest[0], dest[1], k);
                             s(dest[0], dest[1], k) = tmp;
@@ -609,10 +620,6 @@ void stream_core(const std::vector<double>& u_mean,
                             nu[dest_idx] -= inverse_nm;
                             
                             N_added += 1;
-
-                            if (k == nm) {
-                                break; // exit the loop if we have swapped all particles
-                            }
                         }
                     }
                     k += 1;

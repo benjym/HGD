@@ -1,8 +1,8 @@
 {
     // resolution
-    nx : 100, // width
-    ny : 50, // height
-    nm : 200,  // number of simultaneous simulations
+    nx : 160, // width
+    ny : 160, // height
+    nm : 2000,  // number of simultaneous simulations
 
     // geometry
     H : 1, // (m)
@@ -15,6 +15,7 @@
     // s_M : 0.01, // maximum particle size (m)
     nu_cs : 0.5, // critical state void ratio --- STILL NEEDED FOR DELTA_NU_LIMIT CALCULATION
     beta : 6,
+    max_threads : 8,
     
     // initial condition:
     nu_fill : 0.4,
@@ -22,7 +23,9 @@
 
     // inertia: [true, false],
     inertia: false,
-    move_type: ["void", "particle"],
+    // inertia : true,
+    // move_type: ["void", "particle", "particle_tiled"],
+    move_type: "particle_tiled",
     
     plot : ['nu'],
     videos : ['nu'],

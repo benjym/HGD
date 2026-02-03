@@ -157,7 +157,7 @@ def time_step(p, state):
     if p.inertia:
         # u, v, s = operators.stream(u_new, v_new, s, p)
         if p.stream is not None:
-            u, v, s = p.stream(u, v, s, p)
+            u, v, s = p.stream(u_new, v_new, s, p)
     else:
         pass
         # u, v = u_new, v_new

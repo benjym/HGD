@@ -72,10 +72,12 @@
 
     // parallel code
     max_workers : 5, // max number of workers to run simultaneously. Default value is actually set void_migration.py
+    max_threads : 8, // max number of threads for tiled particle moves
     
     motion_model : 'd2q4_cpp', // 'd2q4_slow', 'd2q4_array' or 'd2q9_slow'
     advection_model : 'freefall', // 'average_size', 'freefall' or 'stress'
     inertia : false, // should the inertia term be included
+    move_type : "particle", // move type to use. Options are "void" and "particle". Only implemented in core.cpp motion model.
 
     // cycles
     cycles : [], // list of dicts that define any cycles

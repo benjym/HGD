@@ -13,6 +13,7 @@ struct Params {
     int nx, ny, nm;
     // move type, "void" or "particle"
     std::string move_type;
+    int max_threads;
 };
 
 template<typename T>
@@ -68,6 +69,12 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                      std::vector<double>& chi_out);
 
 void move_particles_core(View3<double> u, View3<double> v, View3<double> s,
+                     const View2<const uint8_t>& mask,
+                     Params p,
+                     std::vector<double>& nu,
+                     std::vector<double>& chi_out);
+
+void move_particles_core_tiled(View3<double> u, View3<double> v, View3<double> s,
                      const View2<const uint8_t>& mask,
                      Params p,
                      std::vector<double>& nu,
