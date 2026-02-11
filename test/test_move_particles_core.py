@@ -1,0 +1,93 @@
+from types import SimpleNamespace
+
+import numpy as np
+import pytest
+
+try:
+    from HGD.motion import d2q4_cpp
+except ImportError:  # pragma: no cover
+    d2q4_cpp = None
+
+
+pytestmark = pytest.mark.skipif(d2q4_cpp is None, reason="d2q4_cpp extension is not available")
+
+
+def _make_particle_params(nx=5, ny=5, nm=10, nu_cs=0.5):
+    return SimpleNamespace(
+        g=9.81,
+        dt=1.0,
+        dx=1.0,
+        dy=1.0,
+        alpha=1.0,
+        nu_cs=nu_cs,
+        P_stab=0.5,
+        delta_limit=0.1,
+        seg_exponent=0.1,
+        beta=6.0,
+        cyclic_BC=False,
+        inertia=True,
+        cyclic_BC_y_offset=0,
+        nx=nx,
+        ny=ny,
+        nm=nm,
+        move_type="particle",
+        max_threads=1,
+        boundary_mask=np.zeros((nx, ny), dtype=bool),
+        space_criterion="nu_cs",
+        tau=0.0,
+    )
+
+
+def _run_move_particles(u, v, s, p):
+    out = d2q4_cpp.move_voids(u, v, s, p, 0, None, None, None, None)
+    return out[0], out[1], out[2]
+
+
+def test_move_particles_core_cleans_void_velocities():
+    p = _make_particle_params(nx=6, ny=6, nm=10, nu_cs=0.6)
+    rng = np.random.default_rng(42)
+
+    s = np.full((p.nx, p.ny, p.nm), np.nan, dtype=np.float64)
+    # one particle only
+    s[3, 4, 0] = 1.0
+
+    # start with stale velocity everywhere
+    u = rng.normal(size=(p.nx, p.ny, p.nm))
+    v = rng.normal(size=(p.nx, p.ny, p.nm))
+
+    u_out, v_out, s_out = _run_move_particles(u, v, s, p)
+
+    void_mask = np.isnan(s_out)
+    assert np.all(u_out[void_mask] == 0.0)
+    assert np.all(v_out[void_mask] == 0.0)
+
+
+def test_move_particles_core_respects_nu_cs_cap():
+    p = _make_particle_params(nx=5, ny=5, nm=10, nu_cs=0.5)
+
+    s = np.full((p.nx, p.ny, p.nm), np.nan, dtype=np.float64)
+    u = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+    v = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+
+    src = (2, 1, 0)
+    dst = (2, 0)
+
+    # Candidate moving particle (downward target only).
+    s[src] = 1.0
+
+    # Destination already at nu_cs = 5/10.
+    for k in range(1, 6):
+        s[dst[0], dst[1], k] = 1.0
+
+    # Mask side neighbors so downward is the only possible move.
+    p.boundary_mask[1, 1] = True
+    p.boundary_mask[3, 1] = True
+
+    _, _, s_out = _run_move_particles(u, v, s, p)
+
+    nu_dest = np.mean(~np.isnan(s_out[dst[0], dst[1], :]))
+    assert nu_dest <= p.nu_cs + 1e-12
+
+    # The source particle should remain if destination is capped.
+    assert not np.isnan(s_out[src])
+    assert np.isnan(s_out[dst[0], dst[1], src[2]])

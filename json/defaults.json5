@@ -78,6 +78,9 @@
     advection_model : 'freefall', // 'average_size', 'freefall' or 'stress'
     inertia : false, // should the inertia term be included
     move_type : "particle", // move type to use. Options are "void" and "particle". Only implemented in core.cpp motion model.
+    stream_model : "legacy", // stream kernel: "legacy" or "lbm_zero_eq"
+    space_criterion : "pore_size", // space gate for particle motion: "pore_size" or "nu_cs"
+    tau : 0.0, // relaxation time for inertial stream (s). <=0 disables relaxation to zero.
 
     // cycles
     cycles : [], // list of dicts that define any cycles

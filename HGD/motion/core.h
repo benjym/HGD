@@ -4,6 +4,7 @@
 #include <random>
 #include <cmath>
 #include <tuple>
+#include <string>
 
 struct Params {
     double g, dt, dx, dy, alpha, nu_cs, P_stab, delta_limit, seg_exponent, beta;
@@ -13,7 +14,10 @@ struct Params {
     int nx, ny, nm;
     // move type, "void" or "particle"
     std::string move_type;
+    // space criterion for particle moves: "nu_cs" or "pore_size"
+    std::string space_criterion;
     int max_threads;
+    double tau;
 };
 
 template<typename T>
@@ -52,7 +56,6 @@ std::vector<double> compute_mean_core(const View3<const double>& a);
 std::vector<double> compute_s_inv_bar_core(const View3<const double>& s);
 std::vector<bool> compute_some_particles_core(const std::vector<double>& nu,
                                              const View2<const uint8_t>& mask, int nx, int ny);
-std::vector<bool> compute_locally_fluid_core(const std::vector<double>& nu, int nx, int ny, double nu_cs);
 
 std::tuple<int, int, int, int> get_lr_core(int i, int j, int nx, int ny, int cyclic_BC_y_offset, bool cyclic_BC);
 
@@ -86,3 +89,12 @@ void stream_core(const std::vector<double>& u_mean,
                  const View2<const uint8_t>& mask,
                  std::vector<double>& nu,
                  const Params& p);
+
+void stream_core_lbm_zero_eq(const std::vector<double>& u_mean,
+                             const std::vector<double>& v_mean,
+                             View3<double> u,
+                             View3<double> v,
+                             View3<double> s,
+                             const View2<const uint8_t>& mask,
+                             std::vector<double>& nu,
+                             const Params& p);

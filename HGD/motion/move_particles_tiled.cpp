@@ -191,6 +191,9 @@ void move_particles_core_tiled(View3<double> u, View3<double> v, View3<double> s
                             if (mask(i, j - 1)) {
                                 P_d = 0;
                             }
+                            if (P_d > 0.0 && (nu[idx_down] + inverse_nm > p.nu_cs + 1e-12)) {
+                                P_d = 0.0;
+                            }
                         }
 
                         if (left_in_tile) {
@@ -206,6 +209,9 @@ void move_particles_core_tiled(View3<double> u, View3<double> v, View3<double> s
                             if (mask(l, j_l)) {
                                 P_l = 0;
                             }
+                            if (P_l > 0.0 && (nu[idx_l] + inverse_nm > p.nu_cs + 1e-12)) {
+                                P_l = 0.0;
+                            }
                         }
 
                         if (right_in_tile) {
@@ -220,6 +226,9 @@ void move_particles_core_tiled(View3<double> u, View3<double> v, View3<double> s
                             }
                             if (mask(r, j_r)) {
                                 P_r = 0;
+                            }
+                            if (P_r > 0.0 && (nu[idx_r] + inverse_nm > p.nu_cs + 1e-12)) {
+                                P_r = 0.0;
                             }
                         }
 
@@ -254,6 +263,14 @@ void move_particles_core_tiled(View3<double> u, View3<double> v, View3<double> s
                             double tmp = s(i, j, k);
                             s(i, j, k) = s(dest[0], dest[1], dest[2]);
                             s(dest[0], dest[1], dest[2]) = tmp;
+
+                            double u_tmp = u(i, j, k);
+                            u(i, j, k) = u(dest[0], dest[1], dest[2]);
+                            u(dest[0], dest[1], dest[2]) = u_tmp;
+
+                            double v_tmp = v(i, j, k);
+                            v(i, j, k) = v(dest[0], dest[1], dest[2]);
+                            v(dest[0], dest[1], dest[2]) = v_tmp;
 
                             nu[idx] -= inverse_nm;
                             nu[dest_idx] += inverse_nm;
@@ -335,6 +352,15 @@ void move_particles_core_tiled(View3<double> u, View3<double> v, View3<double> s
                 if (right_cross && mask(r, j_r)) {
                     P_r = 0;
                 }
+                if (P_d > 0.0 && (nu[idx_down] + inverse_nm > p.nu_cs + 1e-12)) {
+                    P_d = 0.0;
+                }
+                if (P_l > 0.0 && (nu[idx_l] + inverse_nm > p.nu_cs + 1e-12)) {
+                    P_l = 0.0;
+                }
+                if (P_r > 0.0 && (nu[idx_r] + inverse_nm > p.nu_cs + 1e-12)) {
+                    P_r = 0.0;
+                }
 
                 double P_tot = P_d + P_l + P_r;
                 if (P_tot <= 0) {
@@ -367,6 +393,14 @@ void move_particles_core_tiled(View3<double> u, View3<double> v, View3<double> s
                     double tmp = s(i, j, k);
                     s(i, j, k) = s(dest[0], dest[1], dest[2]);
                     s(dest[0], dest[1], dest[2]) = tmp;
+
+                    double u_tmp = u(i, j, k);
+                    u(i, j, k) = u(dest[0], dest[1], dest[2]);
+                    u(dest[0], dest[1], dest[2]) = u_tmp;
+
+                    double v_tmp = v(i, j, k);
+                    v(i, j, k) = v(dest[0], dest[1], dest[2]);
+                    v(dest[0], dest[1], dest[2]) = v_tmp;
 
                     nu[idx] -= inverse_nm;
                     nu[dest_idx] += inverse_nm;

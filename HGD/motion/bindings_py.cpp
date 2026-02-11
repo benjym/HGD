@@ -85,29 +85,6 @@ py::array_t<bool> compute_some_particles_py(py::array_t<double> nu_array, py::ar
     return result;
 }
 
-py::array_t<bool> compute_locally_fluid_py(py::array_t<double> nu_array, double nu_cs) {
-    auto nu_buf = nu_array.unchecked<2>();
-    
-    std::vector<double> nu(nu_buf.shape(0) * nu_buf.shape(1));
-    for (int i = 0; i < nu_buf.shape(0); i++) {
-        for (int j = 0; j < nu_buf.shape(1); j++) {
-            nu[i * nu_buf.shape(1) + j] = nu_buf(i, j);
-        }
-    }
-    
-    auto locally_fluid = compute_locally_fluid_core(nu, nu_buf.shape(0), nu_buf.shape(1), nu_cs);
-    
-    // Convert std::vector<bool> to numpy array manually
-    py::array_t<bool> result = py::array_t<bool>({static_cast<int>(nu_buf.shape(0)), static_cast<int>(nu_buf.shape(1))});
-    auto result_buf = result.mutable_unchecked<2>();
-    for (int i = 0; i < nu_buf.shape(0); i++) {
-        for (int j = 0; j < nu_buf.shape(1); j++) {
-            result_buf(i, j) = locally_fluid[i * nu_buf.shape(1) + j];
-        }
-    }
-    return result;
-}
-
 py::tuple move_voids_py(py::array_t<double> u, py::array_t<double> v, py::array_t<double> s,
                         py::object p, int dummy,
                         py::object c, py::object T,
@@ -132,8 +109,10 @@ py::tuple move_voids_py(py::array_t<double> u, py::array_t<double> v, py::array_
         p.attr("ny").cast<int>(),
         p.attr("nm").cast<int>(),
         p.attr("move_type").cast<std::string>(),
+        py::hasattr(p, "space_criterion") ? p.attr("space_criterion").cast<std::string>() : std::string("pore_size"),
         p.attr("max_threads").cast<int>()
     };
+    P.tau = py::hasattr(p, "tau") ? p.attr("tau").cast<double>() : 0.0;
     
     auto vU = as_view3(u);
     auto vV = as_view3(v);
@@ -155,15 +134,15 @@ py::tuple move_voids_py(py::array_t<double> u, py::array_t<double> v, py::array_
 py::tuple stream_py(py::array_t<double> u, py::array_t<double> v,
                     py::array_t<double> s, py::object p) {
 
-    auto vU = as_view3_const(u);
-    auto vV = as_view3_const(v);
+    auto vU = as_view3(u);
+    auto vV = as_view3(v);
     auto vS = as_view3(s);
 
     auto mask = p.attr("boundary_mask").cast<py::array_t<bool>>();
     auto vM = as_view2u8(mask);
 
-    std::vector<double> u_mean = compute_mean_core(vU);
-    std::vector<double> v_mean = compute_mean_core(vV);
+    std::vector<double> u_mean = compute_mean_core(View3<const double>{vU.data, vU.nx, vU.ny, vU.nm, vU.sx, vU.sy, vU.sz});
+    std::vector<double> v_mean = compute_mean_core(View3<const double>{vV.data, vV.nx, vV.ny, vV.nm, vV.sx, vV.sy, vV.sz});
     std::vector<double> nu = compute_solid_fraction_core(View3<const double>{vS.data, vS.nx, vS.ny, vS.nm, vS.sx, vS.sy, vS.sz});
 
     Params P{
@@ -184,10 +163,21 @@ py::tuple stream_py(py::array_t<double> u, py::array_t<double> v,
         p.attr("ny").cast<int>(),
         p.attr("nm").cast<int>(),
         p.attr("move_type").cast<std::string>(),
+        py::hasattr(p, "space_criterion") ? p.attr("space_criterion").cast<std::string>() : std::string("pore_size"),
         p.attr("max_threads").cast<int>()
     };
+    P.tau = py::hasattr(p, "tau") ? p.attr("tau").cast<double>() : 0.0;
 
-    stream_core(u_mean, v_mean, vS, vM, nu, P);
+    std::string stream_model = "legacy";
+    if (py::hasattr(p, "stream_model")) {
+        stream_model = p.attr("stream_model").cast<std::string>();
+    }
+
+    if (stream_model == "lbm_zero_eq" || stream_model == "lbm") {
+        stream_core_lbm_zero_eq(u_mean, v_mean, vU, vV, vS, vM, nu, P);
+    } else {
+        stream_core(u_mean, v_mean, vS, vM, nu, P);
+    }
 
     return py::make_tuple(u, v, s);
 }
@@ -197,7 +187,6 @@ PYBIND11_MODULE(d2q4_cpp, m) {
     m.def("compute_s_inv_bar", &compute_s_inv_bar_py, "Compute inverse solid fraction");
     m.def("compute_mean", &compute_mean_py, "Compute mean over last dimension of a 3D array");
     m.def("compute_some_particles", &compute_some_particles_py, "Compute some particles mask");
-    m.def("compute_locally_fluid", &compute_locally_fluid_py, "Compute locally fluid mask");
     m.def("move_voids", &move_voids_py, "Moves voids in the system",
           py::arg("u"), py::arg("v"), py::arg("s"), py::arg("p"), py::arg("dummy"),
           py::arg("c") = py::none(), py::arg("T") = py::none(),

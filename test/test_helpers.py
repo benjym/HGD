@@ -1,38 +1,40 @@
 import numpy as np
+import pytest
+
 import HGD.operators
-from HGD.motion import d2q4_cpp  # Import your compiled C++ module
 
-# Create a random test array with NaNs (similar to real data)
-nx, ny, nm = 10, 10, 5  # Small test size for speed
-s = np.random.rand(nx, ny, nm)
-s[s < 0.2] = np.nan  # Introduce NaNs to simulate missing values
-
-
-# Compute using C++ functions
-nu_cpp = np.array(d2q4_cpp.compute_solid_fraction(s)).reshape(nx, ny)
-s_inv_bar_cpp = np.array(d2q4_cpp.compute_s_inv_bar(s)).reshape(nx, ny)
-s_bar_cpp = np.array(d2q4_cpp.compute_s_bar(s)).reshape(nx, ny)
-
-# Compute reference values using NumPy
-nu_np = HGD.operators.get_solid_fraction(s)
-s_inv_bar_np = HGD.operators.get_hyperbolic_average(s)
-s_bar_np = HGD.operators.get_average(s)
+try:
+    from HGD.motion import d2q4_cpp
+except ImportError:  # pragma: no cover
+    d2q4_cpp = None
 
 
-# Check if they match (allowing small floating-point errors)
-def compare_results(name, cpp_result, np_result):
-    # print(f"Comparing {name}")
-    # print(f"NumPy: {np_result}")
-    # print(f"C++: {cpp_result}")
-    diff = np.abs(cpp_result - np_result)
-    max_diff = np.nanmax(diff)
-    print(f"{name} - Max Difference: {max_diff}")
-    assert np.allclose(cpp_result, np_result, atol=1e-6, equal_nan=True), f"{name} does not match!"
+pytestmark = pytest.mark.skipif(d2q4_cpp is None, reason="d2q4_cpp extension is not available")
 
 
-# Compare results
-compare_results("Solid Fraction", nu_cpp, nu_np)
-compare_results("Hyperbolic size", s_inv_bar_cpp, s_inv_bar_np)
-compare_results("Mean size", s_bar_cpp, s_bar_np)
+def _make_test_array(nx=10, ny=10, nm=5):
+    rng = np.random.default_rng(1234)
+    s = rng.random((nx, ny, nm))
+    s[s < 0.2] = np.nan
+    return s
 
-print("All functions match the original versions!")
+
+def test_compute_solid_fraction_matches_numpy():
+    s = _make_test_array()
+    nu_cpp = np.array(d2q4_cpp.compute_solid_fraction(s)).reshape(s.shape[0], s.shape[1])
+    nu_np = HGD.operators.get_solid_fraction(s)
+    assert np.allclose(nu_cpp, nu_np, atol=1e-6, equal_nan=True)
+
+
+def test_compute_s_inv_bar_matches_numpy():
+    s = _make_test_array()
+    s_inv_bar_cpp = np.array(d2q4_cpp.compute_s_inv_bar(s)).reshape(s.shape[0], s.shape[1])
+    s_inv_bar_np = HGD.operators.get_hyperbolic_average(s)
+    assert np.allclose(s_inv_bar_cpp, s_inv_bar_np, atol=1e-6, equal_nan=True)
+
+
+def test_compute_mean_matches_numpy():
+    s = _make_test_array()
+    s_bar_cpp = np.array(d2q4_cpp.compute_mean(s)).reshape(s.shape[0], s.shape[1])
+    s_bar_np = HGD.operators.get_average(s)
+    assert np.allclose(s_bar_cpp, s_bar_np, atol=1e-6, equal_nan=True)

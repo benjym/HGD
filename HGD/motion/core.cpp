@@ -119,18 +119,6 @@ std::vector<bool> compute_some_particles_core(const std::vector<double>& nu,
     return some_particles;
 }
 
-std::vector<bool> compute_locally_fluid_core(const std::vector<double>& nu, int nx, int ny, double nu_cs) {
-    std::vector<bool> locally_fluid(nx * ny);
-
-    for (int i = 0; i < nx; i++) {
-        for (int j = 0; j < ny; j++) {
-            locally_fluid[i * ny + j] = nu[i * ny + j] < nu_cs;
-        }
-    }
-
-    return locally_fluid;
-}
-
 // static inline double compute_pore_size(double s_a, double s_b, double s_c,
                                     //    double void_ratio, double beta_on_6) {
 static inline double compute_pore_size(View3<double>& s, int i, int j, int k, int k_range, double void_ratio, double beta_on_6, int nm) {
@@ -154,6 +142,57 @@ static inline double compute_pore_size(View3<double>& s, int i, int j, int k, in
     }
 
     return beta_on_6 * void_ratio * sauter_mean_diameter;
+}
+
+enum class SpaceCriterion {
+    NuCs,
+    PoreSize
+};
+
+static inline SpaceCriterion parse_space_criterion(const Params& p) {
+    if (p.space_criterion == "nu_cs" || p.space_criterion == "nu") {
+        return SpaceCriterion::NuCs;
+    }
+    if (p.space_criterion == "pore_size" || p.space_criterion == "d_pore" || p.space_criterion == "pore") {
+        return SpaceCriterion::PoreSize;
+    }
+    throw std::invalid_argument("Invalid space_criterion: " + p.space_criterion + ". Use 'nu_cs' or 'pore_size'.");
+}
+
+static inline bool has_space_nu_cs(const std::vector<double>& nu, int dest_idx, double inverse_nm, double nu_cs) {
+    return (nu[dest_idx] + inverse_nm) <= (nu_cs + 1e-12);
+}
+
+static inline bool has_space_pore_size(View3<double>& s,
+                                       int dest_i,
+                                       int dest_j,
+                                       int k,
+                                       double s_here,
+                                       const std::vector<double>& nu,
+                                       int dest_idx,
+                                       double beta_on_6,
+                                       int nm) {
+    double void_ratio_dest = (1.0 - nu[dest_idx]) / (nu[dest_idx] + 1e-10);
+    double d_pore_dest = compute_pore_size(s, dest_i, dest_j, k, 1, void_ratio_dest, beta_on_6, nm);
+    return s_here <= d_pore_dest;
+}
+
+static inline bool has_space_for_particle(View3<double>& s,
+                                          int dest_i,
+                                          int dest_j,
+                                          int k,
+                                          double s_here,
+                                          const std::vector<double>& nu,
+                                          int dest_idx,
+                                          double inverse_nm,
+                                          double nu_cs,
+                                          double beta_on_6,
+                                          int nm,
+                                          SpaceCriterion criterion) {
+    if (criterion == SpaceCriterion::NuCs) {
+        return has_space_nu_cs(nu, dest_idx, inverse_nm, nu_cs);
+    }
+    return has_space_pore_size(s, dest_i, dest_j, k, s_here, nu, dest_idx, beta_on_6, nm);
 }
 
 static inline int wrap_index(int idx, int n) {
@@ -227,6 +266,7 @@ void move_particles_core(View3<double> u, View3<double> v, View3<double> s,
     double dy_over_dt = p.dy / p.dt;
     double dx_over_dt = p.dx / p.dt;
     double beta_on_6 = p.beta / 6.0;
+    const SpaceCriterion space_criterion = parse_space_criterion(p);
 
     // storage arrays
     std::array<int, 3> dest = {0, 0, 0};
@@ -259,27 +299,25 @@ void move_particles_core(View3<double> u, View3<double> v, View3<double> s,
                         // int idx_up = idx + 1;
                         int idx_down = idx - 1;
 
-                        double void_ratio_here = (1.0 - nu[idx]) / (nu[idx] + 1e-10);
-                        double void_ratio_down = (1.0 - nu[idx_down])/(nu[idx_down] + 1e-10);
-                        double void_ratio_right = (1.0 - nu[idx_r]) / (nu[idx_r] + 1e-10);
-                        double void_ratio_left = (1.0 - nu[idx_l]) / (nu[idx_l] + 1e-10);
-
                         double s_here = s(i, j, k);
                         double s_down = s(i, j - 1, k);
                         double s_right = s(r, j_r, k);
                         double s_left = s(l, j_l, k);
 
-                        int k_range = 1; // consider particles k-1, k, k+1 for pore size calculation
-                        double d_pore_here = compute_pore_size(s, i, j, k, k_range, void_ratio_here, beta_on_6, nm);
-                        double d_pore_down = compute_pore_size(s, i, j-1, k, k_range, void_ratio_down, beta_on_6, nm);
-                        double d_pore_right = compute_pore_size(s, r, j_r, k, k_range, void_ratio_right, beta_on_6, nm);
-                        double d_pore_left = compute_pore_size(s, l, j_l, k, k_range, void_ratio_left, beta_on_6, nm);
+                        bool down_void = std::isnan(s_down);
+                        bool left_void = std::isnan(s_left);
+                        bool right_void = std::isnan(s_right);
 
-                        double P_d = (std::isnan(s_down) && s_here <= d_pore_down)
+                        bool space_down = down_void && has_space_for_particle(
+                            s, i, j - 1, k, s_here, nu, idx_down, inverse_nm, p.nu_cs, beta_on_6, nm, space_criterion);
+                        bool space_left = left_void && has_space_for_particle(
+                            s, l, j_l, k, s_here, nu, idx_l, inverse_nm, p.nu_cs, beta_on_6, nm, space_criterion);
+                        bool space_right = right_void && has_space_for_particle(
+                            s, r, j_r, k, s_here, nu, idx_r, inverse_nm, p.nu_cs, beta_on_6, nm, space_criterion);
+
+                        double P_d = (down_void && space_down)
                                          ? P_ud_bar * std::pow(s_inv_bar[idx] / s_here, seg_exponent)
                                          : 0.0;
-
-                        // if (s_here > d_pore_down) P_d = 0; // Prevent downward movement if particle is larger than pore size
                         
                         double nu_here = nu[idx];
                         double nu_left = nu[idx_l];
@@ -291,11 +329,8 @@ void move_particles_core(View3<double> u, View3<double> v, View3<double> s,
                         bool unstable_right = (std::abs(nu_here - nu_right) > delta_nu_limit);
 
                         // 
-                        double P_l = (std::isnan(s_left) && unstable_left && s_here <= d_pore_left) ? P_lr_ref * s_here : 0.0;
-                        double P_r = (std::isnan(s_right) && unstable_right && s_here <= d_pore_right) ? P_lr_ref * s_here : 0.0;
-
-                        // if (s_here > d_pore_left) P_l = 0;  // Pore-size gate for left move
-                        // if (s_here > d_pore_right) P_r = 0;  // Pore-size gate for right move
+                        double P_l = (left_void && unstable_left && space_left) ? P_lr_ref * s_here : 0.0;
+                        double P_r = (right_void && unstable_right && space_right) ? P_lr_ref * s_here : 0.0;
 
                         if (mask(i, j - 1)) {
                             P_d = 0; // Prevent downward movement into a masked cell
@@ -340,6 +375,15 @@ void move_particles_core(View3<double> u, View3<double> v, View3<double> s,
                                 double tmp = s(i, j, k);
                                 s(i, j, k) = s(dest[0], dest[1], dest[2]);
                                 s(dest[0], dest[1], dest[2]) = tmp;
+
+                                // Stream velocity with the moved particle.
+                                double u_tmp = u(i, j, k);
+                                u(i, j, k) = u(dest[0], dest[1], dest[2]);
+                                u(dest[0], dest[1], dest[2]) = u_tmp;
+
+                                double v_tmp = v(i, j, k);
+                                v(i, j, k) = v(dest[0], dest[1], dest[2]);
+                                v(dest[0], dest[1], dest[2]) = v_tmp;
 
                                 nu[idx] -= inverse_nm;
                                 nu[dest_idx] += inverse_nm;
@@ -601,7 +645,7 @@ void stream_core(const std::vector<double>& u_mean,
             std::vector<int> dests = {i, j + 1, l, j_l, r, j_r};
             int k = 0;
 
-            printf("At cell (%d, %d): N_u=%d, N_l=%d, N_r=%d\n", i, j, N_u, N_l, N_r);
+            // printf("At cell (%d, %d): N_u=%d, N_l=%d, N_r=%d\n", i, j, N_u, N_l, N_r);
             
             for (int d = 0; d < 3; d += 1) {
                 std::array<int, 2> dest = {dests[2 * d], dests[2 * d + 1]};
@@ -627,6 +671,210 @@ void stream_core(const std::vector<double>& u_mean,
                         }
                     }
                     k += 1;
+                }
+            }
+        }
+    }
+}
+
+void stream_core_lbm_zero_eq(const std::vector<double>& u_mean,
+                             const std::vector<double>& v_mean,
+                             View3<double> u,
+                             View3<double> v,
+                             View3<double> s,
+                             const View2<const uint8_t>& mask,
+                             std::vector<double>& nu,
+                             const Params& p) {
+    const int nx = p.nx;
+    const int ny = p.ny;
+    const int nm = p.nm;
+    const double inverse_nm = 1.0 / static_cast<double>(nm);
+    const double beta_on_6 = p.beta / 6.0;
+    const SpaceCriterion space_criterion = parse_space_criterion(p);
+
+    // Precompute lateral neighbors once.
+    NeighborIndices neighbors(nx, ny, p.cyclic_BC_y_offset, p.cyclic_BC);
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> unit01(0.0, 1.0);
+
+    auto sample_count = [&](double prob, int n_solid) -> int {
+        if (prob <= 0.0 || n_solid <= 0) {
+            return 0;
+        }
+        double expected = prob * static_cast<double>(n_solid);
+        int count = static_cast<int>(std::floor(expected));
+        double frac = expected - static_cast<double>(count);
+        if (unit01(gen) < frac) {
+            count += 1;
+        }
+        return std::min(count, n_solid);
+    };
+
+    for (int i = 0; i < nx; ++i) {
+        for (int j = 0; j < ny; ++j) {
+            const int idx = i * ny + j;
+            if (mask(i, j)) {
+                continue;
+            }
+
+            std::vector<int> solid_indices;
+            solid_indices.reserve(nm);
+            for (int k = 0; k < nm; ++k) {
+                if (!std::isnan(s(i, j, k))) {
+                    solid_indices.push_back(k);
+                }
+            }
+
+            const int n_solid = static_cast<int>(solid_indices.size());
+            if (n_solid == 0) {
+                continue;
+            }
+
+            const int l = neighbors.left[idx];
+            const int r = neighbors.right[idx];
+            const int j_l = neighbors.j_left[idx];
+            const int j_r = neighbors.j_right[idx];
+
+            // LBM-inspired pure streaming (f_eq = 0, no forcing):
+            // directional transport probability comes directly from local velocity.
+            double P_u = 0.0;
+            double P_d = 0.0;
+            double P_l = 0.0;
+            double P_r = 0.0;
+
+            const double u_here = u_mean[idx];
+            const double v_here = v_mean[idx];
+            const double cfl_x = (p.dx > 0.0) ? (p.dt / p.dx) : 0.0;
+            const double cfl_y = (p.dy > 0.0) ? (p.dt / p.dy) : 0.0;
+
+            if (u_here > 0.0) {
+                P_r = std::min(1.0, u_here * cfl_x);
+            } else if (u_here < 0.0) {
+                P_l = std::min(1.0, -u_here * cfl_x);
+            }
+
+            if (v_here > 0.0) {
+                P_u = std::min(1.0, v_here * cfl_y);
+            } else if (v_here < 0.0) {
+                P_d = std::min(1.0, -v_here * cfl_y);
+            }
+
+            // Gate moves that cross the boundary or masked cells.
+            if (j >= ny - 1 || mask(i, j + 1)) {
+                P_u = 0.0;
+            }
+            if (j <= 0 || mask(i, j - 1)) {
+                P_d = 0.0;
+            }
+            if (mask(l, j_l)) {
+                P_l = 0.0;
+            }
+            if (mask(r, j_r)) {
+                P_r = 0.0;
+            }
+
+            double P_tot = P_u + P_d + P_l + P_r;
+            if (P_tot <= 0.0) {
+                continue;
+            }
+
+            // A particle can stream in only one direction per sub-step.
+            if (P_tot > 1.0) {
+                const double inv = 1.0 / P_tot;
+                P_u *= inv;
+                P_d *= inv;
+                P_l *= inv;
+                P_r *= inv;
+            }
+
+            std::array<int, 4> N_req = {
+                sample_count(P_u, n_solid),
+                sample_count(P_d, n_solid),
+                sample_count(P_l, n_solid),
+                sample_count(P_r, n_solid),
+            };
+
+            std::array<std::array<int, 2>, 4> dests = {{
+                {i, j + 1},   // up
+                {i, j - 1},   // down
+                {l, j_l},     // left
+                {r, j_r},     // right
+            }};
+
+            std::array<int, 4> dir_order = {0, 1, 2, 3};
+            std::shuffle(dir_order.begin(), dir_order.end(), gen);
+            std::shuffle(solid_indices.begin(), solid_indices.end(), gen);
+
+            int solid_cursor = 0;
+            for (int ord = 0; ord < 4 && solid_cursor < n_solid; ++ord) {
+                int d = dir_order[ord];
+                int dest_i = dests[d][0];
+                int dest_j = dests[d][1];
+                int dest_idx = dest_i * ny + dest_j;
+
+                int moved = 0;
+                while (moved < N_req[d] && solid_cursor < n_solid) {
+                    int k = solid_indices[solid_cursor++];
+                    if (std::isnan(s(i, j, k))) {
+                        continue;
+                    }
+                    if (mask(dest_i, dest_j)) {
+                        continue;
+                    }
+                    if (!std::isnan(s(dest_i, dest_j, k))) {
+                        continue;
+                    }
+                    if (!has_space_for_particle(
+                            s,
+                            dest_i,
+                            dest_j,
+                            k,
+                            s(i, j, k),
+                            nu,
+                            dest_idx,
+                            inverse_nm,
+                            p.nu_cs,
+                            beta_on_6,
+                            nm,
+                            space_criterion)) {
+                        continue;
+                    }
+
+                    double tmp = s(i, j, k);
+                    s(i, j, k) = s(dest_i, dest_j, k);
+                    s(dest_i, dest_j, k) = tmp;
+
+                    // Stream particle momentum with the particle and clear the vacated site.
+                    u(dest_i, dest_j, k) = u(i, j, k);
+                    v(dest_i, dest_j, k) = v(i, j, k);
+                    u(i, j, k) = 0.0;
+                    v(i, j, k) = 0.0;
+
+                    nu[idx] -= inverse_nm;
+                    nu[dest_idx] += inverse_nm;
+                    moved += 1;
+                }
+            }
+        }
+    }
+
+    // Relax particle velocities toward equilibrium (u=v=0) with timescale tau.
+    // tau <= 0 disables relaxation.
+    const bool relax_to_zero = (p.tau > 0.0);
+    const double relax_factor = relax_to_zero ? std::exp(-p.dt / p.tau) : 1.0;
+
+    // Remove stale velocity in voids (and in masked cells), then relax occupied cells.
+    for (int i = 0; i < nx; ++i) {
+        for (int j = 0; j < ny; ++j) {
+            for (int k = 0; k < nm; ++k) {
+                if (mask(i, j) || std::isnan(s(i, j, k))) {
+                    u(i, j, k) = 0.0;
+                    v(i, j, k) = 0.0;
+                } else if (relax_to_zero) {
+                    u(i, j, k) *= relax_factor;
+                    v(i, j, k) *= relax_factor;
                 }
             }
         }

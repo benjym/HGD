@@ -17,10 +17,11 @@
     alpha : 1.0,
 
     // inertia: [false, 'time_averaging', 'derived'],
-    inertia : [false, true],
+    inertia : true,
     motion_model : "d2q4_cpp",
-    // motion_model : "d2q4_array_v2",
-    // inertia: true,
+    stream_model : "lbm_zero_eq",
+    space_criterion : ["nu_cs", "pore_size"], // criterion used in both move_particles_core and stream_core_lbm_zero_eq
+    tau : [0.1, 0.5, 1.0, 2.0], // relaxation time for inertia, in seconds. If tau <= 0, no relaxation is applied.
     
     // initial condition:
     nu_fill : 0.5,
