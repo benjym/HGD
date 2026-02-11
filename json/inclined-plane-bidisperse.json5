@@ -25,11 +25,12 @@
     repose_angle : 20, // (degrees)
 
     masks : ["slope"],
-    inertia : false,
-    motion_model : 'd2q4_cpp',
 
-    // inertia: true,
-    // motion_model : "d2q4_array_v2",
+    inertia : true,
+    motion_model : "d2q4_cpp",
+    stream_model : "lbm_zero_eq",
+    space_criterion : "pore_size", // criterion used in both move_particles_core and stream_core_lbm_zero_eq
+    tau : 0.5, // relaxation time for inertia, in seconds. If tau <= 0, no relaxation is applied.
     
     // initial conditions
     // IC_mode : "bottom",  // just leave empty space at the top
@@ -38,7 +39,7 @@
     nu_fill : 0.5,
 
     // temporal stuff
-    t_f : 50.0,  // final time
+    t_f : 20.0,  // final time
     
     // saving
     save_inc : 200,  // how often to save

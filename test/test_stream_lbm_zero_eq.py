@@ -172,7 +172,7 @@ def test_void_cells_have_zero_velocity_after_streaming():
     assert np.all(v_out[void_mask] == 0.0)
 
 
-def test_tau_relaxes_velocity_toward_zero():
+def test_tau_does_not_relax_dilute_cells():
     p = _make_params(nx=7, ny=7, nm=10)
     p.tau = 2.0
 
@@ -195,6 +195,97 @@ def test_tau_relaxes_velocity_toward_zero():
     i, j, k = _particle_pos(s_out)
     assert (i, j, k) == src
 
+    # nu = 1/nm < nu_cs, so no relaxation should be applied.
+    assert u_out[i, j, k] == pytest.approx(1.0, abs=1e-10)
+    assert v_out[i, j, k] == pytest.approx(-0.5, abs=1e-10)
+
+
+def test_tau_relaxes_velocity_when_nu_exceeds_nu_cs():
+    p = _make_params(nx=7, ny=7, nm=10)
+    p.tau = 2.0
+    p.nu_cs = 0.5
+
+    s = np.full((p.nx, p.ny, p.nm), np.nan, dtype=np.float64)
+    u = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+    v = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+
+    i0, j0 = 3, 3
+    # Dense local packing: 6/10 = 0.6 > nu_cs.
+    for k in range(6):
+        s[i0, j0, k] = 1.0
+        u[i0, j0, k] = 1.0
+        v[i0, j0, k] = -0.5
+
+    # Block all neighboring moves so we isolate pure relaxation.
+    p.boundary_mask[2, 3] = True
+    p.boundary_mask[4, 3] = True
+    p.boundary_mask[3, 2] = True
+    p.boundary_mask[3, 4] = True
+
+    u_out, v_out, s_out = d2q4_cpp.stream(u, v, s, p)
     relax_factor = np.exp(-p.dt / p.tau)
-    assert u_out[i, j, k] == pytest.approx(1.0 * relax_factor, abs=1e-10)
-    assert v_out[i, j, k] == pytest.approx(-0.5 * relax_factor, abs=1e-10)
+
+    for k in range(6):
+        assert not np.isnan(s_out[i0, j0, k])
+        assert u_out[i0, j0, k] == pytest.approx(1.0 * relax_factor, abs=1e-10)
+        assert v_out[i0, j0, k] == pytest.approx(-0.5 * relax_factor, abs=1e-10)
+
+
+def test_tau_does_not_relax_when_particle_fits_local_pore_size():
+    p = _make_params(nx=7, ny=7, nm=10)
+    p.tau = 2.0
+    p.space_criterion = "pore_size"
+
+    s = np.full((p.nx, p.ny, p.nm), np.nan, dtype=np.float64)
+    u = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+    v = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+
+    src = (3, 3, 0)
+    s[src] = 0.5
+    u[src] = 1.0
+    v[src] = -0.5
+
+    # Block all neighboring moves so we isolate pure relaxation.
+    p.boundary_mask[2, 3] = True
+    p.boundary_mask[4, 3] = True
+    p.boundary_mask[3, 2] = True
+    p.boundary_mask[3, 4] = True
+
+    u_out, v_out, s_out = d2q4_cpp.stream(u, v, s, p)
+    i, j, k = _particle_pos(s_out)
+    assert (i, j, k) == src
+
+    # In dilute conditions, local d_pore is large and no relaxation is applied.
+    assert u_out[i, j, k] == pytest.approx(1.0, abs=1e-10)
+    assert v_out[i, j, k] == pytest.approx(-0.5, abs=1e-10)
+
+
+def test_tau_relaxes_when_particle_exceeds_local_pore_size():
+    p = _make_params(nx=7, ny=7, nm=10)
+    p.tau = 2.0
+    p.space_criterion = "pore_size"
+
+    s = np.full((p.nx, p.ny, p.nm), np.nan, dtype=np.float64)
+    u = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+    v = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+
+    i0, j0 = 3, 3
+    # Dense local packing: d_pore becomes small enough that s > d_pore.
+    for k in range(6):
+        s[i0, j0, k] = 1.0
+        u[i0, j0, k] = 1.0
+        v[i0, j0, k] = -0.5
+
+    # Block all neighboring moves so we isolate pure relaxation.
+    p.boundary_mask[2, 3] = True
+    p.boundary_mask[4, 3] = True
+    p.boundary_mask[3, 2] = True
+    p.boundary_mask[3, 4] = True
+
+    u_out, v_out, s_out = d2q4_cpp.stream(u, v, s, p)
+    relax_factor = np.exp(-p.dt / p.tau)
+
+    for k in range(6):
+        assert not np.isnan(s_out[i0, j0, k])
+        assert u_out[i0, j0, k] == pytest.approx(1.0 * relax_factor, abs=1e-10)
+        assert v_out[i0, j0, k] == pytest.approx(-0.5 * relax_factor, abs=1e-10)

@@ -19,9 +19,11 @@
     nu_fill : 0.5,
     IC_mode : "left_column",
 
-    motion_model : "d2q4_array_v2",
-    inertia: [false, true],
-    // inertia: true,
+    inertia : true,
+    motion_model : "d2q4_cpp",
+    stream_model : "lbm_zero_eq",
+    space_criterion : "pore_size", // criterion used in both move_particles_core and stream_core_lbm_zero_eq
+    tau : 0.5, // relaxation time for inertia, in seconds. If tau <= 0, no relaxation is applied.
     
     plot : ['nu', 'U_mag', 'chi'],
     videos : ['nu', 'u','v', 'U_mag', 'chi'],

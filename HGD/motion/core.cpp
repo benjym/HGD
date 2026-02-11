@@ -195,6 +195,30 @@ static inline bool has_space_for_particle(View3<double>& s,
     return has_space_pore_size(s, dest_i, dest_j, k, s_here, nu, dest_idx, beta_on_6, nm);
 }
 
+static inline bool should_relax_particle(View3<double>& s,
+                                         int i,
+                                         int j,
+                                         int k,
+                                         const std::vector<double>& nu,
+                                         int idx,
+                                         double nu_cs,
+                                         double beta_on_6,
+                                         int nm,
+                                         SpaceCriterion criterion) {
+    if (criterion == SpaceCriterion::NuCs) {
+        return nu[idx] >= (nu_cs - 1e-12);
+    }
+
+    double s_here = s(i, j, k);
+    if (std::isnan(s_here)) {
+        return false;
+    }
+
+    double void_ratio_here = (1.0 - nu[idx]) / (nu[idx] + 1e-10);
+    double d_pore_here = compute_pore_size(s, i, j, k, 1, void_ratio_here, beta_on_6, nm);
+    return s_here > d_pore_here;
+}
+
 static inline int wrap_index(int idx, int n) {
     if (n <= 0) {
         return 0;
@@ -356,19 +380,19 @@ void move_particles_core(View3<double> u, View3<double> v, View3<double> s,
                                 dest = {i, j - 1, k};
                                 dest_idx = idx_down;
                                 found = true;
-                                v(i, j, k) -= dy_over_dt;
+                                v(i, j, k) -= P_d * dy_over_dt;
                             }
                             else if (rand_val < (P_l + P_d)) {
                                 dest = {l, j_l, k};
                                 dest_idx = idx_l;
                                 found = true;
-                                u(i, j, k) -= dx_over_dt;
+                                u(i, j, k) -= P_l * dx_over_dt;
                             }
                             else if (rand_val < P_tot) {
                                 dest = {r, j_r, k};
                                 dest_idx = idx_r;
                                 found = true;
-                                u(i, j, k) += dx_over_dt;
+                                u(i, j, k) += P_r * dx_over_dt;
                             }
 
                             if (found) {
@@ -860,19 +884,21 @@ void stream_core_lbm_zero_eq(const std::vector<double>& u_mean,
         }
     }
 
-    // Relax particle velocities toward equilibrium (u=v=0) with timescale tau.
-    // tau <= 0 disables relaxation.
+    // Relax particle velocities toward equilibrium (u=v=0) using the selected
+    // space criterion. Dilute/gas-like states are left unrelaxed.
     const bool relax_to_zero = (p.tau > 0.0);
     const double relax_factor = relax_to_zero ? std::exp(-p.dt / p.tau) : 1.0;
 
-    // Remove stale velocity in voids (and in masked cells), then relax occupied cells.
+    // Remove stale velocity in voids (and in masked cells), then selectively relax.
     for (int i = 0; i < nx; ++i) {
         for (int j = 0; j < ny; ++j) {
+            int idx = i * ny + j;
             for (int k = 0; k < nm; ++k) {
                 if (mask(i, j) || std::isnan(s(i, j, k))) {
                     u(i, j, k) = 0.0;
                     v(i, j, k) = 0.0;
-                } else if (relax_to_zero) {
+                } else if (relax_to_zero && should_relax_particle(
+                        s, i, j, k, nu, idx, p.nu_cs, beta_on_6, nm, space_criterion)) {
                     u(i, j, k) *= relax_factor;
                     v(i, j, k) *= relax_factor;
                 }
