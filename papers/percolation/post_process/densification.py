@@ -139,17 +139,19 @@ def main() -> None:
             loose_sorted = sorted(loose, key=lambda t: t[0])
             ratios = [d[0] for d in loose_sorted]
             means = [d[2] for d in loose_sorted]
-            ax.plot(ratios, means, marker="o", ls="-", color=color, label=rf"$\beta={beta_val:g}$ loose")
+            n = 1 - np.array(means)
+            ax.plot(ratios, n, marker="o", ls="-", color=color, label=rf"$\beta={beta_val:g}$ loose")
 
         if dense:
             dense_sorted = sorted(dense, key=lambda t: t[0])
             ratios = [d[0] for d in dense_sorted]
             means = [d[2] for d in dense_sorted]
-            ax.plot(ratios, means, marker="s", ls="--", color=color, label=rf"$\beta={beta_val:g}$ dense")
+            n = 1 - np.array(means)
+            ax.plot(ratios, n, marker="s", ls="--", color=color, label=rf"$\beta={beta_val:g}$ dense")
 
     ax.set_xlabel(r"$s_M/s_m$")
-    ax.set_ylabel(r"$\nu$")
-    # ax.set_xscale("log")
+    ax.set_ylabel(r"Porosity, $n$")
+    ax.set_xscale("log")
     ax.grid(True, alpha=0.3)
     ax.legend(frameon=False)
 
@@ -167,9 +169,10 @@ def main() -> None:
             loose_sorted = sorted(loose, key=lambda t: t[1])
             ig_vals = [d[1] for d in loose_sorted]
             means = [d[2] for d in loose_sorted]
+            n = 1 - np.array(means)
             ax_ig.plot(
                 ig_vals,
-                1 - np.array(means),
+                n,
                 marker="o",
                 ls="-",
                 color=color,
@@ -180,9 +183,10 @@ def main() -> None:
             dense_sorted = sorted(dense, key=lambda t: t[1])
             ig_vals = [d[1] for d in dense_sorted]
             means = [d[2] for d in dense_sorted]
+            n = 1 - np.array(means)
             ax_ig.plot(
                 ig_vals,
-                1 - np.array(means),
+                n,
                 marker="s",
                 ls="--",
                 color=color,

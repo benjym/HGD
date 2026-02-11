@@ -61,21 +61,19 @@ def IC(p):
                 s[i, m, fill] = p.s_m
 
     elif p.gsd_mode == "bi" or p.gsd_mode == "fbi":  # bidisperse
-        if (p.nm * p.large_concentration * p.nu_fill) < 2:
-            s = np.random.choice([p.s_m, p.s_M], size=[p.nx, p.ny, p.nm])
-        else:
-            s = np.nan * np.ones([p.nx, p.ny, p.nm])
-            for i in range(p.nx):
-                for j in range(p.ny):
-                    large = rng.choice(
-                        p.nm, size=int(p.nm * p.large_concentration * p.nu_fill), replace=False
-                    )
-                    s[i, j, large] = p.s_M
-                    remaining = np.where(np.isnan(s[i, j, :]))[0]
-                    small = rng.choice(
-                        remaining, size=int(p.nm * (1 - p.large_concentration) * p.nu_fill), replace=False
-                    )
-                    s[i, j, small] = p.s_m
+        # if (p.nm * p.large_concentration * p.nu_fill) < 2:
+        # s = np.random.choice([p.s_m, p.s_M], size=[p.nx, p.ny, p.nm])
+        # else:
+        s = np.nan * np.ones([p.nx, p.ny, p.nm])
+        for i in range(p.nx):
+            for j in range(p.ny):
+                large = rng.choice(p.nm, size=int(p.nm * p.large_concentration * p.nu_fill), replace=False)
+                s[i, j, large] = p.s_M
+                remaining = np.where(np.isnan(s[i, j, :]))[0]
+                small = rng.choice(
+                    remaining, size=int(p.nm * (1 - p.large_concentration) * p.nu_fill), replace=False
+                )
+                s[i, j, small] = p.s_m
 
     elif p.gsd_mode == "power_law":
         # CGSD(d) = ( d**(3-alpha) - d_m**(3-alpha) ) / ( d_M**(3-alpha) - d_m**(3-alpha) )
@@ -96,6 +94,26 @@ def IC(p):
         mask = rng.uniform(size=[p.nx, p.ny, p.nm]) > p.nu_fill
         s[mask] = np.nan
 
+    elif p.gsd_mode == "normal":
+        s = rng.normal(loc=p.s_mean, scale=p.s_std, size=[p.nx, p.ny, p.nm])
+        # s[s < p.s_m] = p.s_m
+        # s[s > p.s_M] = p.s_M
+
+        mask = rng.uniform(size=[p.nx, p.ny, p.nm]) > p.nu_fill
+        s[mask] = np.nan
+        p.s_M = np.nanmax(s)
+        p.s_m = np.nanmin(s)
+
+    elif p.gsd_mode == "lognormal":
+        s = rng.lognormal(mean=np.log(p.s_mean), sigma=p.sigma, size=[p.nx, p.ny, p.nm])
+        # s[s < p.s_m] = p.s_m
+        # s[s > p.s_M] = p.s_M
+
+        mask = rng.uniform(size=[p.nx, p.ny, p.nm]) > p.nu_fill
+        s[mask] = np.nan
+        p.s_M = np.nanmax(s)
+        p.s_m = np.nanmin(s)
+
     elif p.gsd_mode == "weibull":
         # Using a weird parameterisation of the Weibull distribution to have d_50 as a parameter
         # F(d) = 1−exp(−(d/d_50)^k)*ln(2))
@@ -111,6 +129,8 @@ def IC(p):
         # assumes existence of p.s_m (min size), p.s_mid (mid size) and p.s_M (max size)
         # relative proportions are given by p.large_concentration and p.mid_concentration. the total from all three sizes must be one, so:
         min_concentration = 1 - p.large_concentration - p.mid_concentration
+        if min_concentration < 0:
+            raise ValueError("The sum of large_concentration and mid_concentration must be ≤ 1.")
 
         s = np.nan * np.ones([p.nx, p.ny, p.nm])
         for i in range(p.nx):

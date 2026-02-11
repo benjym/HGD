@@ -472,11 +472,15 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
 
                     double P_u = std::isnan(s_up) ? 0 : P_u_bar * std::pow(s_inv_bar[idx_up] / s_up, seg_exponent);
 
-                    double d_pore_up_eff = (d_pore_here > 0.0) ? d_pore_here : d_pore_up;
-                    double d_pore_right_eff = (d_pore_here > 0.0) ? d_pore_here : d_pore_right;
-                    double d_pore_left_eff = (d_pore_here > 0.0) ? d_pore_here : d_pore_left;
+                    // double d_pore_up_eff = (d_pore_here > 0.0) ? d_pore_here : d_pore_up;
+                    // double d_pore_right_eff = (d_pore_here > 0.0) ? d_pore_here : d_pore_right;
+                    // double d_pore_left_eff = (d_pore_here > 0.0) ? d_pore_here : d_pore_left;
 
-                    if (s_up > d_pore_up_eff) P_u = 0; // Prevent upward movement of void if particle is larger than pore size
+                    d_pore_up = std::min(d_pore_here, d_pore_up);
+                    d_pore_right = std::min(d_pore_here, d_pore_right);
+                    d_pore_left = std::min(d_pore_here, d_pore_left);
+
+                    if (s_up > d_pore_up) P_u = 0; // Prevent upward movement of void if particle is larger than pore size
                     
                     double nu_here = nu[idx];
                     double nu_left = nu[idx_l];
@@ -487,8 +491,8 @@ void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
                     double P_l = (!std::isnan(s_left) && unstable_left) ? P_lr_ref * s_left : 0;
                     double P_r = (!std::isnan(s_right) && unstable_right) ? P_lr_ref * s_right : 0;
 
-                    if (!unstable_right && s_right > d_pore_right_eff) P_r = 0; // Prevent rightward movement of void if particle is larger than pore size
-                    if (!unstable_left && s_left > d_pore_left_eff) P_l = 0;   // Prevent leftward movement of void if particle is larger than pore size
+                    if (!unstable_right && s_right > d_pore_right) P_r = 0; // Prevent rightward movement of void if particle is larger than pore size
+                    if (!unstable_left && s_left > d_pore_left) P_l = 0;   // Prevent leftward movement of void if particle is larger than pore size
 
                     if (mask(i, j + 1)) {
                         P_u = 0; // Prevent upward movement into a masked cell
