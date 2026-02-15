@@ -26,7 +26,7 @@
     close_voids : false, // should the voids be closed after some time
     max_diff_swap_length : 1, // maximum length of a diffusion swap
     slope_stability_model : 'gradient', // 'stress' or 'gradient'
-    time_average_chi : true, // should the chi field be time averaged
+    time_average : true, // should the chi, u and v fields be time averaged with exponential averaging
 
     // material properties
     repose_angle : 30, // (degrees)
@@ -36,6 +36,8 @@
     nu_cs : 0.5, // critical state solid volume fraction
     alpha : 4, // diffusivity parameter
     seg_exponent : 0.1, // exponent used in segmentation probability
+    void_creation_param : 0.52, // controls shear-induced void creation in boundary flow rules
+    cohesion : 0.0, // material cohesion used by the stress model (Pa)
     beta : 6, // Kozeny-Carman shape factor. Typical values are 5-6 for spheres and 7-8 for angular particles.
     
     // initial condition

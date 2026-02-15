@@ -10,3 +10,5 @@ build/
 venv/
 *.so
 *.png
+venv_dry/
+*.mp4

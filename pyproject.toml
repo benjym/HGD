@@ -1,6 +1,6 @@
 [project]
 name = "HGD"
-version = "1.2"
+version = "1.2.1"
 requires-python = ">=3.9"
 authors = [
   {name = "Benjy Marks", email = "benjy.marks@sydney.edu.au"},
