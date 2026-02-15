@@ -141,8 +141,27 @@ py::tuple stream_py(py::array_t<double> u, py::array_t<double> v,
     auto mask = p.attr("boundary_mask").cast<py::array_t<bool>>();
     auto vM = as_view2u8(mask);
 
-    std::vector<double> u_mean = compute_mean_core(View3<const double>{vU.data, vU.nx, vU.ny, vU.nm, vU.sx, vU.sy, vU.sz});
-    std::vector<double> v_mean = compute_mean_core(View3<const double>{vV.data, vV.nx, vV.ny, vV.nm, vV.sx, vV.sy, vV.sz});
+    std::vector<double> u_mean(vU.nx * vU.ny, 0.0);
+    std::vector<double> v_mean(vV.nx * vV.ny, 0.0);
+    for (int i = 0; i < vS.nx; ++i) {
+        for (int j = 0; j < vS.ny; ++j) {
+            double u_sum = 0.0;
+            double v_sum = 0.0;
+            int count = 0;
+            for (int k = 0; k < vS.nm; ++k) {
+                if (!std::isnan(vS(i, j, k))) {
+                    u_sum += vU(i, j, k);
+                    v_sum += vV(i, j, k);
+                    count += 1;
+                }
+            }
+            if (count > 0) {
+                int idx = i * vS.ny + j;
+                u_mean[idx] = u_sum / static_cast<double>(count);
+                v_mean[idx] = v_sum / static_cast<double>(count);
+            }
+        }
+    }
     std::vector<double> nu = compute_solid_fraction_core(View3<const double>{vS.data, vS.nx, vS.ny, vS.nm, vS.sx, vS.sy, vS.sz});
 
     Params P{

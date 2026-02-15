@@ -43,7 +43,7 @@ def _run_move_particles(u, v, s, p):
     return out[0], out[1], out[2]
 
 
-def test_move_particles_core_cleans_void_velocities():
+def test_move_particles_core_only_updates_local_velocity_entries():
     p = _make_particle_params(nx=6, ny=6, nm=10, nu_cs=0.6)
     rng = np.random.default_rng(42)
 
@@ -57,9 +57,10 @@ def test_move_particles_core_cleans_void_velocities():
 
     u_out, v_out, s_out = _run_move_particles(u, v, s, p)
 
-    void_mask = np.isnan(s_out)
-    assert np.all(u_out[void_mask] == 0.0)
-    assert np.all(v_out[void_mask] == 0.0)
+    # Particle motion should only touch velocity entries participating in a swap.
+    # We intentionally do not enforce global void-velocity cleanup here.
+    changed = (~np.isclose(u_out, u)) | (~np.isclose(v_out, v))
+    assert np.count_nonzero(changed) <= 2
 
 
 def test_move_particles_core_respects_nu_cs_cap():
