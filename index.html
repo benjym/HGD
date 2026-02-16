@@ -1,0 +1,914 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+        <link rel="next" href="getting-started/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Heterarchical Granular Dynamics</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#heterarchical-granular-dynamics-hgd" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="Heterarchical Granular Dynamics" class="md-header__button md-logo" aria-label="Heterarchical Granular Dynamics" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Heterarchical Granular Dynamics
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="Heterarchical Granular Dynamics" class="md-nav__button md-logo" aria-label="Heterarchical Granular Dynamics" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Heterarchical Granular Dynamics
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Quick Start
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-simulations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Running Simulations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Documentation &amp; Resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-simulations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Example Simulations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#viewing-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Viewing Results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❓ Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Quick Start
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-simulations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Running Simulations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Documentation &amp; Resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-simulations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Example Simulations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#viewing-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Viewing Results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❓ Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="heterarchical-granular-dynamics-hgd">Heterarchical Granular Dynamics (HGD)</h1>
+<p><strong>Disclaimer: This code is under development and is likely to have significant breaking changes in the near future. Many features are incomplete or redundant. Please contact the development team if you would like a tour.</strong></p>
+<p>A Python package for simulating the motion of granular materials as a result of the motion of voids. HGD models non-inertial problems and segregation particularly well for several systems.</p>
+<p><a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a></p>
+<h2 id="quick-start">🚀 Quick Start</h2>
+<p><strong>New to HGD?</strong> Follow our comprehensive <a href="https://benjym.github.io/HGD/getting-started">Getting Started Guide</a> for step-by-step installation and your first simulation.</p>
+<p><strong>Already installed?</strong> Try running an example:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/hopper.json5
+</code></pre></div></p>
+<h2 id="prerequisites">📋 Prerequisites</h2>
+<p>Before installing HGD, ensure you have:</p>
+<ul>
+<li><strong>Python 3.9 or newer</strong> (Python 3.11+ recommended)</li>
+<li><strong>C++ compiler</strong> (g++, Clang, or MSVC)</li>
+<li><strong>CMake 3.15+</strong></li>
+<li><strong>OpenMP</strong> (for parallel execution)</li>
+</ul>
+<details>
+<summary>📦 <b>Quick install commands for dependencies</b></summary>
+
+**Ubuntu/Debian:**
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>python3<span class="w"> </span>python3-pip<span class="w"> </span>g++<span class="w"> </span>cmake<span class="w"> </span>libomp-dev
+</code></pre></div>
+
+**macOS:**
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>brew<span class="w"> </span>install<span class="w"> </span>python<span class="w"> </span>cmake<span class="w"> </span>libomp
+</code></pre></div>
+
+**Windows:**
+- Install Python from [python.org](https://www.python.org/downloads/)
+- Install Visual Studio with C++ support
+- Install CMake from [cmake.org](https://cmake.org/download/)
+
+</details>
+
+<h2 id="installation">🔧 Installation</h2>
+<ol>
+<li>
+<p><strong>Clone or download this repository:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/benjym/HGD.git
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">cd</span><span class="w"> </span>HGD
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Install HGD and dependencies:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</code></pre></div></p>
+</li>
+</ol>
+<p>This command installs all required Python packages and compiles the C++ extension modules.</p>
+<ol>
+<li>
+<p><strong>Verify installation:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import HGD; print(&#39;HGD installed successfully!&#39;)&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>(Optional) Set up pre-commit hooks for development:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>pre-commit<span class="w"> </span>install
+</code></pre></div></p>
+</li>
+</ol>
+<h2 id="running-simulations">🎯 Running Simulations</h2>
+<p>Run a simulation using a JSON5 configuration file:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/&lt;config_file&gt;.json5
+</code></pre></div>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/hopper.json5
+</code></pre></div></p>
+<p>The simulation parameters are stored in the JSON5 file. Default parameters are available in <code>json/defaults.json5</code>.</p>
+<h2 id="documentation-resources">📚 Documentation &amp; Resources</h2>
+<ul>
+<li><strong><a href="https://benjym.github.io/HGD/getting-started">Getting Started Guide</a></strong> - Complete installation and first simulation walkthrough</li>
+<li><strong><a href="https://benjym.github.io/HGD/examples">Examples Guide</a></strong> - Detailed description of all example scenarios</li>
+<li><strong><a href="https://benjym.github.io/HGD/troubleshooting">Troubleshooting</a></strong> - Solutions to common problems</li>
+<li><strong><a href="https://benjym.github.io/HGD/">API Documentation</a></strong> - Comprehensive code reference</li>
+<li><strong><a href="../json/defaults.json5">Default Parameters</a></strong> - All configurable parameters with defaults</li>
+</ul>
+<h2 id="example-simulations">💡 Example Simulations</h2>
+<p>HGD includes several example configurations. Start with the quickest one:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Quick validation (10 seconds)</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/minimal_test.json5
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Simple examples</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/collapse.json5<span class="w">  </span><span class="c1"># ~1 minute</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/hopper.json5<span class="w">    </span><span class="c1"># ~2 minutes</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Example</th>
+<th>Description</th>
+<th>Runtime</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>minimal_test.json5</code></td>
+<td>Installation verification</td>
+<td>~10 sec</td>
+</tr>
+<tr>
+<td><code>hopper.json5</code></td>
+<td>Material flowing through a hopper</td>
+<td>~2 min</td>
+</tr>
+<tr>
+<td><code>collapse.json5</code></td>
+<td>Column collapse under gravity</td>
+<td>~1 min</td>
+</tr>
+<tr>
+<td><code>footing.json5</code></td>
+<td>Load bearing capacity test</td>
+<td>~3 min</td>
+</tr>
+<tr>
+<td><code>temperature.json5</code></td>
+<td>Thermal effects in flow</td>
+<td>~5 min</td>
+</tr>
+</tbody>
+</table>
+<p>See the <a href="https://benjym.github.io/HGD/examples">Examples Guide</a> for complete descriptions and usage instructions.</p>
+<h2 id="viewing-results">🔍 Viewing Results</h2>
+<p>After running a simulation, results are saved in the <code>output/</code> directory:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>output/
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>└── &lt;simulation_name&gt;/
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    ├── &lt;parameter_set&gt;/
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    │   ├── nu_*.png      # Density snapshots
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    │   ├── s_*.png       # Particle size snapshots
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    │   ├── nu.mp4        # Density video
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    │   └── s.mp4         # Particle size video
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    └── ...
+</code></pre></div>
+<h2 id="configuration">🛠️ Configuration</h2>
+<p>Simulations are configured using JSON5 files. Key parameters include:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="c1">// Grid resolution</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nv">nx</span><span class="p">:</span><span class="w"> </span><span class="mf">50</span><span class="p">,</span><span class="w">              </span><span class="c1">// Horizontal cells</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="nv">ny</span><span class="p">:</span><span class="w"> </span><span class="mf">50</span><span class="p">,</span><span class="w">              </span><span class="c1">// Vertical cells</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nv">nm</span><span class="p">:</span><span class="w"> </span><span class="mf">20</span><span class="p">,</span><span class="w">              </span><span class="c1">// Internal states</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="c1">// Physical properties</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">    </span><span class="nv">H</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w">              </span><span class="c1">// System height (m)</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">    </span><span class="nv">repose_angle</span><span class="p">:</span><span class="w"> </span><span class="mf">30</span><span class="p">,</span><span class="w">    </span><span class="c1">// Friction angle (degrees)</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="nv">s_m</span><span class="p">:</span><span class="w"> </span><span class="mf">0.001</span><span class="p">,</span><span class="w">          </span><span class="c1">// Min particle size (m)</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">    </span><span class="nv">gsd_mode</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;bi&#39;</span><span class="p">,</span><span class="w">      </span><span class="c1">// Grain size distribution</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="c1">// Simulation</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">    </span><span class="nv">t_f</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span><span class="p">,</span><span class="w">            </span><span class="c1">// Final time (s)</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">    </span><span class="nv">save_inc</span><span class="p">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w">         </span><span class="c1">// Save frequency</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">    </span><span class="nv">plot</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&#39;nu&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;s&#39;</span><span class="p">],</span><span class="w">   </span><span class="c1">// Variables to plot</span>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="p">}</span>
+</code></pre></div>
+<p>See <code>json/defaults.json5</code> for all available parameters.</p>
+<h2 id="troubleshooting">❓ Troubleshooting</h2>
+<p><strong>Installation fails?</strong> Check the <a href="https://benjym.github.io/HGD/troubleshooting">Troubleshooting Guide</a> for solutions to common issues:
+- C++ compiler not found
+- CMake errors
+- OpenMP missing
+- Memory errors
+- And more...</p>
+<p><strong>Need help?</strong> See the <a href="#-support">Support</a> section below.</p>
+<h1 id="documentation">Documentation</h1>
+<p>You can <a href="https://benjym.github.io/HGD/">read the docs here</a>.</p>
+<h1 id="support">Support</h1>
+<p>You can contact the development team <a href="https://matrix.to/#/!UZnyhaLhQymfFbLJYI:matrix.org?via=matrix.org">here</a>.</p>
+<h1 id="authors">Authors</h1>
+<ul>
+<li><a href="mailto:benjy.marks@sydney.edu.au">Benjy Marks</a></li>
+<li><a href="mailto:shivakumar.athani@sydney.edu.au">Shivakumar Athani</a></li>
+<li><a href="mailto:jiahuan.li@sydney.edu.au">Jiahuan Li</a></li>
+</ul>
+<h1 id="usage">Usage</h1>
+<p>The code is run by calling <code>python void_migration/main.py &lt;json5 file&gt;</code>. The parameters for the simulation are stored in the <code>json5</code> file.
+The default parameters, contained in <code>defaults.json5</code> are as follows:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">{</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="c1">// resolution</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="kc">n</span><span class="err">x</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="c1">// number of cells horizontally</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="kc">n</span><span class="err">y</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="c1">// number of cells vertically</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="kc">n</span><span class="err">m</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">  </span><span class="c1">// number of cells in internal direction</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="err">P_s</span><span class="kc">ta</span><span class="err">b</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="c1">// maximum probability to allow for stability</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">    </span><span class="c1">// geometry</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">    </span><span class="err">H</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// physical height of the system (m)</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">    </span><span class="kc">t</span><span class="err">he</span><span class="kc">ta</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// angle of gravity (0 is vertical, degrees)</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="w">    </span><span class="err">g</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">9.81</span><span class="p">,</span><span class="w"> </span><span class="c1">// gravitational acceleration (m/s^2)</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="w">    </span><span class="err">bou</span><span class="kc">n</span><span class="err">daries</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="c1">// &quot;central_outlet&quot;, &quot;multiple_outlets&quot;, &quot;slope&quot;, &quot;mara&quot; or &quot;pour&quot;</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="w">    </span><span class="err">masks</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="c1">// list of masks to be used in the simulation</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">    </span><span class="err">i</span><span class="kc">nternal</span><span class="err">_geome</span><span class="kc">tr</span><span class="err">y</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// true if internal geometry is present, currently defined only for a single case</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="w">    </span><span class="err">cyclic_BC</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// true if cyclic BCs are used horizontally</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="w">    </span><span class="err">cyclic_BC_y_a</span><span class="kc">n</span><span class="err">gle</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// angle of the cyclic BCs (degrees)</span>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="w">    </span><span class="err">re</span><span class="kc">f</span><span class="err">ill</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// should the particles come back in the top if they leave the bottom</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="w">    </span><span class="err">ou</span><span class="kc">tlet</span><span class="err">_ra</span><span class="kc">te</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="c1">// proportion of each timestep that the outlet is open</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="w">    </span><span class="err">ou</span><span class="kc">tlet</span><span class="err">_</span><span class="kc">nu</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// solid fraction of the particles in the outlet</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a><span class="w">    </span><span class="err">wall_mo</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// should the walls move</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a><span class="w">    </span><span class="c1">// void migration model parameters</span>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a><span class="w">    </span><span class="err">diag</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a><span class="w">    </span><span class="err">lagra</span><span class="kc">n</span><span class="err">gia</span><span class="kc">n</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a><span class="w">    </span><span class="err">close_voids</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// should the voids be closed after some time</span>
+<a id="__codelineno-12-27" name="__codelineno-12-27" href="#__codelineno-12-27"></a><span class="w">    </span><span class="err">max_di</span><span class="kc">ff</span><span class="err">_swap_le</span><span class="kc">n</span><span class="err">g</span><span class="kc">t</span><span class="err">h</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// maximum length of a diffusion swap</span>
+<a id="__codelineno-12-28" name="__codelineno-12-28" href="#__codelineno-12-28"></a><span class="w">    </span><span class="err">slope_s</span><span class="kc">ta</span><span class="err">bili</span><span class="kc">t</span><span class="err">y_model</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">&#39;gradie</span><span class="kc">nt</span><span class="err">&#39;</span><span class="p">,</span><span class="w"> </span><span class="c1">// &#39;stress&#39; or &#39;gradient&#39;</span>
+<a id="__codelineno-12-29" name="__codelineno-12-29" href="#__codelineno-12-29"></a><span class="w">    </span><span class="kc">t</span><span class="err">ime_average</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="c1">// should the chi, u and v fields be time averaged with exponential averaging</span>
+<a id="__codelineno-12-30" name="__codelineno-12-30" href="#__codelineno-12-30"></a>
+<a id="__codelineno-12-31" name="__codelineno-12-31" href="#__codelineno-12-31"></a><span class="w">    </span><span class="c1">// material properties</span>
+<a id="__codelineno-12-32" name="__codelineno-12-32" href="#__codelineno-12-32"></a><span class="w">    </span><span class="err">repose_a</span><span class="kc">n</span><span class="err">gle</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="c1">// (degrees)</span>
+<a id="__codelineno-12-33" name="__codelineno-12-33" href="#__codelineno-12-33"></a><span class="w">    </span><span class="err">gsd_mode</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">&#39;bi&#39;</span><span class="p">,</span><span class="w"> </span><span class="c1">// &#39;mono&#39;, &#39;bi&#39; or &#39;poly&#39;</span>
+<a id="__codelineno-12-34" name="__codelineno-12-34" href="#__codelineno-12-34"></a><span class="w">    </span><span class="err">large_co</span><span class="kc">n</span><span class="err">ce</span><span class="kc">ntrat</span><span class="err">io</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="c1">// concentration of large particles for bidisperse case</span>
+<a id="__codelineno-12-35" name="__codelineno-12-35" href="#__codelineno-12-35"></a><span class="w">    </span><span class="err">s_m</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.0005</span><span class="p">,</span><span class="w"> </span><span class="c1">// minimum particle size (m)</span>
+<a id="__codelineno-12-36" name="__codelineno-12-36" href="#__codelineno-12-36"></a><span class="w">    </span><span class="kc">nu</span><span class="err">_cs</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="c1">// critical state solid volume fraction</span>
+<a id="__codelineno-12-37" name="__codelineno-12-37" href="#__codelineno-12-37"></a><span class="w">    </span><span class="err">alpha</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="c1">// diffusivity parameter</span>
+<a id="__codelineno-12-38" name="__codelineno-12-38" href="#__codelineno-12-38"></a><span class="w">    </span><span class="err">seg_expo</span><span class="kc">nent</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="c1">// exponent used in segmentation probability</span>
+<a id="__codelineno-12-39" name="__codelineno-12-39" href="#__codelineno-12-39"></a><span class="w">    </span><span class="err">void_crea</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_param</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.52</span><span class="p">,</span><span class="w"> </span><span class="c1">// void creation parameter - default taken from fitting linear lines to Fig 5c/d from https://www.annualreviews.org/docserver/fulltext/fl/40/1/annurev.fluid.40.111406.102142.pdf and taking ratio of slopes</span>
+<a id="__codelineno-12-40" name="__codelineno-12-40" href="#__codelineno-12-40"></a><span class="w">    </span><span class="err">cohesio</span><span class="kc">n</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="c1">// cohesion between particles (Pa)</span>
+<a id="__codelineno-12-41" name="__codelineno-12-41" href="#__codelineno-12-41"></a>
+<a id="__codelineno-12-42" name="__codelineno-12-42" href="#__codelineno-12-42"></a><span class="w">    </span><span class="c1">// initial condition</span>
+<a id="__codelineno-12-43" name="__codelineno-12-43" href="#__codelineno-12-43"></a><span class="w">    </span><span class="kc">f</span><span class="err">ill_ra</span><span class="kc">t</span><span class="err">io</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.25</span><span class="p">,</span><span class="w"> </span><span class="c1">// ratio of the domain that is filled with particles</span>
+<a id="__codelineno-12-44" name="__codelineno-12-44" href="#__codelineno-12-44"></a><span class="w">    </span><span class="kc">nu</span><span class="err">_</span><span class="kc">f</span><span class="err">ill</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="c1">// solid fraction of the particles in the initial condition</span>
+<a id="__codelineno-12-45" name="__codelineno-12-45" href="#__codelineno-12-45"></a><span class="w">    </span><span class="err">IC_mode</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;column&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// where should the initial particles be, &quot;column&quot;, &quot;random&quot;, &quot;top&quot;, &quot;full&quot; or &quot;empty&quot;</span>
+<a id="__codelineno-12-46" name="__codelineno-12-46" href="#__codelineno-12-46"></a>
+<a id="__codelineno-12-47" name="__codelineno-12-47" href="#__codelineno-12-47"></a><span class="w">    </span><span class="c1">// temperature</span>
+<a id="__codelineno-12-48" name="__codelineno-12-48" href="#__codelineno-12-48"></a><span class="w">    </span><span class="err">calcula</span><span class="kc">te</span><span class="err">_</span><span class="kc">te</span><span class="err">mpera</span><span class="kc">ture</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// should the temperature be calculated</span>
+<a id="__codelineno-12-49" name="__codelineno-12-49" href="#__codelineno-12-49"></a><span class="w">    </span><span class="err">T_i</span><span class="kc">n</span><span class="err">i</span><span class="kc">t</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="c1">// initial temperature (C)</span>
+<a id="__codelineno-12-50" name="__codelineno-12-50" href="#__codelineno-12-50"></a>
+<a id="__codelineno-12-51" name="__codelineno-12-51" href="#__codelineno-12-51"></a><span class="w">    </span><span class="c1">// stress</span>
+<a id="__codelineno-12-52" name="__codelineno-12-52" href="#__codelineno-12-52"></a><span class="w">    </span><span class="err">calcula</span><span class="kc">te</span><span class="err">_s</span><span class="kc">tress</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// should the stress be calculated</span>
+<a id="__codelineno-12-53" name="__codelineno-12-53" href="#__codelineno-12-53"></a><span class="w">    </span><span class="err">s</span><span class="kc">tress</span><span class="err">_mode</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">&#39;ac</span><span class="kc">t</span><span class="err">ive&#39;</span><span class="p">,</span><span class="w"> </span><span class="c1">// &#39;isotropic&#39;, &#39;active&#39;, &#39;passive&#39;, &#39;K_0&#39;, &#39;anisotropic&#39; or &#39;harr&#39;</span>
+<a id="__codelineno-12-54" name="__codelineno-12-54" href="#__codelineno-12-54"></a><span class="w">    </span><span class="err">solid_de</span><span class="kc">ns</span><span class="err">i</span><span class="kc">t</span><span class="err">y</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">2700</span><span class="p">,</span><span class="w"> </span><span class="c1">// density of the solid particles (kg/m^3/m)</span>
+<a id="__codelineno-12-55" name="__codelineno-12-55" href="#__codelineno-12-55"></a><span class="w">    </span><span class="err">wall_</span><span class="kc">fr</span><span class="err">ic</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_a</span><span class="kc">n</span><span class="err">gle</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="c1">// friction coefficient between the walls and the particles</span>
+<a id="__codelineno-12-56" name="__codelineno-12-56" href="#__codelineno-12-56"></a>
+<a id="__codelineno-12-57" name="__codelineno-12-57" href="#__codelineno-12-57"></a><span class="w">    </span><span class="c1">// gas</span>
+<a id="__codelineno-12-58" name="__codelineno-12-58" href="#__codelineno-12-58"></a><span class="w">    </span><span class="err">gas_de</span><span class="kc">ns</span><span class="err">i</span><span class="kc">t</span><span class="err">y</span><span class="p">:</span><span class="mf">1.225</span><span class="p">,</span>
+<a id="__codelineno-12-59" name="__codelineno-12-59" href="#__codelineno-12-59"></a><span class="w">    </span><span class="err">gas_viscosi</span><span class="kc">t</span><span class="err">y</span><span class="p">:</span><span class="mf">1.8e-5</span><span class="p">,</span>
+<a id="__codelineno-12-60" name="__codelineno-12-60" href="#__codelineno-12-60"></a>
+<a id="__codelineno-12-61" name="__codelineno-12-61" href="#__codelineno-12-61"></a><span class="w">    </span><span class="c1">// saving</span>
+<a id="__codelineno-12-62" name="__codelineno-12-62" href="#__codelineno-12-62"></a><span class="w">    </span><span class="kc">f</span><span class="err">olderName</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;output/&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// name of the folder to save the data in</span>
+<a id="__codelineno-12-63" name="__codelineno-12-63" href="#__codelineno-12-63"></a><span class="w">    </span><span class="err">save_i</span><span class="kc">n</span><span class="err">c</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// how often to save the state of the system (timesteps)</span>
+<a id="__codelineno-12-64" name="__codelineno-12-64" href="#__codelineno-12-64"></a><span class="w">    </span><span class="kc">t</span><span class="err">_</span><span class="kc">f</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w">  </span><span class="c1">// final time to end the simulation (s)</span>
+<a id="__codelineno-12-65" name="__codelineno-12-65" href="#__codelineno-12-65"></a><span class="w">    </span><span class="err">plo</span><span class="kc">t</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">&#39;</span><span class="kc">nu</span><span class="err">&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;s&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;combi</span><span class="kc">ne</span><span class="err">d_plo</span><span class="kc">t</span><span class="err">&#39;</span><span class="p">],</span><span class="w"> </span><span class="c1">// which variables to plot. Should at least include the ones to make videos.</span>
+<a id="__codelineno-12-66" name="__codelineno-12-66" href="#__codelineno-12-66"></a><span class="w">    </span><span class="err">videos</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">&#39;</span><span class="kc">nu</span><span class="err">&#39;</span><span class="p">,</span><span class="err">&#39;s&#39;</span><span class="p">],</span><span class="w"> </span><span class="c1">// which variables to save videos of.</span>
+<a id="__codelineno-12-67" name="__codelineno-12-67" href="#__codelineno-12-67"></a><span class="w">    </span><span class="err">save</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="c1">// which variables to save. By default none.</span>
+<a id="__codelineno-12-68" name="__codelineno-12-68" href="#__codelineno-12-68"></a><span class="w">    </span><span class="err">mask_s_bar</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// should the images of s_bar be masked to hide areas of low density</span>
+<a id="__codelineno-12-69" name="__codelineno-12-69" href="#__codelineno-12-69"></a><span class="w">    </span><span class="err">plo</span><span class="kc">t</span><span class="err">_colorbar</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// should the colorbar be plotted</span>
+<a id="__codelineno-12-70" name="__codelineno-12-70" href="#__codelineno-12-70"></a>
+<a id="__codelineno-12-71" name="__codelineno-12-71" href="#__codelineno-12-71"></a><span class="w">    </span><span class="c1">// density pressure model</span>
+<a id="__codelineno-12-72" name="__codelineno-12-72" href="#__codelineno-12-72"></a><span class="w">    </span><span class="kc">nu</span><span class="err">_cs_mode</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">&#39;co</span><span class="kc">nstant</span><span class="err">&#39;</span><span class="p">,</span><span class="w"> </span><span class="c1">// &#39;dynamic&#39; or &#39;constant&#39;</span>
+<a id="__codelineno-12-73" name="__codelineno-12-73" href="#__codelineno-12-73"></a><span class="w">    </span><span class="err">lambda_</span><span class="kc">nu</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="c1">// rate of change of nu_cs</span>
+<a id="__codelineno-12-74" name="__codelineno-12-74" href="#__codelineno-12-74"></a><span class="w">    </span><span class="kc">nu</span><span class="err">_</span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="c1">// value of nu_cs at (or below) 1 kPa</span>
+<a id="__codelineno-12-75" name="__codelineno-12-75" href="#__codelineno-12-75"></a><span class="w">    </span><span class="err">poi</span><span class="kc">nt</span><span class="err">_load</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-12-76" name="__codelineno-12-76" href="#__codelineno-12-76"></a><span class="w">    </span><span class="err">pad_wid</span><span class="kc">t</span><span class="err">h</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="c1">// width of the pad (m)</span>
+<a id="__codelineno-12-77" name="__codelineno-12-77" href="#__codelineno-12-77"></a>
+<a id="__codelineno-12-78" name="__codelineno-12-78" href="#__codelineno-12-78"></a><span class="w">    </span><span class="c1">// parallel code</span>
+<a id="__codelineno-12-79" name="__codelineno-12-79" href="#__codelineno-12-79"></a><span class="w">    </span><span class="err">max_workers</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="c1">// max number of workers to run simultaneously. Default value is actually set void_migration.py</span>
+<a id="__codelineno-12-80" name="__codelineno-12-80" href="#__codelineno-12-80"></a>
+<a id="__codelineno-12-81" name="__codelineno-12-81" href="#__codelineno-12-81"></a><span class="w">    </span><span class="err">mo</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_model</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">&#39;d</span><span class="mi">2</span><span class="err">q</span><span class="mi">4</span><span class="err">_cpp&#39;</span><span class="p">,</span><span class="w"> </span><span class="c1">// &#39;d2q4_slow&#39;, &#39;d2q4_array&#39; or &#39;d2q9_slow&#39;</span>
+<a id="__codelineno-12-82" name="__codelineno-12-82" href="#__codelineno-12-82"></a><span class="w">    </span><span class="err">advec</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_model</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="kc">freefall</span><span class="err">&#39;</span><span class="p">,</span><span class="w"> </span><span class="c1">// &#39;average_size&#39;, &#39;freefall&#39; or &#39;stress&#39;</span>
+<a id="__codelineno-12-83" name="__codelineno-12-83" href="#__codelineno-12-83"></a><span class="w">    </span><span class="err">i</span><span class="kc">nert</span><span class="err">ia</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// should the inertia term be included</span>
+<a id="__codelineno-12-84" name="__codelineno-12-84" href="#__codelineno-12-84"></a>
+<a id="__codelineno-12-85" name="__codelineno-12-85" href="#__codelineno-12-85"></a><span class="w">    </span><span class="c1">// cycles</span>
+<a id="__codelineno-12-86" name="__codelineno-12-86" href="#__codelineno-12-86"></a><span class="w">    </span><span class="err">cycles</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="c1">// list of dicts that define any cycles</span>
+<a id="__codelineno-12-87" name="__codelineno-12-87" href="#__codelineno-12-87"></a><span class="w">    </span><span class="err">i</span><span class="kc">nlet</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// amount of material added this cycle</span>
+<a id="__codelineno-12-88" name="__codelineno-12-88" href="#__codelineno-12-88"></a><span class="w">    </span><span class="err">ou</span><span class="kc">tlet</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// amount of material removed this cycle</span>
+<a id="__codelineno-12-89" name="__codelineno-12-89" href="#__codelineno-12-89"></a><span class="w">    </span><span class="err">cycle_</span><span class="kc">f</span><span class="err">orever</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// should the cycles be repeated indefinitely</span>
+<a id="__codelineno-12-90" name="__codelineno-12-90" href="#__codelineno-12-90"></a><span class="w">    </span><span class="err">charge_ra</span><span class="kc">te</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// rate of charge zone filling (kg/s)</span>
+<a id="__codelineno-12-91" name="__codelineno-12-91" href="#__codelineno-12-91"></a><span class="w">    </span><span class="err">sigma_charge</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="c1">// relative width of charge zone</span>
+<a id="__codelineno-12-92" name="__codelineno-12-92" href="#__codelineno-12-92"></a>
+<a id="__codelineno-12-93" name="__codelineno-12-93" href="#__codelineno-12-93"></a><span class="w">    </span><span class="c1">// stopping</span>
+<a id="__codelineno-12-94" name="__codelineno-12-94" href="#__codelineno-12-94"></a><span class="w">    </span><span class="err">s</span><span class="kc">t</span><span class="err">op_eve</span><span class="kc">nt</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="c1">// this is None in Python, but null in JavaScript</span>
+<a id="__codelineno-12-95" name="__codelineno-12-95" href="#__codelineno-12-95"></a><span class="w">    </span><span class="err">s</span><span class="kc">t</span><span class="err">op_a</span><span class="kc">fter</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="c1">// number of timesteps to run with nothing happening before stopping</span>
+<a id="__codelineno-12-96" name="__codelineno-12-96" href="#__codelineno-12-96"></a><span class="w">    </span><span class="err">s</span><span class="kc">t</span><span class="err">opped_</span><span class="kc">t</span><span class="err">imes</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// number of times the system has stopped</span>
+<a id="__codelineno-12-97" name="__codelineno-12-97" href="#__codelineno-12-97"></a>
+<a id="__codelineno-12-98" name="__codelineno-12-98" href="#__codelineno-12-98"></a><span class="w">    </span><span class="c1">// diagnostics</span>
+<a id="__codelineno-12-99" name="__codelineno-12-99" href="#__codelineno-12-99"></a><span class="w">    </span><span class="err">show_op</span><span class="kc">t</span><span class="err">imal_resolu</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// should the optimal resolution be shown on the screen at runtime</span>
+<a id="__codelineno-12-100" name="__codelineno-12-100" href="#__codelineno-12-100"></a>
+<a id="__codelineno-12-101" name="__codelineno-12-101" href="#__codelineno-12-101"></a><span class="w">    </span><span class="err">gui</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="c1">// this is None in Python, but null in JavaScript</span>
+<a id="__codelineno-12-102" name="__codelineno-12-102" href="#__codelineno-12-102"></a><span class="w">    </span><span class="err">queue</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<a id="__codelineno-12-103" name="__codelineno-12-103" href="#__codelineno-12-103"></a><span class="w">    </span><span class="err">queue</span><span class="mi">2</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<a id="__codelineno-12-104" name="__codelineno-12-104" href="#__codelineno-12-104"></a><span class="p">}</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": [], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

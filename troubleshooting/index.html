@@ -1,0 +1,1670 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../examples/">
+      
+      
+        <link rel="next" href="../reference/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Troubleshooting - Heterarchical Granular Dynamics</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#hgd-troubleshooting-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Heterarchical Granular Dynamics" class="md-header__button md-logo" aria-label="Heterarchical Granular Dynamics" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Heterarchical Granular Dynamics
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Troubleshooting
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Heterarchical Granular Dynamics" class="md-nav__button md-logo" aria-label="Heterarchical Granular Dynamics" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Heterarchical Granular Dynamics
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-pip-install-e-fails-with-no-module-named-skbuild" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: pip install -e . fails with "No module named 'skbuild'"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-cmake-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: CMake not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-c-compiler-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: C++ compiler not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-openmp-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: OpenMP not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-no-module-named-hgd-after-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: "No module named 'HGD'" after installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runtime-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime Errors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Runtime Errors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-attributeerror-dict_to_class-object-has-no-attribute-defined_time_step_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: AttributeError: 'dict_to_class' object has no attribute 'defined_time_step_size'
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-simulation-starts-but-immediately-crashes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Simulation starts but immediately crashes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-keyerror-or-missing-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: KeyError or missing parameter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-cannot-allocate-memory-or-memoryerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: "Cannot allocate memory" or MemoryError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-filenotfounderror-for-json-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: FileNotFoundError for JSON file
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-simulation-is-very-slow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Simulation is very slow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-simulation-uses-100-cpu-but-is-still-slow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Simulation uses 100% CPU but is still slow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Output Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-no-output-files-generated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: No output files generated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-videos-are-not-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Videos are not created
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-images-look-wrong-or-corrupted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Images look wrong or corrupted
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#platform-specific-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform-Specific Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Platform-Specific Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#macos-library-not-loaded-error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        macOS: "Library not loaded" error
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows-dll-load-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Windows: "DLL load failed"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-permission-denied-when-running" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux: "Permission denied" when running
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-more-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting More Help
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting More Help">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-check-existing-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Check Existing Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-enable-debug-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Enable Debug Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-check-your-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Check Your Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-gather-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Gather Information
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-ask-for-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Ask for Help
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-minimal-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Minimal Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-warnings-not-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Warnings (Not Errors)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-diagnostic-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Diagnostic Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-pip-install-e-fails-with-no-module-named-skbuild" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: pip install -e . fails with "No module named 'skbuild'"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-cmake-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: CMake not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-c-compiler-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: C++ compiler not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-openmp-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: OpenMP not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-no-module-named-hgd-after-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: "No module named 'HGD'" after installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runtime-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime Errors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Runtime Errors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-attributeerror-dict_to_class-object-has-no-attribute-defined_time_step_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: AttributeError: 'dict_to_class' object has no attribute 'defined_time_step_size'
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-simulation-starts-but-immediately-crashes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Simulation starts but immediately crashes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-keyerror-or-missing-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: KeyError or missing parameter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-cannot-allocate-memory-or-memoryerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: "Cannot allocate memory" or MemoryError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-filenotfounderror-for-json-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: FileNotFoundError for JSON file
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-simulation-is-very-slow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Simulation is very slow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-simulation-uses-100-cpu-but-is-still-slow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Simulation uses 100% CPU but is still slow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Output Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-no-output-files-generated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: No output files generated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-videos-are-not-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Videos are not created
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-images-look-wrong-or-corrupted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Images look wrong or corrupted
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#platform-specific-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform-Specific Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Platform-Specific Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#macos-library-not-loaded-error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        macOS: "Library not loaded" error
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows-dll-load-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Windows: "DLL load failed"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-permission-denied-when-running" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux: "Permission denied" when running
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-more-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting More Help
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting More Help">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-check-existing-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Check Existing Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-enable-debug-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Enable Debug Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-check-your-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Check Your Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-gather-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Gather Information
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-ask-for-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Ask for Help
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-minimal-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Minimal Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-warnings-not-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Warnings (Not Errors)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-diagnostic-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Diagnostic Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="hgd-troubleshooting-guide">HGD Troubleshooting Guide</h1>
+<p>This guide helps you resolve common issues when installing and using HGD.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#installation-issues">Installation Issues</a></li>
+<li><a href="#runtime-errors">Runtime Errors</a></li>
+<li><a href="#performance-issues">Performance Issues</a></li>
+<li><a href="#output-issues">Output Issues</a></li>
+<li><a href="#platform-specific-issues">Platform-Specific Issues</a></li>
+<li><a href="#getting-more-help">Getting More Help</a></li>
+</ul>
+<hr />
+<h2 id="installation-issues">Installation Issues</h2>
+<h3 id="problem-pip-install-e-fails-with-no-module-named-skbuild">Problem: <code>pip install -e .</code> fails with "No module named 'skbuild'"</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>ModuleNotFoundError: No module named &#39;skbuild&#39;
+</code></pre></div></p>
+<p><strong>Solution:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip<span class="w"> </span>setuptools<span class="w"> </span>wheel
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pip<span class="w"> </span>install<span class="w"> </span>scikit-build-core<span class="w"> </span>pybind11
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</code></pre></div></p>
+<hr />
+<h3 id="problem-cmake-not-found">Problem: CMake not found</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>CMake Error: CMake was unable to find a build program corresponding to &quot;Unix Makefiles&quot;
+</code></pre></div></p>
+<p><strong>Solution:</strong>
+Install CMake:
+- <strong>Ubuntu/Debian:</strong> <code>sudo apt-get install cmake</code>
+- <strong>macOS:</strong> <code>brew install cmake</code>
+- <strong>Windows:</strong> Download from <a href="https://cmake.org/download/">cmake.org</a></p>
+<p>After installing, verify:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>cmake<span class="w"> </span>--version<span class="w">  </span><span class="c1"># Should show 3.15 or higher</span>
+</code></pre></div></p>
+<hr />
+<h3 id="problem-c-compiler-not-found">Problem: C++ compiler not found</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>error: Microsoft Visual C++ 14.0 or greater is required
+</code></pre></div>
+or
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>error: command &#39;gcc&#39; failed
+</code></pre></div></p>
+<p><strong>Solution:</strong></p>
+<p><strong>Linux:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>build-essential<span class="w"> </span>g++
+</code></pre></div></p>
+<p><strong>macOS:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>xcode-select<span class="w"> </span>--install
+</code></pre></div></p>
+<p><strong>Windows:</strong>
+- Install <a href="https://visualstudio.microsoft.com/">Visual Studio Community Edition</a>
+- Select "Desktop development with C++" workload during installation</p>
+<hr />
+<h3 id="problem-openmp-not-found">Problem: OpenMP not found</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>fatal error: omp.h: No such file or directory
+</code></pre></div></p>
+<p><strong>Solution:</strong></p>
+<p><strong>Ubuntu/Debian:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>libomp-dev
+</code></pre></div></p>
+<p><strong>macOS:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>brew<span class="w"> </span>install<span class="w"> </span>libomp
+</code></pre></div></p>
+<p><strong>Windows:</strong>
+OpenMP should be included with Visual Studio. If not, reinstall with C++ support.</p>
+<hr />
+<h3 id="problem-no-module-named-hgd-after-installation">Problem: "No module named 'HGD'" after installation</h3>
+<p><strong>Symptoms:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">HGD</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="ne">ModuleNotFoundError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="s1">&#39;HGD&#39;</span>
+</code></pre></div></p>
+<p><strong>Solution:</strong>
+1. Make sure you're in the correct directory:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nb">cd</span><span class="w"> </span>/path/to/HGD
+</code></pre></div></p>
+<ol>
+<li>
+<p>Reinstall:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</code></pre></div></p>
+</li>
+<li>
+<p>Verify Python is using the correct environment:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>which<span class="w"> </span>python<span class="w">  </span><span class="c1"># or: where python on Windows</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>pip<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>HGD
+</code></pre></div></p>
+</li>
+<li>
+<p>If using virtual environment, make sure it's activated:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nb">source</span><span class="w"> </span>venv/bin/activate<span class="w">  </span><span class="c1"># Linux/macOS</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate<span class="w">  </span><span class="c1"># Windows</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h2 id="runtime-errors">Runtime Errors</h2>
+<h3 id="problem-attributeerror-dict_to_class-object-has-no-attribute-defined_time_step_size">Problem: AttributeError: 'dict_to_class' object has no attribute 'defined_time_step_size'</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>AttributeError: &#39;dict_to_class&#39; object has no attribute &#39;defined_time_step_size&#39;
+</code></pre></div></p>
+<p><strong>Cause:</strong> When <code>inertia</code> is set to <code>true</code>, the parameter <code>defined_time_step_size</code> is required but missing.</p>
+<p><strong>Solution:</strong>
+Add this line to your JSON5 configuration file:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p">{</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span><span class="nv">inertia</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">,</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="nv">defined_time_step_size</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-3</span><span class="p">,</span><span class="w">  </span><span class="c1">// Add this line</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span><span class="c1">// ... other parameters</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="p">}</span>
+</code></pre></div></p>
+<p>The value <code>1e-3</code> is a reasonable starting point for most simulations. Adjust based on your needs:
+- Smaller values (e.g., <code>1e-4</code>): More accurate but slower
+- Larger values (e.g., <code>1e-2</code>): Faster but may be unstable</p>
+<hr />
+<h3 id="problem-simulation-starts-but-immediately-crashes">Problem: Simulation starts but immediately crashes</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>Traceback (most recent call last):
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>  ...
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>IndexError: index out of bounds
+</code></pre></div></p>
+<p><strong>Common causes:</strong></p>
+<ol>
+<li>
+<p><strong>Grid too small:</strong> Increase <code>nx</code>, <code>ny</code>, or <code>nm</code>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="err">nx</span><span class="p">:</span><span class="w"> </span><span class="mf">20</span><span class="err">,</span><span class="w">  </span><span class="c1">// Minimum recommended</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="err">ny</span><span class="p">:</span><span class="w"> </span><span class="mf">20</span><span class="err">,</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="err">nm</span><span class="p">:</span><span class="w"> </span><span class="mf">10</span><span class="err">,</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Invalid boundary condition:</strong> Check <code>boundaries</code> parameter
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="err">boundaries</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;central_outlet&quot;</span><span class="p">]</span><span class="err">,</span><span class="w">  </span><span class="c1">// Must be a list</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Incompatible parameters:</strong> Some combinations don't work</p>
+</li>
+<li>Can't have outlet without appropriate boundary</li>
+<li><code>IC_mode</code> must match geometry</li>
+</ol>
+<hr />
+<h3 id="problem-keyerror-or-missing-parameter">Problem: KeyError or missing parameter</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>KeyError: &#39;some_parameter&#39;
+</code></pre></div></p>
+<p><strong>Solution:</strong>
+HGD uses default values from <code>json/defaults.json5</code>. If a required parameter is missing:</p>
+<ol>
+<li>Check parameter name spelling</li>
+<li>Ensure parameter is defined in either:</li>
+<li>Your JSON5 file, or</li>
+<li>
+<p><code>json/defaults.json5</code></p>
+</li>
+<li>
+<p>For new/custom parameters, make sure they're properly initialized</p>
+</li>
+</ol>
+<hr />
+<h3 id="problem-cannot-allocate-memory-or-memoryerror">Problem: "Cannot allocate memory" or MemoryError</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>MemoryError: Unable to allocate array
+</code></pre></div>
+or
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>numpy.core._exceptions._ArrayMemoryError
+</code></pre></div></p>
+<p><strong>Cause:</strong> Grid resolution too high for available RAM.</p>
+<p><strong>Solution:</strong></p>
+<ol>
+<li>
+<p><strong>Reduce resolution:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="err">nx</span><span class="p">:</span><span class="w"> </span><span class="mf">25</span><span class="err">,</span><span class="w">   </span><span class="c1">// Reduced from 50</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="err">ny</span><span class="p">:</span><span class="w"> </span><span class="mf">25</span><span class="err">,</span><span class="w">   </span><span class="c1">// Reduced from 50</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="err">nm</span><span class="p">:</span><span class="w"> </span><span class="mf">10</span><span class="err">,</span><span class="w">   </span><span class="c1">// Reduced from 20</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Estimate memory usage:</strong></p>
+</li>
+<li>Memory ≈ <code>nx * ny * nm * 8 bytes * number_of_fields</code></li>
+<li>Example: 50×50×20 grid ≈ 50×50×20×8×10 = 40 MB (manageable)</li>
+<li>
+<p>Example: 100×100×100 grid ≈ 100×100×100×8×10 = 800 MB (high)</p>
+</li>
+<li>
+<p><strong>Close other applications</strong> to free RAM</p>
+</li>
+<li>
+<p><strong>Use a machine with more memory</strong></p>
+</li>
+</ol>
+<hr />
+<h3 id="problem-filenotfounderror-for-json-file">Problem: FileNotFoundError for JSON file</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>FileNotFoundError: [Errno 2] No such file or directory: &#39;json/example.json5&#39;
+</code></pre></div></p>
+<p><strong>Solution:</strong></p>
+<ol>
+<li>
+<p><strong>Check you're in the HGD directory:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>ls<span class="w"> </span>json/<span class="w">  </span><span class="c1"># Should list .json5 files</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Use relative or absolute path:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># From HGD directory</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/hopper.json5
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="c1"># From anywhere with absolute path</span>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>python<span class="w"> </span>/full/path/to/HGD/main.py<span class="w"> </span>/full/path/to/json/hopper.json5
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h2 id="performance-issues">Performance Issues</h2>
+<h3 id="problem-simulation-is-very-slow">Problem: Simulation is very slow</h3>
+<p><strong>Symptoms:</strong>
+- Takes hours to complete
+- Progress bar shows &lt; 10 iterations/second</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Reduce resolution</strong> (fastest improvement):
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="err">nx</span><span class="p">:</span><span class="w"> </span><span class="mf">25</span><span class="err">,</span><span class="w">  </span><span class="c1">// Reduced from 100</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="err">ny</span><span class="p">:</span><span class="w"> </span><span class="mf">25</span><span class="err">,</span><span class="w">  </span><span class="c1">// Reduced from 100</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Use faster motion model:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="err">motion_model</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;d2q4_cpp&#39;</span><span class="err">,</span><span class="w">  </span><span class="c1">// Fastest (C++)</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="c1">// instead of: &#39;d2q4_slow&#39; (slowest, Python)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Reduce simulation time:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="err">t_f</span><span class="p">:</span><span class="w"> </span><span class="mf">2</span><span class="err">,</span><span class="w">  </span><span class="c1">// Shorter simulation</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Save less frequently:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="err">save_inc</span><span class="p">:</span><span class="w"> </span><span class="mf">100</span><span class="err">,</span><span class="w">  </span><span class="c1">// Save every 100 steps instead of every step</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Disable unnecessary calculations:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="err">calculate_stress</span><span class="p">:</span><span class="w"> </span><span class="k">false</span><span class="err">,</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="err">calculate_temperature</span><span class="p">:</span><span class="w"> </span><span class="k">false</span><span class="err">,</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Use parallel execution:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="err">max_workers</span><span class="p">:</span><span class="w"> </span><span class="mf">4</span><span class="err">,</span><span class="w">  </span><span class="c1">// Use 4 CPU cores</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h3 id="problem-simulation-uses-100-cpu-but-is-still-slow">Problem: Simulation uses 100% CPU but is still slow</h3>
+<p><strong>This is normal behavior.</strong> Granular simulations are computationally intensive.</p>
+<p><strong>To improve:</strong>
+- Use the C++ motion model (<code>d2q4_cpp</code>)
+- Reduce grid resolution
+- Ensure OpenMP is properly installed for parallel C++ execution</p>
+<hr />
+<h2 id="output-issues">Output Issues</h2>
+<h3 id="problem-no-output-files-generated">Problem: No output files generated</h3>
+<p><strong>Symptoms:</strong>
+- Simulation completes
+- No files in <code>output/</code> directory</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Check plot/video parameters:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="err">plot</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&#39;nu&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;s&#39;</span><span class="p">]</span><span class="err">,</span><span class="w">      </span><span class="c1">// Must list what to plot</span>
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="err">videos</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&#39;nu&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;s&#39;</span><span class="p">]</span><span class="err">,</span><span class="w">    </span><span class="c1">// Must list what to save as video</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Check save_inc is not too large:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="err">save_inc</span><span class="p">:</span><span class="w"> </span><span class="mf">1</span><span class="err">,</span><span class="w">  </span><span class="c1">// Save every timestep</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Verify output directory:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>ls<span class="w"> </span>-la<span class="w"> </span>output/<span class="w">  </span><span class="c1"># Check if directory exists and has content</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Check for error messages</strong> during simulation</p>
+</li>
+</ol>
+<hr />
+<h3 id="problem-videos-are-not-created">Problem: Videos are not created</h3>
+<p><strong>Symptoms:</strong>
+- PNG images are generated
+- No MP4 files</p>
+<p><strong>Cause:</strong> ffmpeg is not installed or not in PATH.</p>
+<p><strong>Solution:</strong></p>
+<p><strong>Ubuntu/Debian:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>ffmpeg
+</code></pre></div></p>
+<p><strong>macOS:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>brew<span class="w"> </span>install<span class="w"> </span>ffmpeg
+</code></pre></div></p>
+<p><strong>Windows:</strong>
+- Download from <a href="https://ffmpeg.org/download.html">ffmpeg.org</a>
+- Add to system PATH</p>
+<p><strong>Workaround:</strong> Use PNG images directly or create videos manually:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="nb">cd</span><span class="w"> </span>output/hopper/repose_angle_30/
+<a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>ffmpeg<span class="w"> </span>-framerate<span class="w"> </span><span class="m">10</span><span class="w"> </span>-pattern_type<span class="w"> </span>glob<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;nu_*.png&#39;</span><span class="w"> </span>-c:v<span class="w"> </span>libx264<span class="w"> </span>nu.mp4
+</code></pre></div></p>
+<hr />
+<h3 id="problem-images-look-wrong-or-corrupted">Problem: Images look wrong or corrupted</h3>
+<p><strong>Symptoms:</strong>
+- All white or all black images
+- Strange patterns
+- NaN values</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Check initial conditions:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="err">IC_mode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;column&quot;</span><span class="err">,</span><span class="w">  </span><span class="c1">// Valid: &quot;column&quot;, &quot;random&quot;, &quot;top&quot;, &quot;full&quot;, &quot;empty&quot;</span>
+<a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="err">nu_fill</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="err">,</span><span class="w">       </span><span class="c1">// Should be 0 &lt; nu_fill &lt; 1</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Check material properties:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="err">s_m</span><span class="p">:</span><span class="w"> </span><span class="mf">0.001</span><span class="err">,</span><span class="w">   </span><span class="c1">// Must be positive</span>
+<a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="err">nu_cs</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="err">,</span><span class="w">   </span><span class="c1">// Typically 0.5-0.65</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Reduce time step</strong> if using inertia:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="err">defined_time_step_size</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-4</span><span class="err">,</span><span class="w">  </span><span class="c1">// Smaller = more stable</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h2 id="platform-specific-issues">Platform-Specific Issues</h2>
+<h3 id="macos-library-not-loaded-error">macOS: "Library not loaded" error</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a>Library not loaded: @rpath/libomp.dylib
+</code></pre></div></p>
+<p><strong>Solution:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>brew<span class="w"> </span>install<span class="w"> </span>libomp
+<a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DYLD_LIBRARY_PATH</span><span class="o">=</span>/opt/homebrew/opt/libomp/lib:<span class="nv">$DYLD_LIBRARY_PATH</span>
+</code></pre></div></p>
+<p>Add the export line to your <code>~/.zshrc</code> or <code>~/.bash_profile</code>.</p>
+<hr />
+<h3 id="windows-dll-load-failed">Windows: "DLL load failed"</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>ImportError: DLL load failed while importing module
+</code></pre></div></p>
+<p><strong>Solution:</strong>
+1. Install Visual C++ Redistributable from Microsoft
+2. Reinstall with Visual Studio C++ tools properly configured
+3. Use Python from python.org (not Microsoft Store version)</p>
+<hr />
+<h3 id="linux-permission-denied-when-running">Linux: "Permission denied" when running</h3>
+<p><strong>Error message:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a>PermissionError: [Errno 13] Permission denied
+</code></pre></div></p>
+<p><strong>Solution:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="c1"># Make sure you have write permission in the directory</span>
+<a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a>chmod<span class="w"> </span>+x<span class="w"> </span>HGD/main.py
+<a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a><span class="c1"># Or run from your home directory with full paths</span>
+</code></pre></div></p>
+<hr />
+<h2 id="getting-more-help">Getting More Help</h2>
+<p>If your problem isn't listed here:</p>
+<h3 id="1-check-existing-issues">1. Check Existing Issues</h3>
+<p>Visit <a href="https://github.com/benjym/HGD/issues">GitHub Issues</a> to see if others have encountered the same problem.</p>
+<h3 id="2-enable-debug-output">2. Enable Debug Output</h3>
+<p>Run with verbose output:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a>python<span class="w"> </span>-v<span class="w"> </span>HGD/main.py<span class="w"> </span>json/example.json5
+</code></pre></div></p>
+<h3 id="3-check-your-configuration">3. Check Your Configuration</h3>
+<p>Verify your JSON5 file syntax:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import json5; json5.load(open(&#39;json/your_file.json5&#39;))&quot;</span>
+</code></pre></div></p>
+<h3 id="4-gather-information">4. Gather Information</h3>
+<p>When reporting issues, include:
+- Operating system and version
+- Python version (<code>python --version</code>)
+- HGD version/commit
+- Complete error message
+- JSON5 configuration file
+- Steps to reproduce</p>
+<h3 id="5-ask-for-help">5. Ask for Help</h3>
+<ul>
+<li><strong>Matrix Chat:</strong> <a href="https://matrix.to/#/!UZnyhaLhQymfFbLJYI:matrix.org?via=matrix.org">https://matrix.to/#/!UZnyhaLhQymfFbLJYI:matrix.org?via=matrix.org</a></li>
+<li><strong>GitHub Issues:</strong> <a href="https://github.com/benjym/HGD/issues">https://github.com/benjym/HGD/issues</a></li>
+<li><strong>Email:</strong> Contact authors listed in README.md</li>
+</ul>
+<h3 id="6-minimal-example">6. Minimal Example</h3>
+<p>When asking for help, create a minimal example that reproduces the issue:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="p">{</span>
+<a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a><span class="w">    </span><span class="c1">// Minimal configuration that shows the problem</span>
+<a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="w">    </span><span class="nv">nx</span><span class="p">:</span><span class="w"> </span><span class="mf">20</span><span class="p">,</span>
+<a id="__codelineno-50-4" name="__codelineno-50-4" href="#__codelineno-50-4"></a><span class="w">    </span><span class="nv">ny</span><span class="p">:</span><span class="w"> </span><span class="mf">20</span><span class="p">,</span>
+<a id="__codelineno-50-5" name="__codelineno-50-5" href="#__codelineno-50-5"></a><span class="w">    </span><span class="nv">nm</span><span class="p">:</span><span class="w"> </span><span class="mf">10</span><span class="p">,</span>
+<a id="__codelineno-50-6" name="__codelineno-50-6" href="#__codelineno-50-6"></a><span class="w">    </span><span class="nv">H</span><span class="p">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span>
+<a id="__codelineno-50-7" name="__codelineno-50-7" href="#__codelineno-50-7"></a><span class="w">    </span><span class="nv">t_f</span><span class="p">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span>
+<a id="__codelineno-50-8" name="__codelineno-50-8" href="#__codelineno-50-8"></a><span class="p">}</span>
+</code></pre></div></p>
+<hr />
+<h2 id="common-warnings-not-errors">Common Warnings (Not Errors)</h2>
+<p>These warnings are usually safe to ignore:</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a>FutureWarning: The &#39;warn&#39; parameter is deprecated
+</code></pre></div>
+- From numpy/matplotlib, not from HGD
+- Does not affect functionality</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a>/usr/lib/python3.*/dist-packages/matplotlib/...
+</code></pre></div>
+- matplotlib backend warnings
+- Usually harmless</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a>tqdm: ... position is incorrect
+</code></pre></div>
+- Progress bar display issue
+- Doesn't affect simulation accuracy</p>
+<hr />
+<h2 id="quick-diagnostic-checklist">Quick Diagnostic Checklist</h2>
+<p>When something goes wrong, check:</p>
+<ul>
+<li>[ ] Python 3.9+ installed?</li>
+<li>[ ] C++ compiler installed?</li>
+<li>[ ] CMake 3.15+ installed?</li>
+<li>[ ] OpenMP installed?</li>
+<li>[ ] <code>pip install -e .</code> completed successfully?</li>
+<li>[ ] Running from HGD directory?</li>
+<li>[ ] JSON5 file exists and is valid?</li>
+<li>[ ] JSON5 file has required parameters?</li>
+<li>[ ] Sufficient RAM for grid size?</li>
+<li>[ ] Enough disk space for output?</li>
+</ul>
+<hr />
+<p>Happy troubleshooting! If all else fails, start with the simplest example (<code>collapse.json5</code>) and build up from there. 🔧</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

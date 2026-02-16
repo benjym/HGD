@@ -1,0 +1,1482 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../examples/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Getting Started - Heterarchical Granular Dynamics</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#getting-started-with-hgd" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Heterarchical Granular Dynamics" class="md-header__button md-logo" aria-label="Heterarchical Granular Dynamics" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Heterarchical Granular Dynamics
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Getting Started
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Heterarchical Granular Dynamics" class="md-nav__button md-logo" aria-label="Heterarchical Granular Dynamics" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Heterarchical Granular Dynamics
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#system-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-software" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Software
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-system-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installing System Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hardware-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-get-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Get the Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-install-python-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Install Python Package
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-verify-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Verify Installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-set-up-pre-commit-hooks-optional-for-developers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Set Up Pre-commit Hooks (Optional, for developers)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verify-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Verify Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quick-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-a-quick-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run a Quick Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-unit-tests-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run Unit Tests (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#your-first-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Your First Simulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Your First Simulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-choose-an-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Choose an Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-watch-the-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Watch the Progress
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-find-your-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Find Your Results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#understanding-the-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Understanding the Output
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Understanding the Output">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#output-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interpreting-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpreting Results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Next Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#try-other-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Try Other Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-your-own-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create Your Own Simulation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameter-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameter Reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Help
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's Next?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#system-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-software" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Software
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-system-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installing System Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hardware-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-get-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Get the Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-install-python-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Install Python Package
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-verify-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Verify Installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-set-up-pre-commit-hooks-optional-for-developers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Set Up Pre-commit Hooks (Optional, for developers)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verify-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Verify Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quick-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-a-quick-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run a Quick Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-unit-tests-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run Unit Tests (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#your-first-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Your First Simulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Your First Simulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-choose-an-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Choose an Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-watch-the-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Watch the Progress
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-find-your-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Find Your Results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#understanding-the-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Understanding the Output
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Understanding the Output">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#output-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interpreting-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpreting Results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Next Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#try-other-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Try Other Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-your-own-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create Your Own Simulation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameter-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameter Reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Help
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's Next?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="getting-started-with-hgd">Getting Started with HGD</h1>
+<p>Welcome to Heterarchical Granular Dynamics (HGD)! This guide will help you install and run your first granular mechanics simulation.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#verify-installation">Verify Installation</a></li>
+<li><a href="#your-first-simulation">Your First Simulation</a></li>
+<li><a href="#understanding-the-output">Understanding the Output</a></li>
+<li><a href="#next-steps">Next Steps</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="system-requirements">System Requirements</h3>
+<p>Before installing HGD, ensure your system has the following:</p>
+<h4 id="required-software">Required Software</h4>
+<ul>
+<li><strong>Python 3.9 or newer</strong> (Python 3.11+ recommended)</li>
+<li><strong>C++ Compiler</strong> with C++11 support:</li>
+<li>Linux: <code>g++</code> (usually pre-installed)</li>
+<li>macOS: Xcode Command Line Tools</li>
+<li>Windows: Visual Studio with C++ support or MinGW</li>
+<li><strong>CMake 3.15 or newer</strong></li>
+<li><strong>OpenMP</strong> (for parallel C++ execution)</li>
+</ul>
+<h4 id="installing-system-dependencies">Installing System Dependencies</h4>
+<p><strong>Ubuntu/Debian:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>python3<span class="w"> </span>python3-pip<span class="w"> </span>g++<span class="w"> </span>cmake<span class="w"> </span>libomp-dev
+</code></pre></div></p>
+<p><strong>macOS:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Install Homebrew if not already installed (https://brew.sh)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>/bin/bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh<span class="k">)</span><span class="s2">&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Install dependencies</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>brew<span class="w"> </span>install<span class="w"> </span>python<span class="w"> </span>cmake<span class="w"> </span>libomp
+</code></pre></div></p>
+<p><strong>Windows:</strong>
+- Install Python from <a href="https://www.python.org/downloads/">python.org</a>
+- Install Visual Studio Community Edition with "Desktop development with C++" workload
+- Install CMake from <a href="https://cmake.org/download/">cmake.org</a></p>
+<h3 id="hardware-requirements">Hardware Requirements</h3>
+<ul>
+<li><strong>Minimum:</strong> 4 GB RAM, 2 CPU cores</li>
+<li><strong>Recommended:</strong> 8+ GB RAM, 4+ CPU cores (simulations can be computationally intensive)</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<h3 id="step-1-get-the-code">Step 1: Get the Code</h3>
+<p>Clone or download the repository:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Using git (recommended)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/benjym/HGD.git
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nb">cd</span><span class="w"> </span>HGD
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Or download and extract the ZIP file from GitHub</span>
+</code></pre></div>
+<h3 id="step-2-install-python-package">Step 2: Install Python Package</h3>
+<p>Install HGD and all its dependencies:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</code></pre></div>
+<p>This command will:
+- Install all required Python packages (numpy, matplotlib, scipy, etc.)
+- Compile the C++ extension modules
+- Set up the package in "editable" mode for development</p>
+<p><strong>Note:</strong> The installation may take a few minutes as it compiles C++ code and downloads dependencies.</p>
+<h3 id="step-3-verify-installation">Step 3: Verify Installation</h3>
+<p>Run a simple test to check everything is working:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import HGD; print(&#39;HGD installed successfully!&#39;)&quot;</span>
+</code></pre></div>
+<p>If you see "HGD installed successfully!" then the installation worked.</p>
+<p>You can also run a quick simulation test (see below).</p>
+<h3 id="step-4-set-up-pre-commit-hooks-optional-for-developers">Step 4: Set Up Pre-commit Hooks (Optional, for developers)</h3>
+<p>If you plan to contribute to HGD development:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pre-commit<span class="w"> </span>install
+</code></pre></div>
+<h2 id="verify-installation">Verify Installation</h2>
+<p>Let's verify that HGD is installed correctly:</p>
+<h3 id="quick-test">Quick Test</h3>
+<p>Run this simple Python command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import HGD; print(&#39;HGD installed successfully!&#39;)&quot;</span>
+</code></pre></div>
+<p>If you see "HGD installed successfully!" then the installation worked.</p>
+<h3 id="run-a-quick-validation">Run a Quick Validation</h3>
+<p>Try running the minimal test simulation (takes ~10 seconds):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/minimal_test.json5
+</code></pre></div>
+<p>This should:
+- Complete in ~10 seconds
+- Create output in <code>output/minimal_test/</code>
+- Generate PNG images of the simulation</p>
+<p>Check the output:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>ls<span class="w"> </span>output/minimal_test/
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># Should show: nu_000000.png, nu_000010.png, etc.</span>
+</code></pre></div></p>
+<p>If you see PNG files, congratulations! HGD is working correctly. 🎉</p>
+<h3 id="run-unit-tests-optional">Run Unit Tests (Optional)</h3>
+<p>For developers, you can also run the test suite:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>python<span class="w"> </span>test/test_operators.py
+</code></pre></div>
+<p>This should complete without errors.</p>
+<h2 id="your-first-simulation">Your First Simulation</h2>
+<p>Now let's run your first granular mechanics simulation! We'll simulate a column of granular material collapsing under gravity.</p>
+<h3 id="step-1-choose-an-example">Step 1: Choose an Example</h3>
+<p>HGD comes with several example configurations in the <code>json/</code> directory. Let's start with a simple hopper example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/hopper.json5
+</code></pre></div>
+<p>This simulation will:
+- Create a hopper (funnel-shaped container) filled with granular material
+- Simulate material flowing out through a central outlet
+- Generate visualization videos of the particle density and size distribution</p>
+<p><strong>Expected runtime:</strong> 1-5 minutes depending on your computer</p>
+<h3 id="step-2-watch-the-progress">Step 2: Watch the Progress</h3>
+<p>You'll see progress bars showing:
+- Overall simulation progress
+- Individual simulation variants (if there are multiple parameter combinations)</p>
+<p>Example output:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>Sim:  50%|█████     | 1/2 [00:30&lt;00:30, 30.0s/it]
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>inertia=False: 100%|██████████| 8266/8266 [00:30&lt;00:00, 275.53it/s]
+</code></pre></div></p>
+<h3 id="step-3-find-your-results">Step 3: Find Your Results</h3>
+<p>When the simulation completes, results are saved in the <code>output/</code> directory:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>output/
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>└── hopper/
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    ├── repose_angle_0/
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    │   ├── nu_0000.png
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    │   ├── nu_0100.png
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    │   ├── ...
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    │   └── nu.mp4
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    ├── repose_angle_30/
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    └── repose_angle_60/
+</code></pre></div>
+<h2 id="understanding-the-output">Understanding the Output</h2>
+<h3 id="output-files">Output Files</h3>
+<p>For each simulation, HGD generates:</p>
+<ul>
+<li><strong>PNG images:</strong> Snapshots at regular intervals showing:</li>
+<li><code>nu_*.png</code> - Solid volume fraction (particle density)</li>
+<li><code>s_*.png</code> - Particle size distribution</li>
+<li>
+<p><code>stress_*.png</code> - Stress field (if calculated)</p>
+</li>
+<li>
+<p><strong>MP4 videos:</strong> Animated visualizations:</p>
+</li>
+<li><code>nu.mp4</code> - Time evolution of particle density</li>
+<li>
+<p><code>s.mp4</code> - Evolution of particle size distribution</p>
+</li>
+<li>
+<p><strong>Data files:</strong> (if enabled in configuration)</p>
+</li>
+<li><code>.npz</code> files containing raw numerical data for further analysis</li>
+</ul>
+<h3 id="interpreting-results">Interpreting Results</h3>
+<ul>
+<li><strong>Solid fraction (nu):</strong></li>
+<li>White/bright areas = high particle density</li>
+<li>Dark areas = low particle density (voids)</li>
+<li>
+<p>Range: 0 (empty) to ~0.6 (densely packed)</p>
+</li>
+<li>
+<p><strong>Particle size (s):</strong></p>
+</li>
+<li>Different colors represent different particle sizes</li>
+<li>Helps visualize segregation and mixing</li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<h3 id="try-other-examples">Try Other Examples</h3>
+<p>Explore different scenarios:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Granular collapse</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/collapse.json5
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># Hopper with different friction angles</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/hopper.json5
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="c1"># Slope stability</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/test_slope.json5
+</code></pre></div>
+<p>For descriptions of all available examples, see the <a href="../examples/">Examples Guide</a>.</p>
+<h3 id="create-your-own-simulation">Create Your Own Simulation</h3>
+<ol>
+<li>
+<p>Copy an example configuration:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>cp<span class="w"> </span>json/hopper.json5<span class="w"> </span>json/my_simulation.json5
+</code></pre></div></p>
+</li>
+<li>
+<p>Edit the parameters (see <a href="#parameter-reference">Parameter Reference</a>)</p>
+</li>
+<li>
+<p>Run your simulation:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/my_simulation.json5
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="parameter-reference">Parameter Reference</h3>
+<p>Key parameters you can modify:</p>
+<ul>
+<li><strong>Resolution:</strong></li>
+<li><code>nx</code>: Horizontal grid cells (higher = more detailed, slower)</li>
+<li><code>ny</code>: Vertical grid cells</li>
+<li>
+<p><code>nm</code>: Number of internal states (parallel simulations)</p>
+</li>
+<li>
+<p><strong>Geometry:</strong></p>
+</li>
+<li><code>H</code>: Physical height of system (meters)</li>
+<li><code>theta</code>: Gravity angle (0 = vertical, degrees)</li>
+<li>
+<p><code>boundaries</code>: Boundary conditions (e.g., "central_outlet")</p>
+</li>
+<li>
+<p><strong>Material Properties:</strong></p>
+</li>
+<li><code>repose_angle</code>: Angle of repose / friction angle (degrees)</li>
+<li><code>s_m</code>: Minimum particle size (meters)</li>
+<li><code>s_M</code>: Maximum particle size (meters)</li>
+<li>
+<p><code>gsd_mode</code>: Grain size distribution ('mono', 'bi', or 'poly')</p>
+</li>
+<li>
+<p><strong>Simulation:</strong></p>
+</li>
+<li><code>t_f</code>: Final simulation time (seconds)</li>
+<li><code>save_inc</code>: How often to save outputs (timesteps)</li>
+</ul>
+<p>For a complete list with defaults, see <code>json/defaults.json5</code>.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="installation-issues">Installation Issues</h3>
+<p><strong>Problem:</strong> "No module named 'HGD'"
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>Solution: Make sure you ran `pip install -e .` from the HGD directory
+</code></pre></div></p>
+<p><strong>Problem:</strong> "CMake Error" or "C++ compiler not found"
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>Solution: Install CMake and a C++ compiler (see Prerequisites section)
+</code></pre></div></p>
+<p><strong>Problem:</strong> "fatal error: omp.h: No such file or directory"
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>Solution: Install OpenMP development libraries
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>  Ubuntu/Debian: sudo apt-get install libomp-dev
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>  macOS: brew install libomp
+</code></pre></div></p>
+<h3 id="runtime-issues">Runtime Issues</h3>
+<p><strong>Problem:</strong> <code>AttributeError: 'dict_to_class' object has no attribute 'defined_time_step_size'</code>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>Solution: If using inertia=true, you must add:
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>  defined_time_step_size: 1e-3  // in your JSON configuration
+</code></pre></div></p>
+<p><strong>Problem:</strong> Simulation runs but produces no output
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>Solution: Check that the &#39;plot&#39; and &#39;videos&#39; parameters are set in your JSON file
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>  plot: [&#39;nu&#39;, &#39;s&#39;]
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>  videos: [&#39;nu&#39;, &#39;s&#39;]
+</code></pre></div></p>
+<p><strong>Problem:</strong> "Cannot allocate memory" or out of memory errors
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>Solution: Reduce grid resolution (nx, ny, nm) or increase system RAM
+</code></pre></div></p>
+<p>For more detailed troubleshooting, see the <a href="../troubleshooting/">Troubleshooting Guide</a>.</p>
+<h2 id="getting-help">Getting Help</h2>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://benjym.github.io/HGD/">https://benjym.github.io/HGD/</a></li>
+<li><strong>Support:</strong> Contact the development team on <a href="https://matrix.to/#/!UZnyhaLhQymfFbLJYI:matrix.org?via=matrix.org">Matrix</a></li>
+<li><strong>Issues:</strong> Report bugs on <a href="https://github.com/benjym/HGD/issues">GitHub Issues</a></li>
+</ul>
+<h2 id="whats-next">What's Next?</h2>
+<ul>
+<li>Read the <a href="../examples/">Examples Guide</a> to understand available example scenarios</li>
+<li>Explore the <a href="https://benjym.github.io/HGD/reference">API Reference</a> for advanced usage</li>
+<li>Check out published papers using HGD in the <code>papers/</code> directory</li>
+<li>Join the community chat for questions and discussions</li>
+</ul>
+<p>Happy simulating! 🎉</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

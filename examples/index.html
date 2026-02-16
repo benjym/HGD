@@ -1,0 +1,1546 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../getting-started/">
+      
+      
+        <link rel="next" href="../troubleshooting/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Examples - Heterarchical Granular Dynamics</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#hgd-example-simulations" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Heterarchical Granular Dynamics" class="md-header__button md-logo" aria-label="Heterarchical Granular Dynamics" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Heterarchical Granular Dynamics
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Examples
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Heterarchical Granular Dynamics" class="md-nav__button md-logo" aria-label="Heterarchical Granular Dynamics" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Heterarchical Granular Dynamics
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#beginner-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Beginner Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Beginner Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#0-minimal-test-minimal_testjson5-fastest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Minimal Test (minimal_test.json5) ⚡ FASTEST
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1-hopper-flow-hopperjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Hopper Flow (hopper.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-granular-collapse-collapsejson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Granular Collapse (collapse.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-slope-stability-test_slopejson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Slope Stability (test_slope.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intermediate-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intermediate Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Intermediate Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4-bidisperse-collapse-collapse_bijson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Bidisperse Collapse (collapse_bi.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-footing-load-test-footingjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Footing Load Test (footing.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-collapse-with-inertia-collapse_inertiajson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Collapse with Inertia (collapse_inertia.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#7-hopper-emptying-studies-hopper_emptyingjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Hopper Emptying Studies (hopper_emptying*.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-temperature-effects-temperaturejson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Temperature Effects (temperature.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-stress-field-test-test_stressjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Stress Field Test (test_stress.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-mesh-dependency-study-mesh_dependencyjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Mesh Dependency Study (mesh_dependency.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#special-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Special Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Special Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cyclic-hopper-hopper_cyclejson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cyclic Hopper (hopper_cycle.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry-filling-dry_fillingjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dry Filling (dry_filling.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-run-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to Run Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How to Run Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitor-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitor Progress
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stop-a-running-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stop a Running Simulation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjust-simulation-speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adjust Simulation Speed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#understanding-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Understanding Output
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modifying-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modifying Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Modifying Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-your-own-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create Your Own Variant
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-modifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Modifications
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-for-choosing-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tips for Choosing Examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#need-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Need Help?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#beginner-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Beginner Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Beginner Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#0-minimal-test-minimal_testjson5-fastest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Minimal Test (minimal_test.json5) ⚡ FASTEST
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1-hopper-flow-hopperjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Hopper Flow (hopper.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-granular-collapse-collapsejson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Granular Collapse (collapse.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-slope-stability-test_slopejson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Slope Stability (test_slope.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intermediate-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intermediate Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Intermediate Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4-bidisperse-collapse-collapse_bijson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Bidisperse Collapse (collapse_bi.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-footing-load-test-footingjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Footing Load Test (footing.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-collapse-with-inertia-collapse_inertiajson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Collapse with Inertia (collapse_inertia.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#7-hopper-emptying-studies-hopper_emptyingjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Hopper Emptying Studies (hopper_emptying*.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-temperature-effects-temperaturejson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Temperature Effects (temperature.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-stress-field-test-test_stressjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Stress Field Test (test_stress.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-mesh-dependency-study-mesh_dependencyjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Mesh Dependency Study (mesh_dependency.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#special-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Special Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Special Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cyclic-hopper-hopper_cyclejson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cyclic Hopper (hopper_cycle.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry-filling-dry_fillingjson5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dry Filling (dry_filling.json5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-run-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to Run Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How to Run Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitor-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitor Progress
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stop-a-running-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stop a Running Simulation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjust-simulation-speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adjust Simulation Speed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#understanding-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Understanding Output
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modifying-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modifying Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Modifying Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-your-own-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create Your Own Variant
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-modifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Modifications
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-for-choosing-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tips for Choosing Examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#need-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Need Help?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="hgd-example-simulations">HGD Example Simulations</h1>
+<p>This document describes the example simulation configurations included with HGD. Each example demonstrates different features and physical scenarios.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#quick-reference">Quick Reference</a></li>
+<li><a href="#beginner-examples">Beginner Examples</a></li>
+<li><a href="#intermediate-examples">Intermediate Examples</a></li>
+<li><a href="#advanced-examples">Advanced Examples</a></li>
+<li><a href="#how-to-run-examples">How to Run Examples</a></li>
+</ul>
+<h2 id="quick-reference">Quick Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Example</th>
+<th>Difficulty</th>
+<th>Runtime</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>minimal_test.json5</code></td>
+<td>⚡ Quickest</td>
+<td>~10 sec</td>
+<td>Installation verification</td>
+</tr>
+<tr>
+<td><code>hopper.json5</code></td>
+<td>⭐ Easy</td>
+<td>~2 min</td>
+<td>Material flowing through a hopper outlet</td>
+</tr>
+<tr>
+<td><code>collapse.json5</code></td>
+<td>⭐ Easy</td>
+<td>~1 min</td>
+<td>Column collapse under gravity</td>
+</tr>
+<tr>
+<td><code>test_slope.json5</code></td>
+<td>⭐ Easy</td>
+<td>~1 min</td>
+<td>Slope stability test</td>
+</tr>
+<tr>
+<td><code>footing.json5</code></td>
+<td>⭐⭐ Medium</td>
+<td>~3 min</td>
+<td>Load bearing capacity of granular material</td>
+</tr>
+<tr>
+<td><code>collapse_bi.json5</code></td>
+<td>⭐⭐ Medium</td>
+<td>~5 min</td>
+<td>Bidisperse collapse with segregation</td>
+</tr>
+<tr>
+<td><code>hopper_emptying.json5</code></td>
+<td>⭐⭐⭐ Advanced</td>
+<td>~10 min</td>
+<td>Detailed hopper flow analysis</td>
+</tr>
+<tr>
+<td><code>temperature.json5</code></td>
+<td>⭐⭐⭐ Advanced</td>
+<td>~5 min</td>
+<td>Thermal effects in granular flow</td>
+</tr>
+</tbody>
+</table>
+<h2 id="beginner-examples">Beginner Examples</h2>
+<h3 id="0-minimal-test-minimal_testjson5-fastest">0. Minimal Test (<code>minimal_test.json5</code>) ⚡ FASTEST</h3>
+<p><strong>What it simulates:</strong> Ultra-simple test to verify HGD installation.</p>
+<p><strong>Key features:</strong>
+- Smallest possible grid for fast execution
+- Very short simulation time (0.5 seconds)
+- No video generation (doesn't require ffmpeg)
+- Perfect for testing installation</p>
+<p><strong>Run command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/minimal_test.json5
+</code></pre></div></p>
+<p><strong>Expected runtime:</strong> ~5-10 seconds</p>
+<p><strong>Output:</strong> Just PNG images in <code>output/minimal_test/</code></p>
+<p><strong>Purpose:</strong> Quick validation that HGD is installed and working correctly.</p>
+<hr />
+<h3 id="1-hopper-flow-hopperjson5">1. Hopper Flow (<code>hopper.json5</code>)</h3>
+<p><strong>What it simulates:</strong> Granular material flowing out of a hopper (funnel-shaped container) through a central outlet.</p>
+<p><strong>Key features:</strong>
+- Central outlet boundary condition
+- Particle refill from top (continuous flow)
+- Tests multiple friction angles (0°, 30°, 60°)
+- Bidisperse particle size distribution</p>
+<p><strong>Run command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/hopper.json5
+</code></pre></div></p>
+<p><strong>Output:</strong> Videos showing density, particle size, stress field, and strain rate</p>
+<p><strong>What to observe:</strong>
+- Flow patterns and velocity profiles
+- Effect of friction angle on flow rate
+- Particle segregation (large vs small particles)
+- Stress distribution in the granular material</p>
+<p><strong>Parameters you can modify:</strong>
+- <code>repose_angle</code>: Change friction angle (currently [0, 30, 60] degrees)
+- <code>half_width</code>: Outlet width
+- <code>outlet_rate</code>: Flow rate (0 to 1)
+- <code>alpha</code>: Diffusion parameter</p>
+<hr />
+<h3 id="2-granular-collapse-collapsejson5">2. Granular Collapse (<code>collapse.json5</code>)</h3>
+<p><strong>What it simulates:</strong> A column of granular material collapsing under gravity.</p>
+<p><strong>Key features:</strong>
+- Simple rectangular column initial condition
+- Monodisperse (single size) particles
+- Tests both with and without inertia effects
+- Fast simulation for quick testing</p>
+<p><strong>Run command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/collapse.json5
+</code></pre></div></p>
+<p><strong>Output:</strong> Videos of particle density evolution</p>
+<p><strong>What to observe:</strong>
+- Collapse dynamics and runout distance
+- Formation of static and flowing zones
+- Difference between inertial and non-inertial behavior</p>
+<p><strong>Typical applications:</strong>
+- Avalanche dynamics
+- Landslide runout
+- Silo discharge</p>
+<hr />
+<h3 id="3-slope-stability-test_slopejson5">3. Slope Stability (<code>test_slope.json5</code>)</h3>
+<p><strong>What it simulates:</strong> Granular material on an inclined slope, testing stability conditions.</p>
+<p><strong>Key features:</strong>
+- Slope boundary condition
+- Tests critical angle of repose
+- Simple geometry for validation</p>
+<p><strong>Run command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/test_slope.json5
+</code></pre></div></p>
+<p><strong>What to observe:</strong>
+- Critical angle where material begins to flow
+- Development of surface avalanches
+- Equilibrium slope angle</p>
+<hr />
+<h2 id="intermediate-examples">Intermediate Examples</h2>
+<h3 id="4-bidisperse-collapse-collapse_bijson5">4. Bidisperse Collapse (<code>collapse_bi.json5</code>)</h3>
+<p><strong>What it simulates:</strong> Column collapse with two different particle sizes.</p>
+<p><strong>Key features:</strong>
+- Bidisperse particle size distribution (small and large)
+- Higher resolution than basic collapse
+- Tests both inertial and non-inertial modes
+- Demonstrates particle segregation</p>
+<p><strong>Run command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/collapse_bi.json5
+</code></pre></div></p>
+<p><strong>Output:</strong> Videos of both density (nu) and particle size (s)</p>
+<p><strong>What to observe:</strong>
+- Size segregation during collapse (Brazil nut effect)
+- Different velocities for different particle sizes
+- Formation of layered structures</p>
+<p><strong>Good for:</strong>
+- Studying mixing and segregation
+- Understanding size-dependent flow
+- Industrial mixing/separation processes</p>
+<hr />
+<h3 id="5-footing-load-test-footingjson5">5. Footing Load Test (<code>footing.json5</code>)</h3>
+<p><strong>What it simulates:</strong> A loaded footing (foundation) on granular soil.</p>
+<p><strong>Key features:</strong>
+- Point load application
+- Stress field calculation
+- Tests bearing capacity</p>
+<p><strong>Run command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/footing.json5
+</code></pre></div></p>
+<p><strong>What to observe:</strong>
+- Stress distribution under the load
+- Failure mechanisms
+- Load-displacement relationship</p>
+<p><strong>Applications:</strong>
+- Foundation design
+- Bearing capacity analysis
+- Geotechnical engineering</p>
+<hr />
+<h3 id="6-collapse-with-inertia-collapse_inertiajson5">6. Collapse with Inertia (<code>collapse_inertia.json5</code>)</h3>
+<p><strong>What it simulates:</strong> High-energy granular collapse with full inertial effects.</p>
+<p><strong>Key features:</strong>
+- Explicit inertia calculation
+- Fixed time step size
+- Higher resolution grid</p>
+<p><strong>Run command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/collapse_inertia.json5
+</code></pre></div></p>
+<p><strong>What to observe:</strong>
+- Dynamic impact forces
+- Wave propagation in granular material
+- Energy dissipation</p>
+<hr />
+<h2 id="advanced-examples">Advanced Examples</h2>
+<h3 id="7-hopper-emptying-studies-hopper_emptyingjson5">7. Hopper Emptying Studies (<code>hopper_emptying*.json5</code>)</h3>
+<p>Several detailed hopper studies with different parameters:</p>
+<ul>
+<li><strong><code>hopper_emptying.json5</code></strong>: Basic emptying study</li>
+<li><strong><code>hopper_emptying_f10_bi.json5</code></strong>: Bidisperse with specific friction</li>
+<li><strong><code>hopper_emptying_mu0p1_poly.json5</code></strong>: Polydisperse, low friction</li>
+<li><strong><code>hopper_emptying_mu1.json5</code></strong>: High friction case</li>
+<li><strong><code>hopper_emptying_mu1_poly.json5</code></strong>: Polydisperse, high friction</li>
+</ul>
+<p><strong>Features:</strong>
+- High resolution (nx=51, ny=101, nm=500)
+- Long simulation times
+- Detailed flow analysis
+- Multiple particle size distributions</p>
+<p><strong>Warning:</strong> These simulations require significant computational resources and may take 10-30 minutes to complete.</p>
+<p><strong>Run command (example):</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/hopper_emptying.json5
+</code></pre></div></p>
+<p><strong>What to observe:</strong>
+- Detailed discharge rates
+- Particle segregation patterns
+- Effect of friction on flow
+- Jamming and intermittent flow</p>
+<hr />
+<h3 id="8-temperature-effects-temperaturejson5">8. Temperature Effects (<code>temperature.json5</code>)</h3>
+<p><strong>What it simulates:</strong> Thermal transport in flowing granular material.</p>
+<p><strong>Key features:</strong>
+- Coupled thermal calculation
+- Heat diffusion and advection
+- Temperature field evolution</p>
+<p><strong>Run command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/temperature.json5
+</code></pre></div></p>
+<p><strong>What to observe:</strong>
+- Temperature distribution
+- Heat transfer between particles
+- Effect of flow on thermal mixing</p>
+<p><strong>Applications:</strong>
+- Industrial processes (e.g., kilns, reactors)
+- Energy dissipation
+- Thermal management</p>
+<hr />
+<h3 id="9-stress-field-test-test_stressjson5">9. Stress Field Test (<code>test_stress.json5</code>)</h3>
+<p><strong>What it simulates:</strong> Stress distribution calculation in static granular material.</p>
+<p><strong>Key features:</strong>
+- Stress tensor calculation
+- Different stress models ('active', 'passive', 'K_0')
+- Wall friction effects</p>
+<p><strong>Run command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/test_stress.json5
+</code></pre></div></p>
+<p><strong>What to observe:</strong>
+- Stress chains and force networks
+- Pressure distribution
+- Effect of boundary conditions</p>
+<hr />
+<h3 id="10-mesh-dependency-study-mesh_dependencyjson5">10. Mesh Dependency Study (<code>mesh_dependency.json5</code>)</h3>
+<p><strong>What it simulates:</strong> Same problem with different grid resolutions.</p>
+<p><strong>Key features:</strong>
+- Multiple grid sizes: [40, 80, 160]
+- Tests numerical convergence
+- Validates results</p>
+<p><strong>Run command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/mesh_dependency.json5
+</code></pre></div></p>
+<p><strong>Purpose:</strong>
+- Verify mesh-independent results
+- Determine optimal resolution
+- Validate numerical methods</p>
+<hr />
+<h2 id="special-examples">Special Examples</h2>
+<h3 id="cyclic-hopper-hopper_cyclejson5">Cyclic Hopper (<code>hopper_cycle.json5</code>)</h3>
+<p><strong>What it simulates:</strong> Hopper with charge-discharge cycles.</p>
+<p><strong>Key features:</strong>
+- Cyclic loading/unloading
+- Dynamic boundary conditions
+- Time-varying operations</p>
+<p><strong>Applications:</strong>
+- Batch processing
+- Industrial feeders
+- Storage and retrieval systems</p>
+<hr />
+<h3 id="dry-filling-dry_fillingjson5">Dry Filling (<code>dry_filling.json5</code>)</h3>
+<p><strong>What it simulates:</strong> Container being filled with granular material.</p>
+<p><strong>Key features:</strong>
+- Top filling boundary condition
+- Realistic aspect ratio from experimental data
+- Deposition and compaction</p>
+<p><strong>Applications:</strong>
+- Silo filling
+- Powder processing
+- Bulk material handling</p>
+<hr />
+<h2 id="how-to-run-examples">How to Run Examples</h2>
+<h3 id="basic-usage">Basic Usage</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/&lt;example_name&gt;.json5
+</code></pre></div>
+<h3 id="monitor-progress">Monitor Progress</h3>
+<p>The simulation will display progress bars:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>Sim:  50%|█████     | 1/2 [00:30&lt;00:30, 30.0s/it]
+</code></pre></div></p>
+<h3 id="stop-a-running-simulation">Stop a Running Simulation</h3>
+<p>Press <code>Ctrl+C</code> to stop gracefully. The simulation will save current progress.</p>
+<h3 id="adjust-simulation-speed">Adjust Simulation Speed</h3>
+<p>To run faster (lower quality):
+- Reduce <code>nx</code>, <code>ny</code>, <code>nm</code> values
+- Increase <code>save_inc</code> (save less frequently)
+- Reduce <code>t_f</code> (shorter simulation time)</p>
+<p>Example modification in JSON file:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span><span class="kc">n</span><span class="err">x</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span><span class="w">    </span><span class="c1">// Reduced from 50</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="kc">n</span><span class="err">y</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span><span class="w">    </span><span class="c1">// Reduced from 50</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span><span class="kc">t</span><span class="err">_</span><span class="kc">f</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">    </span><span class="c1">// Reduced from 5</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="p">}</span>
+</code></pre></div></p>
+<h2 id="understanding-output">Understanding Output</h2>
+<p>After running an example, find results in:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>output/&lt;example_name&gt;/
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>├── &lt;parameter_variation_1&gt;/
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>│   ├── nu_0000.png  # Initial state
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>│   ├── nu_0100.png  # Intermediate frames
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>│   ├── nu.mp4       # Complete video
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>│   └── ...
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>└── &lt;parameter_variation_2&gt;/
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>    └── ...
+</code></pre></div></p>
+<h2 id="modifying-examples">Modifying Examples</h2>
+<h3 id="create-your-own-variant">Create Your Own Variant</h3>
+<ol>
+<li>
+<p>Copy an example:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>cp<span class="w"> </span>json/hopper.json5<span class="w"> </span>json/my_hopper.json5
+</code></pre></div></p>
+</li>
+<li>
+<p>Edit parameters in <code>my_hopper.json5</code></p>
+</li>
+<li>
+<p>Run your version:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>python<span class="w"> </span>HGD/main.py<span class="w"> </span>json/my_hopper.json5
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="common-modifications">Common Modifications</h3>
+<p><strong>Change grid resolution:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kc">n</span><span class="err">x</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w">  </span><span class="c1">// More horizontal cells</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="kc">n</span><span class="err">y</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w">   </span><span class="c1">// More vertical cells</span>
+</code></pre></div></p>
+<p><strong>Change material properties:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="err">repose_a</span><span class="kc">n</span><span class="err">gle</span><span class="p">:</span><span class="w"> </span><span class="mi">35</span><span class="p">,</span><span class="w">       </span><span class="c1">// Friction angle</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="err">s_m</span><span class="p">:</span><span class="w"> </span><span class="mf">0.001</span><span class="p">,</span><span class="w">             </span><span class="c1">// Min particle size (m)</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="err">s_M</span><span class="p">:</span><span class="w"> </span><span class="mf">0.010</span><span class="p">,</span><span class="w">             </span><span class="c1">// Max particle size (m)</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="err">gsd_mode</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;poly&#39;</span><span class="p">,</span><span class="w">       </span><span class="c1">// &#39;mono&#39;, &#39;bi&#39;, or &#39;poly&#39;</span>
+</code></pre></div></p>
+<p><strong>Change simulation time:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kc">t</span><span class="err">_</span><span class="kc">f</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">        </span><span class="c1">// Simulate 10 seconds</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="err">save_i</span><span class="kc">n</span><span class="err">c</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w">   </span><span class="c1">// Save every 50 timesteps</span>
+</code></pre></div></p>
+<h2 id="tips-for-choosing-examples">Tips for Choosing Examples</h2>
+<p><strong>New to HGD?</strong> Start with:
+1. <code>minimal_test.json5</code> - Fastest verification (10 seconds)
+2. <code>collapse.json5</code> - Simple physics example
+3. <code>hopper.json5</code> - Shows boundary conditions
+4. <code>test_slope.json5</code> - Another simple validation</p>
+<p><strong>Interested in segregation?</strong> Try:
+- <code>collapse_bi.json5</code>
+- <code>hopper_emptying_*_bi.json5</code></p>
+<p><strong>Studying industrial processes?</strong> Look at:
+- <code>hopper_cycle.json5</code>
+- <code>dry_filling.json5</code>
+- <code>temperature.json5</code></p>
+<p><strong>Validating/developing?</strong> Use:
+- <code>test_slope.json5</code>
+- <code>test_stress.json5</code>
+- <code>mesh_dependency.json5</code></p>
+<h2 id="need-help">Need Help?</h2>
+<ul>
+<li>See the <a href="../getting-started/">Getting Started Guide</a> for installation help</li>
+<li>See the <a href="../troubleshooting/">Troubleshooting Guide</a> for common issues</li>
+<li>Check <a href="json/defaults.json5">defaults.json5</a> for all available parameters</li>
+<li>Contact the development team via <a href="https://matrix.to/#/!UZnyhaLhQymfFbLJYI:matrix.org?via=matrix.org">Matrix chat</a></li>
+</ul>
+<p>Happy simulating! 🎉</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
