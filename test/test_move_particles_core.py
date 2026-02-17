@@ -92,3 +92,28 @@ def test_move_particles_core_respects_nu_cs_cap():
     # The source particle should remain if destination is capped.
     assert not np.isnan(s_out[src])
     assert np.isnan(s_out[dst[0], dst[1], src[2]])
+
+
+def test_single_particle_falls_at_gravity_rate_with_inertia():
+    p = _make_particle_params(nx=3, ny=7, nm=1, nu_cs=1.0)
+    p.g = 1.0
+    p.dt = 1.0
+    p.dx = 1.0
+    p.dy = 1.0
+
+    # Constrain to 1-D vertical motion so gravity-only physics is testable.
+    p.boundary_mask[0, :] = True
+    p.boundary_mask[2, :] = True
+
+    s = np.full((p.nx, p.ny, p.nm), np.nan, dtype=np.float64)
+    u = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+    v = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+    s[1, 6, 0] = 1.0
+
+    expected_speed_increment = np.sqrt(p.g * p.dy)
+    for step in range(1, 6):
+        u, v, s = _run_move_particles(u, v, s, p)
+        i, j, k = np.argwhere(~np.isnan(s))[0]
+        assert (int(i), int(j), int(k)) == (1, 6 - step, 0)
+        assert u[i, j, k] == pytest.approx(0.0, abs=1e-12)
+        assert v[i, j, k] == pytest.approx(-step * expected_speed_increment, abs=1e-12)

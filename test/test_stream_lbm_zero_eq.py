@@ -1,7 +1,9 @@
+from io import StringIO
 from types import SimpleNamespace
 
 import numpy as np
 import pytest
+from HGD import params as hgd_params
 
 try:
     from HGD.motion import d2q4_cpp
@@ -289,3 +291,72 @@ def test_tau_relaxes_when_particle_exceeds_local_pore_size():
         assert not np.isnan(s_out[i0, j0, k])
         assert u_out[i0, j0, k] == pytest.approx(1.0 * relax_factor, abs=1e-10)
         assert v_out[i0, j0, k] == pytest.approx(-0.5 * relax_factor, abs=1e-10)
+
+
+def test_inertia_true_can_be_loaded_from_json5():
+    _, p = hgd_params.load_file(StringIO("{ inertia: true, nx: 3, ny: 4, nm: 2 }"))
+    assert p.inertia is True
+
+
+@pytest.mark.parametrize(
+    "vx, vy, expected_ij",
+    [
+        (1.0, 0.0, (5, 4)),
+        (-1.0, 0.0, (3, 4)),
+        (0.0, 1.0, (4, 5)),
+        (0.0, -1.0, (4, 3)),
+    ],
+)
+def test_directional_streaming_without_gravity(vx, vy, expected_ij):
+    p = _make_params(nx=9, ny=9, nm=10)
+    p.g = 0.0
+    start = (4, 4, 0)
+    u, v, s = _single_particle_state(start=start, vx=vx, vy=vy, nx=p.nx, ny=p.ny, nm=p.nm)
+
+    u_out, v_out, s_out = d2q4_cpp.stream(u, v, s, p)
+    i, j, k = _particle_pos(s_out)
+    assert (i, j) == expected_ij
+    assert u_out[i, j, k] == pytest.approx(vx, abs=1e-12)
+    assert v_out[i, j, k] == pytest.approx(vy, abs=1e-12)
+
+
+def test_particle_does_not_penetrate_masked_wall():
+    p = _make_params(nx=9, ny=9, nm=10)
+    start = (4, 4, 0)
+    p.boundary_mask[start[0] + 1, start[1]] = True
+
+    u, v, s = _single_particle_state(start=start, vx=1.0, vy=0.0, nx=p.nx, ny=p.ny, nm=p.nm)
+    u_out, v_out, s_out = d2q4_cpp.stream(u, v, s, p)
+    i, j, k = _particle_pos(s_out)
+
+    assert (i, j, k) == start
+    assert u_out[i, j, k] == pytest.approx(1.0, abs=1e-12)
+    assert v_out[i, j, k] == pytest.approx(0.0, abs=1e-12)
+
+
+def test_tau_relaxation_matches_exponential_decay_over_time():
+    p = _make_params(nx=7, ny=7, nm=10)
+    p.tau = 2.0
+    p.nu_cs = 0.5
+
+    s = np.full((p.nx, p.ny, p.nm), np.nan, dtype=np.float64)
+    u = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+    v = np.zeros((p.nx, p.ny, p.nm), dtype=np.float64)
+
+    i0, j0 = 3, 3
+    for k in range(6):
+        s[i0, j0, k] = 1.0
+        u[i0, j0, k] = 1.0
+        v[i0, j0, k] = -0.5
+
+    p.boundary_mask[2, 3] = True
+    p.boundary_mask[4, 3] = True
+    p.boundary_mask[3, 2] = True
+    p.boundary_mask[3, 4] = True
+
+    for step in range(1, 4):
+        u, v, s = d2q4_cpp.stream(u, v, s, p)
+        expected_factor = np.exp(-step * p.dt / p.tau)
+        for k in range(6):
+            assert u[i0, j0, k] == pytest.approx(expected_factor, abs=1e-10)
+            assert v[i0, j0, k] == pytest.approx(-0.5 * expected_factor, abs=1e-10)
