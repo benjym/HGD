@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include <array>
+#include <stdexcept>
 
 double inf = std::numeric_limits<double>::infinity();
 
