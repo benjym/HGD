@@ -10,6 +10,7 @@ struct Params {
     double g, dt, dx, dy, alpha, nu_cs, P_stab, delta_limit, seg_exponent, beta;
     bool cyclic_BC;
     bool inertia;
+    bool gate_inertia_lateral;
     int cyclic_BC_y_offset;
     int nx, ny, nm;
     // move type, "void" or "particle"
@@ -65,12 +66,6 @@ void move_core(View3<double> u, View3<double> v, View3<double> s,
                      std::vector<double>& nu,
                      std::vector<double>& chi_out);
 
-void move_voids_core(View3<double> u, View3<double> v, View3<double> s,
-                     const View2<const uint8_t>& mask,
-                     Params p,
-                     std::vector<double>& nu,
-                     std::vector<double>& chi_out);
-
 void move_particles_core(View3<double> u, View3<double> v, View3<double> s,
                      const View2<const uint8_t>& mask,
                      Params p,
@@ -83,16 +78,7 @@ void move_particles_core_tiled(View3<double> u, View3<double> v, View3<double> s
                      std::vector<double>& nu,
                      std::vector<double>& chi_out);
 
-void stream_core(const std::vector<double>& u_mean,
-                 const std::vector<double>& v_mean,
-                 View3<double> s,
-                 const View2<const uint8_t>& mask,
-                 std::vector<double>& nu,
-                 const Params& p);
-
-void stream_core_lbm_zero_eq(const std::vector<double>& u_mean,
-                             const std::vector<double>& v_mean,
-                             View3<double> u,
+void stream_core_lbm_zero_eq(View3<double> u,
                              View3<double> v,
                              View3<double> s,
                              const View2<const uint8_t>& mask,

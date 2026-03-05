@@ -184,11 +184,9 @@ class dict_to_class:
                 P_ratio = self.alpha * self.s_M * P_n / self.dy
                 print(f"n = {n}, n*P_diff/P_adv = {n*P_ratio}")
 
-        if self.inertia:
-            # === Inertia Mode: Use fixed time step ===
+        if self.defined_time_step_size is not None:
             self.dt = self.defined_time_step_size
         else:
-            # === Non-Inertia Mode: Original automatic stability loop ===
             safe = False  # Initialize loop condition
             while not safe:
                 self.P_adv_ref = stability
@@ -205,8 +203,10 @@ class dict_to_class:
                     * self.P_diff_weighting
                 )
 
-                self.P_adv_max = self.P_adv_ref * (self.s_M / self.s_m)
-                # self.P_diff_max = self.P_diff_ref * (self.s_M / self.s_m)
+                if self.space_criterion == "pore_size":
+                    self.P_adv_max = self.P_adv_ref
+                else:
+                    self.P_adv_max = self.P_adv_ref * (self.s_M / self.s_m)
 
                 if self.P_adv_max + (2 * self.max_diff_swap_length) * self.P_diff_max <= self.P_stab:
                     safe = True

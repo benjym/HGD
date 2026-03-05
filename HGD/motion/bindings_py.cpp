@@ -104,15 +104,16 @@ py::tuple move_voids_py(py::array_t<double> u, py::array_t<double> v, py::array_
         p.attr("beta").cast<double>(),
         p.attr("cyclic_BC").cast<bool>(),
         p.attr("inertia").cast<bool>(),
+        p.attr("gate_inertia_lateral").cast<bool>(),
         p.attr("cyclic_BC_y_offset").cast<int>(),
         p.attr("nx").cast<int>(),
         p.attr("ny").cast<int>(),
         p.attr("nm").cast<int>(),
         p.attr("move_type").cast<std::string>(),
         py::hasattr(p, "space_criterion") ? p.attr("space_criterion").cast<std::string>() : std::string("pore_size"),
-        p.attr("max_threads").cast<int>()
+        p.attr("max_threads").cast<int>(),
+        p.attr("tau").cast<double>()
     };
-    P.tau = py::hasattr(p, "tau") ? p.attr("tau").cast<double>() : 0.0;
     
     auto vU = as_view3(u);
     auto vV = as_view3(v);
@@ -141,27 +142,6 @@ py::tuple stream_py(py::array_t<double> u, py::array_t<double> v,
     auto mask = p.attr("boundary_mask").cast<py::array_t<bool>>();
     auto vM = as_view2u8(mask);
 
-    std::vector<double> u_mean(vU.nx * vU.ny, 0.0);
-    std::vector<double> v_mean(vV.nx * vV.ny, 0.0);
-    for (int i = 0; i < vS.nx; ++i) {
-        for (int j = 0; j < vS.ny; ++j) {
-            double u_sum = 0.0;
-            double v_sum = 0.0;
-            int count = 0;
-            for (int k = 0; k < vS.nm; ++k) {
-                if (!std::isnan(vS(i, j, k))) {
-                    u_sum += vU(i, j, k);
-                    v_sum += vV(i, j, k);
-                    count += 1;
-                }
-            }
-            if (count > 0) {
-                int idx = i * vS.ny + j;
-                u_mean[idx] = u_sum / static_cast<double>(count);
-                v_mean[idx] = v_sum / static_cast<double>(count);
-            }
-        }
-    }
     std::vector<double> nu = compute_solid_fraction_core(View3<const double>{vS.data, vS.nx, vS.ny, vS.nm, vS.sx, vS.sy, vS.sz});
 
     Params P{
@@ -177,26 +157,19 @@ py::tuple stream_py(py::array_t<double> u, py::array_t<double> v,
         p.attr("beta").cast<double>(),
         p.attr("cyclic_BC").cast<bool>(),
         p.attr("inertia").cast<bool>(),
+        p.attr("gate_inertia_lateral").cast<bool>(),
         p.attr("cyclic_BC_y_offset").cast<int>(),
         p.attr("nx").cast<int>(),
         p.attr("ny").cast<int>(),
         p.attr("nm").cast<int>(),
         p.attr("move_type").cast<std::string>(),
         py::hasattr(p, "space_criterion") ? p.attr("space_criterion").cast<std::string>() : std::string("pore_size"),
-        p.attr("max_threads").cast<int>()
+        p.attr("max_threads").cast<int>(),
+        p.attr("tau").cast<double>()
     };
-    P.tau = py::hasattr(p, "tau") ? p.attr("tau").cast<double>() : 0.0;
 
-    std::string stream_model = "legacy";
-    if (py::hasattr(p, "stream_model")) {
-        stream_model = p.attr("stream_model").cast<std::string>();
-    }
+    stream_core_lbm_zero_eq(vU, vV, vS, vM, nu, P);
 
-    if (stream_model == "lbm_zero_eq" || stream_model == "lbm") {
-        stream_core_lbm_zero_eq(u_mean, v_mean, vU, vV, vS, vM, nu, P);
-    } else {
-        stream_core(u_mean, v_mean, vS, vM, nu, P);
-    }
 
     return py::make_tuple(u, v, s);
 }

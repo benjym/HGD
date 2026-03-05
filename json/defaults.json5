@@ -19,6 +19,7 @@
     outlet_rate : 1.0, // proportion of each timestep that the outlet is open
     outlet_nu : 0, // solid fraction of the particles in the outlet
     wall_motion : false, // should the walls move
+    gate_inertia_lateral : true, // should we use the density gradient gate when inertia is activated
     
     // void migration model parameters
     diag : 0,
@@ -82,7 +83,8 @@
     move_type : "particle", // move type to use. Options are "void" and "particle". Only implemented in core.cpp motion model.
     stream_model : "legacy", // stream kernel: "legacy" or "lbm_zero_eq"
     space_criterion : "pore_size", // space gate for particle motion: "pore_size" or "nu_cs"
-    tau : 0.0, // relaxation time for inertial stream (s). <=0 disables relaxation to zero.
+    tau : 0.1, // relaxation time for inertial stream (s). <=0 disables relaxation to zero.
+    defined_time_step_size : null, // if not null, this value will be used as the time step size instead of calculating it based on stability criteria. (s)
 
     // cycles
     cycles : [], // list of dicts that define any cycles

@@ -8,7 +8,7 @@ find_package(pybind11 REQUIRED)
 add_library(core STATIC HGD/motion/core.cpp HGD/motion/move_particles_tiled.cpp)
 set_target_properties(core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/HGD/motion)
-target_compile_features(core PUBLIC cxx_std_14)
+target_compile_features(core PUBLIC cxx_std_17)
 
 # Python extension
 pybind11_add_module(d2q4_cpp HGD/motion/bindings_py.cpp)
