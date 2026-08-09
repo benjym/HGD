@@ -16,7 +16,10 @@ python HGD/main.py json/hgfd_paper_case1_2p0mm.json5
 python scripts/plot_hgfd_case1.py
 ```
 
-![Reproduced HGFD Case 1 settling curves](images/hgfd_case1_reproduction.png)
+![Animated reproduction of the HGFD Case 1 settling curves](images/hgfd_case1_reproduction.gif)
+
+A high-resolution [static PNG](images/hgfd_case1_reproduction.png) is also
+provided for reports and presentations.
 
 The terminal velocities from the full two-way-coupled runs are:
 
