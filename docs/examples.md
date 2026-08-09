@@ -218,7 +218,7 @@ python HGD/main.py json/fluidized_bed.json5
 
 The `hgfd` motion model adds layer-wise particle inertia, Gidaspow drag (Wen–Yu in dilute cells and Ergun in dense cells), and equal-and-opposite momentum feedback to a two-dimensional fluid-fraction-weighted incompressible solver. The pressure projection enforces `div(n * u_f) = 0` on the co-located HGD grid.
 
-![Fluidized-bed solid fraction, gas velocity, and gas pressure](images/fluidized_bed.png)
+![Animated fluidized-bed solid fraction, gas velocity, and gas pressure](images/fluidized_bed.gif)
 
 The example writes three-panel `fluidized_bed_*.png` frames and `fluid_diagnostics.csv`. The latter reports pressure drop, pressure-drop/effective-bed-weight ratio, locally fluidized fraction, maximum continuity residual, and maximum stochastic transition probability.
 
