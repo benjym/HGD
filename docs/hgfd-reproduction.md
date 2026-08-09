@@ -33,6 +33,37 @@ The paper's experimental time-series values are not published numerically, so
 the plot contains reproduced HGFD curves rather than digitised experimental
 markers.
 
+## Fluidized-bed field visualization
+
+The fluidized-bed example is also exported with the same asset pipeline used
+by the official HGD example gallery: a ParaView time series plus matching
+poster, GIF, and MP4 renders.
+
+[![HGFD fluidized-bed four-field poster](visualizations/hgfd_fluidized_bed/render/poster.png)](visualizations/hgfd_fluidized_bed/render/preview.gif)
+
+- [Animated GIF](visualizations/hgfd_fluidized_bed/render/preview.gif)
+- [H.264 MP4](visualizations/hgfd_fluidized_bed/render/demo.mp4)
+- [ParaView PVD time series](visualizations/hgfd_fluidized_bed/paraview/hgfd_fluidized_bed.pvd)
+
+Open the PVD file in ParaView to inspect all 31 time steps. Available cell
+arrays include solid fraction, mean grain size, particle and fluid velocity
+vectors, particle and fluid speed, vertical fluid velocity, fluid pressure,
+momentum-exchange coefficient, and the fluidized-cell indicator.
+
+The assets can be regenerated after running `fluidized_bed.json5`:
+
+```bash
+python scripts/export_hgfd_to_vti.py \
+  --input output/fluidized_bed/data \
+  --output docs/visualizations/hgfd_fluidized_bed/paraview \
+  --name hgfd_fluidized_bed --t-final 0.06
+
+python scripts/render_hgfd_vti.py \
+  --pvd docs/visualizations/hgfd_fluidized_bed/paraview/hgfd_fluidized_bed.pvd \
+  --output docs/visualizations/hgfd_fluidized_bed/render \
+  --title "HGFD · FLUIDIZED BED"
+```
+
 ## Parity with the paper
 
 The implementation follows the published model for:

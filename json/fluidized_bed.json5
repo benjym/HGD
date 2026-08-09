@@ -38,5 +38,6 @@
     plot_colorbar: true,
     plot: ['fluidized_bed', 'nu'],
     videos: ['fluidized_bed'],
-    save: ['fluid'],
+    // Save both phases for the ParaView VTI/PVD export pipeline.
+    save: ['fluid', 'nu', 's_bar', 'velocity'],
 }

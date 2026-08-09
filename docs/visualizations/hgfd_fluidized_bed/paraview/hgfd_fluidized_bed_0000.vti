@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 16 0 32 0 1" Origin="-0.021290322580645164 8.673617379884035e-19 0" Spacing="0.0025806451612903243 0.002580645161290321 0.00020645161290322567" Direction="1 0 0 0 1 0 0 0 1">
+  <Piece Extent="0 16 0 32 0 1">
+    <PointData>
+    </PointData>
+    <CellData Scalars="Solid fraction" Vectors="Fluid velocity (m/s)">
+      <DataArray type="Float32" Name="Solid fraction" format="binary" RangeMin="0" RangeMax="0.550000011920929">
+        AQAAAACAAAAACAAAHAAAAA==eF47e4bH/uwoHsUjFDOMglEwCkbBCAUAr5drEA==
+      </DataArray>
+      <DataArray type="Float32" Name="Mean grain size (mm)" format="binary" RangeMin="1" RangeMax="1">
+        AQAAAACAAAAACAAAHQAAAA==eF5jYGiwZxjFo3jE4gP1o3gUj+JRPBIxAKrpHh8=
+      </DataArray>
+      <DataArray type="Float32" Name="Particle speed (m/s)" format="binary" RangeMin="0.0001430389384040609" RangeMax="0.0001430389384040609">
+        AQAAAACAAAAACAAAHwAAAA==eF7b+UfUcucoHsUjFDMwHKgfxaN4FI/ikYgBXpsRLg==
+      </DataArray>
+      <DataArray type="Float32" Name="Particle velocity (m/s)" NumberOfComponents="3" format="binary" RangeMin="0" RangeMax="0.0001430389384040609">
+        AQAAAACAAAAAGAAAKgAAAA==eF7txjEBABAAAMEvIYzouhksUnA3XdXaY3a5u7u7/3AAAAB43QFZQYJQ
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            0
+          </Value>
+          <Value index="1">
+            0.0001430389384
+          </Value>
+        </InformationKey>
+      </DataArray>
+      <DataArray type="Float32" Name="Fluid speed (m/s)" format="binary" RangeMin="1.399999976158142" RangeMax="3.1111111640930176">
+        AQAAAACAAAAACAAAHwAAAA==eF4rknF3KBrFo3iEYmPjzfajeBSP4lE8EjEA9qZ93w==
+      </DataArray>
+      <DataArray type="Float32" Name="Fluid velocity (m/s)" NumberOfComponents="3" format="binary" RangeMin="1.399999976158142" RangeMax="3.1111111640930176">
+        AQAAAACAAAAAGAAAwAYAAA==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
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            1.3999999762
+          </Value>
+          <Value index="1">
+            3.1111111641
+          </Value>
+        </InformationKey>
+      </DataArray>
+      <DataArray type="Float32" Name="Fluid vertical velocity (m/s)" format="binary" RangeMin="1.399999976158142" RangeMax="3.1111111640930176">
+        AQAAAACAAAAACAAAHwAAAA==eF4rknF3KBrFo3iEYmPjzfajeBSP4lE8EjEA9qZ93w==
+      </DataArray>
+      <DataArray type="Float32" Name="Fluid pressure (Pa)" format="binary" RangeMin="-0.7409490942955017" RangeMax="551.4906005859375">
+        AQAAAACAAAAACAAALgQAAA==eF6lyftzDmcYxvFsTbeq2DZtKm8pupou+1z3xGkq1CuSiOMqbZjGVJfJpE7RsB1MHUqoktgoYn8QnY3UqUlqeEmUbaRh49RUTRy2oswgNc2rMkUYYWn1+R/2h8/c1/d5Zlx7ccSMAM4MfpIWxK9VTYHUJ9YH8kvF/kBOJxQHcqo0L5DCQRMDMalHILGjrqYGYWUvCMSboKUEcWlvuDaIOZUHw0F0+0ymrYtkalwp0xZTpu8tmfK2yhRjyzT1W5nqeMcUcnkyVX0i08pkmV7uI1NZvEwNnWT6gkLUt3+IqpNClJEcovHpIYoZy40JUc2oEJ1LDVHTe7wHcj1DlPlCiO48iKcO0Xg6fj2eRt+S6Nhtiaw7ElXcl2hwm0Q5jyWK4fL4bmqVyGmRqOSmREcbJWo9LdHIaomW7JcodY9EpdtFerxDpD67RSooE2lFhUgLfhDpFr8x5SLl7eS28V0s0tWNIs3MF6n2S5EmLRJp7ecihQ/6qPzRxxuOj/JqH4U1Pp5y+hEfyw77iDnAlfsoLvGxociHssbHvcU+Eub5eDbbR12vKFa/HUV1QhQt70SxXomiK5fIu+itKJRuUbweF8WljlHUtYui2G9G79Zm+LebUX+rGQWbPFznphd5qOW2c1W8D2zwsLDQw8O1HjJXefh7qYfOCz1k5HqYM8vDkGwPU7I8PPrPRewzF725Tlw+76x/Xcx74mLrIxc3H7jIueti7m0XSX+5GHrDxf2rLm5cdjGl0cWEuRGM5GTuZE4EEndlNr+zIij9NILNWRE8P43/fxwB+yiC+RkRpE+M4Nn4CM5rEey7bMPiMrgrjTZe41p+t/GhZyPtgo2TDTZaf+Nv9Tb+PGUj9oSNg64N4ZiNHkdtsFEm2nNHRpoIc8vSTeSOMPFSmomMFBMTkk3Ehk0cGmIiO8lEyrsmlgw0MWCAiYL+JjbPNjCOq5xloHamgekzDORnG+iXxfc0AwlTDZRkGmibZGDmBwbU9w0sHWdg0xgDRaMNdEnXcHGEhrHc/DQNw1M1VA7XcHqYhtVDNbQN1pA0SMOcgRqq+mlITdSQTBrOMQ2x3LWeCnZxidziHgqWd1cQflPBoa4K7oUUPO6ioClOwfFXFdS8oqBFUjCvs4LpnRRc7KjgxlMBldxk7sQTAc9xHX0BNx8J2NQmoNtDAUUPBLS/L2DjPQEpdwX0vSMg9x8BHbheBxx2bb/DMrl1EYct3Oew0F6HLdvjsF0VDttR5rCC3Q6bv9NhC7Y7LFLqsJRtDhtW4rBDtsPWezobym25qLPvLuhs8nmdHW7QWcNZne0+o7Px9Tr745TOck7orHudzuKO6Sy3VmdpP+usvEZn2jeWGseVrbfUdpxSyNu01PMFlpqdb6mNayw1/LWl7vzKUnutstSzeZb60wpLbVtuqUXc//8ohBc=
+      </DataArray>
+      <DataArray type="Float32" Name="Momentum exchange beta" format="binary" RangeMin="0" RangeMax="5482.8876953125">
+        AQAAAACAAAAACAAAHAAAAA==eF6TCl/tKjWKR/EIxQyjYBSMglEwQgEAgVcI0A==
+      </DataArray>
+      <DataArray type="Float32" Name="Fluidized" format="binary" RangeMin="0" RangeMax="1">
+        AQAAAACAAAAACAAAGwAAAA==eF5jYGiwZxjFo3jE4lEwCkbBKBiZAAAvTY9B
+      </DataArray>
+    </CellData>
+  </Piece>
+  </ImageData>
+</VTKFile>
