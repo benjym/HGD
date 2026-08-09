@@ -19,5 +19,6 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Examples: examples.md
+  - HGFD Reproduction: hgfd-reproduction.md
   - Troubleshooting: troubleshooting.md
   - Reference: reference.md

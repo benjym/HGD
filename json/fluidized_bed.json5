@@ -21,7 +21,9 @@
     gas_viscosity: 1.8e-5,
     fluid_inlet_velocity: 1.40,
     fluid_alpha_max: 0.30,
-    fluid_probability_policy: 'scale',
+    // Paper reproduction uses a fixed dt satisfying the strict P_tot < 0.5
+    // constraint; probability rescaling would change the reported dynamics.
+    fluid_probability_policy: 'error',
 
     inertia: true,
     motion_model: 'hgfd',

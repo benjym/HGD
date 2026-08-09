@@ -234,6 +234,10 @@ This solver is intended for two-dimensional, isothermal, laminar research cases.
 
 The coupling equations follow [Li et al., *Coupling Heterarchical Granular Dynamics and Computational Fluid Dynamics*](https://arxiv.org/abs/2606.23202).
 
+For the three quantitative single-particle validation runs, implementation
+parity, and the limits imposed by unpublished inputs, see the
+[HGFD paper reproduction](hgfd-reproduction.md).
+
 ## Advanced Examples
 
 ### 8. Hopper Emptying Studies (`hopper_emptying*.json5`)

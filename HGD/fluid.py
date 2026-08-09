@@ -1,10 +1,9 @@
 """Two-way fluid coupling utilities for heterarchical granular dynamics.
 
-The implementation follows the fluid-fraction-weighted formulation used by
-Heterarchical Granular--Fluid Dynamics (HGFD).  It is intentionally a compact
-2-D, isothermal, laminar solver: particle velocities are relaxed with the
-Gidaspow drag law and the equal-and-opposite drag is applied to an
-incompressible fluid using a variable-porosity pressure projection.
+The layer drag, particle relaxation, aggregation, and coupling order follow
+Li et al.'s HGFD formulation.  The bundled fluid participant is a compact
+Python finite-volume projection solver; the paper used an extended OpenFOAM
+``pisoFoam`` participant coupled through preCICE.
 """
 
 from dataclasses import dataclass
@@ -28,6 +27,7 @@ class FluidState:
     momentum_source_v: np.ndarray
     divergence: np.ndarray
     fluidized: np.ndarray
+    void_fraction: np.ndarray
     pressure_drop: float = 0.0
     fluidization_ratio: float = 0.0
 
@@ -62,15 +62,16 @@ def initialize(p, s):
         momentum_source_v=zeros.copy(),
         divergence=zeros.copy(),
         fluidized=np.zeros(shape, dtype=bool),
+        void_fraction=void_fraction.copy(),
     )
 
 
 def drag_coefficients(s, particle_u, particle_v, fluid_u, fluid_v, p):
     """Return layer and cell Gidaspow momentum-exchange coefficients.
 
-    ``layer_beta`` is the coefficient used for particle relaxation.  The
-    cell-level coefficient contains the heterarchical ``1 / M`` weighting and
-    is the quantity supplied to the fluid momentum equation.
+    ``layer_beta`` includes the paper's ``1 / M_s`` distribution over the
+    occupied internal coordinates.  Summing it over ``k`` gives the
+    cell-level coefficient supplied to the fluid momentum equation.
     """
 
     occupied = np.isfinite(s)
@@ -94,9 +95,17 @@ def drag_coefficients(s, particle_u, particle_v, fluid_u, fluid_v, p):
     # Written as Cd*|ur| to remain finite in the Stokes limit Re -> 0.
     beta_wen_yu = 18.0 * mu_f / diameter**2 * (1.0 + 0.15 * reynolds**0.687) * phi * eps ** (-2.65)
     beta_ergun = 150.0 * mu_f * phi**2 / (eps * diameter**2) + 1.75 * rho_f * phi * relative_speed / diameter
-    layer_beta = np.where(phi < 0.2, beta_wen_yu, beta_ergun)
+    cell_beta_per_size = np.where(phi < 0.2, beta_wen_yu, beta_ergun)
+    solid_count = np.sum(occupied, axis=2, keepdims=True)
+    layer_weight = np.divide(
+        1.0,
+        solid_count,
+        out=np.zeros_like(solid_count, dtype=float),
+        where=solid_count > 0,
+    )
+    layer_beta = cell_beta_per_size * layer_weight
     layer_beta = np.where(occupied, layer_beta, 0.0)
-    cell_beta = np.sum(layer_beta, axis=2) / p.nm
+    cell_beta = np.sum(layer_beta, axis=2)
     return layer_beta, cell_beta
 
 
@@ -105,7 +114,12 @@ def update_particle_velocities(particle_u, particle_v, s, state, p):
 
     layer_beta, _ = drag_coefficients(s, particle_u, particle_v, state.u, state.v, p)
     occupied = np.isfinite(s)
-    relaxation_rate = layer_beta / p.solid_density
+    # Each occupied internal coordinate represents 1/M of the cell volume.
+    # Its phase mass density is therefore rho_p/M.  This M factor is required
+    # to reproduce the three single-particle terminal velocities in Fig. 4 of
+    # the paper; Eq. (8) prints rho_p/beta_k without making this layer mass
+    # normalisation explicit.
+    relaxation_rate = p.nm * layer_beta / p.solid_density
     decay = np.exp(-relaxation_rate * p.dt)
 
     buoyancy = 1.0 - p.gas_density / p.solid_density
@@ -143,45 +157,145 @@ def coupling_fields(s, particle_u, particle_v, state, p):
     """Aggregate heterarchical drag fields for the fluid momentum equation."""
 
     layer_beta, cell_beta = drag_coefficients(s, particle_u, particle_v, state.u, state.v, p)
-    beta_sum = np.sum(layer_beta, axis=2)
+    virtual_displacement = getattr(p, "hgfd_virtual_displacement", None)
+    if virtual_displacement is None:
+        active = np.isfinite(s)
+    else:
+        active = np.isfinite(s) & (virtual_displacement < p.dx)
+    active_beta = np.where(active, layer_beta, 0.0)
+    active_beta_sum = np.sum(active_beta, axis=2)
     with np.errstate(divide="ignore", invalid="ignore"):
         solid_u = np.divide(
-            np.sum(layer_beta * particle_u, axis=2),
-            beta_sum,
+            np.sum(active_beta * particle_u, axis=2),
+            active_beta_sum,
             out=np.zeros_like(cell_beta),
-            where=beta_sum > 0,
+            where=active_beta_sum > 0,
         )
         solid_v = np.divide(
-            np.sum(layer_beta * particle_v, axis=2),
-            beta_sum,
+            np.sum(active_beta * particle_v, axis=2),
+            active_beta_sum,
             out=np.zeros_like(cell_beta),
-            where=beta_sum > 0,
+            where=active_beta_sum > 0,
         )
 
-    # Equal and opposite to beta * (u_f - u_p), the drag on particles.
+    # Equal and opposite to beta * (u_f - u_p), the drag on particles.  The
+    # paper prints S_m=beta*(u_f-u_p) with a positive fluid source, but also
+    # states that the source is equal-and-opposite; this physical sign is the
+    # one consistent with that statement and with momentum conservation.
     source_u = cell_beta * (solid_u - state.u)
     source_v = cell_beta * (solid_v - state.v)
     return cell_beta, solid_u, solid_v, source_u, source_v
 
 
-def _laplacian(field, dx, dy):
-    return np.gradient(np.gradient(field, dx, axis=0), dx, axis=0) + np.gradient(
-        np.gradient(field, dy, axis=1), dy, axis=1
+def _lust_face_values(field, mass_flux, spacing, axis, lower_boundary, upper_boundary):
+    """Interpolate a transported field with OpenFOAM's 75/25 LUST blend."""
+
+    shape = list(field.shape)
+    shape[axis] += 1
+    faces = np.empty(shape, dtype=float)
+    gradient = np.gradient(field, spacing, axis=axis)
+
+    lower_cell = [slice(None)] * field.ndim
+    upper_cell = [slice(None)] * field.ndim
+    lower_cell[axis] = slice(0, -1)
+    upper_cell[axis] = slice(1, None)
+    internal_face = [slice(None)] * field.ndim
+    internal_face[axis] = slice(1, -1)
+
+    left = field[tuple(lower_cell)]
+    right = field[tuple(upper_cell)]
+    linear = 0.5 * (left + right)
+    linear_upwind = np.where(
+        mass_flux[tuple(internal_face)] >= 0,
+        left + 0.5 * spacing * gradient[tuple(lower_cell)],
+        right - 0.5 * spacing * gradient[tuple(upper_cell)],
     )
+    faces[tuple(internal_face)] = 0.75 * linear + 0.25 * linear_upwind
+
+    lower_face = [slice(None)] * field.ndim
+    upper_face = [slice(None)] * field.ndim
+    lower_face[axis] = 0
+    upper_face[axis] = -1
+    faces[tuple(lower_face)] = lower_boundary
+    faces[tuple(upper_face)] = upper_boundary
+    return faces
 
 
-def _upwind_derivative(field, velocity, spacing, axis):
-    """First-order upwind derivative without periodic wraparound."""
+def _face_average(field, axis):
+    """Linear face interpolation with zero-gradient boundary extrapolation."""
 
-    backward = (field - np.roll(field, 1, axis=axis)) / spacing
-    forward = (np.roll(field, -1, axis=axis) - field) / spacing
-    lower = [slice(None)] * field.ndim
-    upper = [slice(None)] * field.ndim
-    lower[axis] = 0
-    upper[axis] = -1
-    backward[tuple(lower)] = forward[tuple(lower)]
-    forward[tuple(upper)] = backward[tuple(upper)]
-    return np.where(velocity >= 0, backward, forward)
+    shape = list(field.shape)
+    shape[axis] += 1
+    faces = np.empty(shape, dtype=float)
+    lower_cell = [slice(None)] * field.ndim
+    upper_cell = [slice(None)] * field.ndim
+    lower_cell[axis] = slice(0, -1)
+    upper_cell[axis] = slice(1, None)
+    internal_face = [slice(None)] * field.ndim
+    internal_face[axis] = slice(1, -1)
+    faces[tuple(internal_face)] = 0.5 * (field[tuple(lower_cell)] + field[tuple(upper_cell)])
+    lower_face = [slice(None)] * field.ndim
+    upper_face = [slice(None)] * field.ndim
+    lower_source = [slice(None)] * field.ndim
+    upper_source = [slice(None)] * field.ndim
+    lower_face[axis] = 0
+    upper_face[axis] = -1
+    lower_source[axis] = 0
+    upper_source[axis] = -1
+    faces[tuple(lower_face)] = field[tuple(lower_source)]
+    faces[tuple(upper_face)] = field[tuple(upper_source)]
+    return faces
+
+
+def _conservative_transport(state, void_fraction, p):
+    """Advance Eq. (19) without pressure using the paper's FVM operators.
+
+    The convective face value uses the LUST 75/25 linear/linear-upwind blend;
+    gradients and viscous stresses use linear interpolation on the orthogonal
+    grid.  Interphase drag is treated with backward Euler below, matching the
+    paper's first-order implicit temporal discretisation.
+    """
+
+    inlet = getattr(p, "fluid_inlet_velocity", 0.0)
+    qx, qy = _face_fluxes(state.u, state.v, void_fraction, inlet)
+    intrinsic_inlet = inlet / np.maximum(void_fraction[:, 0], 1e-30)
+
+    u_xface = _lust_face_values(state.u, qx, p.dx, axis=0, lower_boundary=0.0, upper_boundary=0.0)
+    u_yface = _lust_face_values(
+        state.u,
+        qy,
+        p.dy,
+        axis=1,
+        lower_boundary=0.0,
+        upper_boundary=state.u[:, -1],
+    )
+    v_xface = _lust_face_values(state.v, qx, p.dx, axis=0, lower_boundary=0.0, upper_boundary=0.0)
+    v_yface = _lust_face_values(
+        state.v,
+        qy,
+        p.dy,
+        axis=1,
+        lower_boundary=intrinsic_inlet,
+        upper_boundary=state.v[:, -1],
+    )
+    convection_u = _flux_divergence(qx * u_xface, qy * u_yface, p.dx, p.dy)
+    convection_v = _flux_divergence(qx * v_xface, qy * v_yface, p.dx, p.dy)
+
+    du_dx = np.gradient(state.u, p.dx, axis=0)
+    du_dy = np.gradient(state.u, p.dy, axis=1)
+    dv_dx = np.gradient(state.v, p.dx, axis=0)
+    dv_dy = np.gradient(state.v, p.dy, axis=1)
+    viscosity = p.gas_viscosity / p.gas_density
+    tau_xx = void_fraction * 2.0 * viscosity * du_dx
+    tau_xy = void_fraction * viscosity * (du_dy + dv_dx)
+    tau_yy = void_fraction * 2.0 * viscosity * dv_dy
+    viscous_u = _flux_divergence(_face_average(tau_xx, axis=0), _face_average(tau_xy, axis=1), p.dx, p.dy)
+    viscous_v = _flux_divergence(_face_average(tau_xy, axis=0), _face_average(tau_yy, axis=1), p.dx, p.dy)
+
+    old_void_fraction = state.void_fraction
+    momentum_u = old_void_fraction * state.u + p.dt * (-convection_u + viscous_u)
+    momentum_v = old_void_fraction * state.v + p.dt * (-convection_v + viscous_v)
+    return momentum_u, momentum_v
 
 
 def _face_fluxes(u, v, void_fraction, inlet_velocity=0.0):
@@ -295,22 +409,15 @@ def advance(state, s, particle_u, particle_v, p):
     void_fraction = _void_fraction(solid_fraction, p)
     beta, solid_u, solid_v, source_u, source_v = coupling_fields(s, particle_u, particle_v, state, p)
 
-    adv_u = state.u * _upwind_derivative(state.u, state.u, p.dx, axis=0) + state.v * _upwind_derivative(
-        state.u, state.v, p.dy, axis=1
-    )
-    adv_v = state.u * _upwind_derivative(state.v, state.u, p.dx, axis=0) + state.v * _upwind_derivative(
-        state.v, state.v, p.dy, axis=1
-    )
-    viscosity = p.gas_viscosity / p.gas_density
-    transport_u = state.u + p.dt * (-adv_u + viscosity * _laplacian(state.u, p.dx, p.dy))
-    transport_v = state.v + p.dt * (-adv_v + viscosity * _laplacian(state.v, p.dx, p.dy))
+    momentum_u, momentum_v = _conservative_transport(state, void_fraction, p)
 
-    # Treat the stiff drag term analytically.  This is the fluid analogue of
-    # the exponential particle relaxation and remains stable in a dense bed.
-    drag_rate = beta / (p.gas_density * void_fraction)
-    drag_decay = np.exp(-drag_rate * p.dt)
-    tentative_u = solid_u + (transport_u - solid_u) * drag_decay
-    tentative_v = solid_v + (transport_v - solid_v) * drag_decay
+    # First-order implicit Euler treatment of the interphase source in
+    # Eq. (19): n U^{n+1} + dt beta/rho U^{n+1}
+    #              = m* + dt beta/rho U_s.
+    drag_weight = p.dt * beta / p.gas_density
+    denominator = void_fraction + drag_weight
+    tentative_u = (momentum_u + drag_weight * solid_u) / denominator
+    tentative_v = (momentum_v + drag_weight * solid_v) / denominator
 
     state.u, state.v, state.pressure, state.divergence = project_velocity(
         tentative_u, tentative_v, state.pressure, void_fraction, p
@@ -320,6 +427,7 @@ def advance(state, s, particle_u, particle_v, p):
     state.solid_v = solid_v
     state.momentum_source_u = source_u
     state.momentum_source_v = source_v
+    state.void_fraction = void_fraction.copy()
     _diagnostics(state, solid_fraction, p)
     courant = np.max(np.abs(state.u) * p.dt / p.dx + np.abs(state.v) * p.dt / p.dy)
     p.fluid_courant = float(courant)

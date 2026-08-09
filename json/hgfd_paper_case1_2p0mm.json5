@@ -1,0 +1,42 @@
+{
+    // Li et al. (2026), Table 1 / Fig. 4: 2.0 mm sphere in water.
+    nx: 15,
+    ny: 13,
+    nm: 100,
+    H: 0.65,
+    cell_size: 0.05,
+
+    gsd_mode: 'mono',
+    s_m: 0.002,
+    solid_density: 2480,
+    nu_fill: 0.01,
+    nu_cs: 0.5,
+    nu_1: 0.5,
+    IC_mode: 'single_particle',
+    single_particle_i: 7,
+    single_particle_j: 10,
+    single_particle_k: 0,
+    repose_angle: 30,
+
+    fluid_coupling: true,
+    gas_density: 997,
+    gas_viscosity: 1.0e-3,
+    fluid_inlet_velocity: 0,
+    fluid_drag_min_particle_size: 0.002,
+    fluid_alpha_max: 0.3,
+    fluid_probability_policy: 'error',
+
+    inertia: true,
+    motion_model: 'hgfd',
+    defined_time_step_size: 1.0e-4,
+    time_average: false,
+    P_stab: 0.5,
+
+    t_f: 0.4,
+    saves: 40,
+    max_workers: 1,
+    random_seed: 13,
+    plot: ['nu'],
+    videos: [],
+    save: ['fluid', 'velocity'],
+}
