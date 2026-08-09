@@ -11,7 +11,7 @@ def IC(p):
     Returns:
         The array of grain sizes. Values of `NaN` are voids.
     """
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(getattr(p, "random_seed", None))
 
     # First step: Generate BOTH the grain size distribution and the void distribution
 

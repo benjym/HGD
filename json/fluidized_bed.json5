@@ -1,0 +1,40 @@
+{
+    // Small gas-fluidized-bed verification case. The inlet is above the
+    // Gidaspow/Ergun minimum-fluidization estimate printed at start-up.
+    nx: 16,
+    ny: 32,
+    nm: 20,
+    H: 0.08,
+
+    gsd_mode: 'mono',
+    s_m: 0.001,
+    solid_density: 2500,
+    nu_fill: 0.55,
+    nu_cs: 0.60,
+    nu_1: 0.60,
+    IC_mode: 'bottom',
+    fill_ratio: 0.40,
+    repose_angle: 30,
+
+    fluid_coupling: true,
+    gas_density: 1.225,
+    gas_viscosity: 1.8e-5,
+    fluid_inlet_velocity: 1.40,
+    fluid_alpha_max: 0.30,
+    fluid_probability_policy: 'scale',
+
+    inertia: true,
+    motion_model: 'hgfd',
+    defined_time_step_size: 0.0001,
+    time_average: false,
+    P_stab: 0.5,
+
+    t_f: 0.06,
+    saves: 30,
+    max_workers: 1,
+    random_seed: 7,
+    plot_colorbar: true,
+    plot: ['fluidized_bed', 'nu'],
+    videos: ['fluidized_bed'],
+    save: ['fluid'],
+}

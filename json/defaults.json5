@@ -57,6 +57,16 @@
     // gas
     gas_density:1.225,
     gas_viscosity:1.8e-5,
+
+    // two-way fluid coupling (2-D, isothermal, laminar)
+    fluid_coupling: false,
+    fluid_inlet_velocity: 0.0, // superficial velocity at the bottom boundary (m/s)
+    fluid_min_void_fraction: 0.05,
+    fluid_drag_min_particle_size: 1e-6,
+    fluid_alpha_max: 0.3,
+    fluid_alpha_epsilon: 0.01,
+    fluid_probability_policy: 'error', // 'error' or 'scale'
+    fluid_cfl_limit: 0.8,
     
     // saving
     folderName : "output/", // name of the folder to save the data in
@@ -94,6 +104,7 @@
     stop_event : null, // this is None in Python, but null in JavaScript
     stop_after : 100, // number of timesteps to run with nothing happening before stopping
     stopped_times : 0, // number of times the system has stopped
+    random_seed : null, // optional reproducible seed for stochastic Python motion models
 
     // diagnostics
     show_optimal_resolution : false, // should the optimal resolution be shown on the screen at runtime
