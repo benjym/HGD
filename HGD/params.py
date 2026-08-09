@@ -128,12 +128,25 @@ class dict_to_class:
             self.n_cycles = len(self.cycles)
 
     def update_before_time_march(self, cycles):
-        self.y = np.linspace(0, self.H, self.ny)
-        self.dy = self.y[1] - self.y[0]
-        self.x = np.arange(
-            -(self.nx - 0.5) / 2 * self.dy, (self.nx - 0.5) / 2 * self.dy, self.dy
-        )  # force equal grid spacing
-        self.dx = self.x[1] - self.x[0]
+        if hasattr(self, "cell_size"):
+            # The HGFD paper specifies cell-centred meshes by cell size and
+            # cell count.  Keep this opt-in so existing HGD configurations
+            # retain their historical endpoint-based grid convention.
+            self.dx = self.dy = float(self.cell_size)
+            self.x = (np.arange(self.nx) - (self.nx - 1) / 2.0) * self.dx
+            self.y = np.arange(self.ny, dtype=float) * self.dy
+            expected_height = self.ny * self.dy
+            if not np.isclose(self.H, expected_height):
+                raise ValueError(
+                    f"H={self.H} is inconsistent with ny*cell_size={expected_height} for a cell-centred grid"
+                )
+        else:
+            self.y = np.linspace(0, self.H, self.ny)
+            self.dy = self.y[1] - self.y[0]
+            self.x = np.arange(
+                -(self.nx - 0.5) / 2 * self.dy, (self.nx - 0.5) / 2 * self.dy, self.dy
+            )  # force equal grid spacing
+            self.dx = self.x[1] - self.x[0]
         if not np.isclose(self.dx, self.dy):
             sys.exit(f"Fatal error: dx != dy. dx = {self.dx}, dy = {self.dy}")
         self.W = self.nx * self.dx

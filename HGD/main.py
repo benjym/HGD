@@ -14,11 +14,15 @@ from HGD import stress
 from HGD import boundary
 from HGD import mask
 from HGD import operators
+from HGD import fluid
 
 # from HGD import cycles
 
 
 def init(p, cycles=None):
+    if p.random_seed is not None:
+        np.random.seed(p.random_seed)
+
     p.move_voids = importlib.import_module(f"HGD.motion.{p.motion_model}").move_voids
 
     if hasattr(importlib.import_module(f"HGD.motion.{p.motion_model}"), "stream"):
@@ -55,6 +59,18 @@ def init(p, cycles=None):
 
     # initial.set_boundary(s, p.X, p.Y, p)
     p = mask.update(p, s)
+
+    if p.fluid_coupling:
+        if not p.inertia:
+            raise ValueError("fluid_coupling requires inertia=true")
+        if p.motion_model != "hgfd":
+            raise ValueError("fluid_coupling requires motion_model='hgfd'")
+        p.fluid_state = fluid.initialize(p, s)
+        p.minimum_fluidization_velocity = fluid.minimum_fluidization_velocity(p)
+        print(
+            f"Estimated minimum fluidization velocity: {p.minimum_fluidization_velocity:.4g} m/s; "
+            f"inlet: {p.fluid_inlet_velocity:.4g} m/s"
+        )
 
     if hasattr(p, "temperature"):
         T = p.temperature["inlet_temperature"] * np.ones_like(s)
@@ -173,6 +189,9 @@ def time_step(p, state):
         chi = chi_new
         u = u_new
         v = v_new
+
+    if p.fluid_coupling:
+        p.fluid_state = fluid.advance(p.fluid_state, s, u, v, p)
 
     state = (
         s,

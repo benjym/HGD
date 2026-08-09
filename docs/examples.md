@@ -20,6 +20,7 @@ This document describes the example simulation configurations included with HGD.
 | `test_slope.json5` | ⭐ Easy | ~1 min | Slope stability test |
 | `footing.json5` | ⭐⭐ Medium | ~3 min | Load bearing capacity of granular material |
 | `collapse_bi.json5` | ⭐⭐ Medium | ~5 min | Bidisperse collapse with segregation |
+| `fluidized_bed.json5` | ⭐⭐ Medium | ~1 min | Two-way coupled laminar gas fluidization |
 | `hopper_emptying.json5` | ⭐⭐⭐ Advanced | ~10 min | Detailed hopper flow analysis |
 | `temperature.json5` | ⭐⭐⭐ Advanced | ~5 min | Thermal effects in granular flow |
 
@@ -207,9 +208,46 @@ python HGD/main.py json/collapse_inertia.json5
 
 ---
 
+### 7. Laminar Gas Fluidized Bed (`fluidized_bed.json5`)
+
+**What it simulates:** A monodisperse bed driven by a prescribed superficial gas velocity through the bottom boundary.
+
+```bash
+python HGD/main.py json/fluidized_bed.json5
+```
+
+The `hgfd` motion model adds layer-wise particle inertia, Gidaspow drag (Wen–Yu in dilute cells and Ergun in dense cells), and equal-and-opposite momentum feedback to a two-dimensional fluid-fraction-weighted incompressible solver. The pressure projection enforces `div(n * u_f) = 0` on the co-located HGD grid.
+
+![Official-gallery-style HGFD fluidized-bed fields](visualizations/hgfd_fluidized_bed/render/preview.gif)
+
+The example writes three-panel `fluidized_bed_*.png` frames and `fluid_diagnostics.csv`. The latter reports pressure drop, pressure-drop/effective-bed-weight ratio, locally fluidized fraction, maximum continuity residual, and maximum stochastic transition probability.
+
+The complete visualization pack also provides an
+[MP4](visualizations/hgfd_fluidized_bed/render/demo.mp4) and a 31-frame
+[ParaView PVD time series](visualizations/hgfd_fluidized_bed/paraview/hgfd_fluidized_bed.pvd).
+Each VTI frame contains both particle and fluid velocity vectors, solid
+fraction, grain size, fluid pressure, momentum-exchange coefficient, and the
+fluidized-cell indicator.
+
+Important parameters:
+
+- `fluid_inlet_velocity`: bottom superficial velocity in m/s
+- `gas_density`, `gas_viscosity`: fluid properties
+- `defined_time_step_size`: shared HGD/fluid time step
+- `fluid_probability_policy`: reject or safely scale an excessive stochastic transition probability
+- `fluid_cfl_limit`: fail-fast limit for the fluid Courant number
+
+This solver is intended for two-dimensional, isothermal, laminar research cases. It has not been validated for bubbling, slugging, turbulent, reacting, or industrial-scale fluidized beds.
+
+The coupling equations follow [Li et al., *Coupling Heterarchical Granular Dynamics and Computational Fluid Dynamics*](https://arxiv.org/abs/2606.23202).
+
+For the three quantitative single-particle validation runs, implementation
+parity, and the limits imposed by unpublished inputs, see the
+[HGFD paper reproduction](hgfd-reproduction.md).
+
 ## Advanced Examples
 
-### 7. Hopper Emptying Studies (`hopper_emptying*.json5`)
+### 8. Hopper Emptying Studies (`hopper_emptying*.json5`)
 
 Several detailed hopper studies with different parameters:
 
@@ -240,7 +278,7 @@ python HGD/main.py json/hopper_emptying.json5
 
 ---
 
-### 8. Temperature Effects (`temperature.json5`)
+### 9. Temperature Effects (`temperature.json5`)
 
 **What it simulates:** Thermal transport in flowing granular material.
 
@@ -266,7 +304,7 @@ python HGD/main.py json/temperature.json5
 
 ---
 
-### 9. Stress Field Test (`test_stress.json5`)
+### 10. Stress Field Test (`test_stress.json5`)
 
 **What it simulates:** Stress distribution calculation in static granular material.
 
@@ -287,7 +325,7 @@ python HGD/main.py json/test_stress.json5
 
 ---
 
-### 10. Mesh Dependency Study (`mesh_dependency.json5`)
+### 11. Mesh Dependency Study (`mesh_dependency.json5`)
 
 **What it simulates:** Same problem with different grid resolutions.
 

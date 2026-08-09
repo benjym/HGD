@@ -11,7 +11,7 @@ def IC(p):
     Returns:
         The array of grain sizes. Values of `NaN` are voids.
     """
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(getattr(p, "random_seed", None))
 
     # First step: Generate BOTH the grain size distribution and the void distribution
 
@@ -136,6 +136,15 @@ def IC(p):
 
     if p.IC_mode == "random":  # voids everywhere randomly, this has been done above in the first step
         # mask = np.random.rand(p.nx, p.ny, p.nm) > p.nu_fill
+        return s
+    elif p.IC_mode == "single_particle":
+        # Paper Case 1: one solid-occupied internal coordinate released from
+        # rest in an otherwise empty, fluid-filled domain.
+        s[:] = np.nan
+        i = getattr(p, "single_particle_i", p.nx // 2)
+        j = getattr(p, "single_particle_j", 3 * p.ny // 4)
+        k = getattr(p, "single_particle_k", 0)
+        s[i, j, k] = p.s_m
         return s
     elif p.IC_mode == "top":  # material at the top
         mask = np.zeros([p.nx, p.ny, p.nm], dtype=bool)

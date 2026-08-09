@@ -96,12 +96,13 @@ def size_colormap():
     return orange_blue_cmap
 
 
-global fig, summary_fig, triple_fig, quad_fig, blue_pink_fig
+global fig, summary_fig, triple_fig, quad_fig, blue_pink_fig, fluid_fig
 fig = plt.figure(1)
 summary_fig = plt.figure(2)
 triple_fig = plt.figure(3)
 quad_fig = plt.figure(4)
 blue_pink_fig = plt.figure(5)
+fluid_fig = plt.figure(6)
 
 replacements = {
     "repose_angle": "φ",
@@ -165,7 +166,7 @@ def replace_strings(text, replacements):
 
 
 def set_plot_size(p):
-    global fig, summary_fig, triple_fig, quad_fig, blue_pink_fig
+    global fig, summary_fig, triple_fig, quad_fig, blue_pink_fig, fluid_fig
 
     # wipe any existing figures
     for i in plt.get_fignums():
@@ -176,6 +177,7 @@ def set_plot_size(p):
     quad_fig = plt.figure(3, figsize=[p.nx / _dpi, 4 * p.ny / _dpi])
     summary_fig = plt.figure(4)
     blue_pink_fig = plt.figure(5, facecolor="k", figsize=[p.nx / _dpi, p.ny / _dpi])
+    fluid_fig = plt.figure(6, figsize=[3 * p.nx / _dpi, p.ny / _dpi])
 
 
 def check_folders_exist(p):
@@ -311,6 +313,12 @@ def update(p, state, *args):
             plot_deviatoric(s, sigma, last_swap, p)
         if "footing" in p.plot:
             plot_footing(p)
+        if "fluid_velocity" in p.plot:
+            plot_fluid_velocity(p)
+        if "fluid_pressure" in p.plot:
+            plot_fluid_pressure(p)
+        if "fluidized_bed" in p.plot:
+            plot_fluidized_bed(s, p)
 
         if "s" in p.save:
             save_s(s, p)
@@ -343,10 +351,106 @@ def update(p, state, *args):
             save_velocity(u, v, p)
         if "charge_discharge" in p.save:
             c_d_saves(p, non_zero_nu_time, p_count, p_count_s, p_count_l)
+        if "fluid" in p.save:
+            save_fluid(p)
         if "col_depth" in p.save:
             get_col_depth(p, s)
         if "surface_profiles" in p.save:
             np.save(p.folderName + "data/surface_profiles.npy", surface_profile)
+
+
+def _fluid_field(p, name):
+    if not getattr(p, "fluid_coupling", False) or not hasattr(p, "fluid_state"):
+        raise ValueError(f"'{name}' plotting requires fluid_coupling=true")
+    return p.fluid_state
+
+
+def _plot_domain(field, p, cmap, vmin=None, vmax=None):
+    image = plt.pcolormesh(p.x, p.y, field.T, cmap=cmap, vmin=vmin, vmax=vmax)
+    plt.axis("off")
+    plt.xlim(p.x[0], p.x[-1])
+    plt.ylim(p.y[0], p.y[-1])
+    return image
+
+
+def plot_fluid_velocity(p):
+    state = _fluid_field(p, "fluid_velocity")
+    speed = np.sqrt(state.u**2 + state.v**2)
+    plt.figure(fig)
+    plt.clf()
+    image = _plot_domain(speed, p, inferno, vmin=0)
+    if p.plot_colorbar:
+        plt.colorbar(image, shrink=0.8, location="top", pad=0.01)
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    plt.savefig(p.folderName + "fluid_velocity_" + str(p.tstep).zfill(6) + ".png")
+
+
+def plot_fluid_pressure(p):
+    state = _fluid_field(p, "fluid_pressure")
+    plt.figure(fig)
+    plt.clf()
+    image = _plot_domain(state.pressure, p, inferno)
+    if p.plot_colorbar:
+        plt.colorbar(image, shrink=0.8, location="top", pad=0.01)
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    plt.savefig(p.folderName + "fluid_pressure_" + str(p.tstep).zfill(6) + ".png")
+
+
+def plot_fluidized_bed(s, p):
+    """Plot solid fraction, vertical gas velocity, and gas pressure in the established style."""
+
+    state = _fluid_field(p, "fluidized_bed")
+    solid_fraction = operators.get_solid_fraction(s)
+    velocity_limit = max(float(np.max(np.abs(state.v))), 1e-12)
+    plt.figure(fluid_fig)
+    plt.clf()
+
+    panels = (
+        (solid_fraction, inferno_r, 0, p.nu_cs, r"Solid fraction $\nu$"),
+        (state.v, bwr, -velocity_limit, velocity_limit, r"Gas velocity $v_f$"),
+        (state.pressure, inferno, None, None, r"Gas pressure $p$"),
+    )
+    for index, (field, colormap, vmin, vmax, title) in enumerate(panels, start=1):
+        plt.subplot(1, 3, index)
+        image = _plot_domain(field, p, colormap, vmin=vmin, vmax=vmax)
+        plt.title(title, y=-0.10)
+        if p.plot_colorbar:
+            plt.colorbar(image, shrink=0.72, location="top", pad=0.05)
+
+    plt.subplots_adjust(left=0.01, right=0.99, bottom=0.10, top=0.98, wspace=0.04)
+    plt.savefig(p.folderName + "fluidized_bed_" + str(p.tstep).zfill(6) + ".png", dpi=120)
+    save_fluid_diagnostics(p)
+
+
+def save_fluid_diagnostics(p):
+    state = _fluid_field(p, "fluidized_bed")
+    if getattr(p, "_last_fluid_diagnostic_step", None) == p.tstep:
+        return
+    path = p.folderName + "fluid_diagnostics.csv"
+    mode = "w" if p.tstep == 0 else "a"
+    with open(path, mode) as output:
+        if mode == "w":
+            output.write(
+                "time,pressure_drop,fluidization_ratio,fluidized_fraction,max_divergence,"
+                "max_transition_probability\n"
+            )
+        output.write(
+            f"{p.t},{state.pressure_drop},{state.fluidization_ratio},{np.mean(state.fluidized)},"
+            f"{np.max(np.abs(state.divergence))},{getattr(p, 'max_transition_probability', 0.0)}\n"
+        )
+    p._last_fluid_diagnostic_step = p.tstep
+
+
+def save_fluid(p):
+    state = _fluid_field(p, "fluid")
+    np.savez(
+        p.folderName + "data/fluid_" + str(p.tstep).zfill(6) + ".npz",
+        u=state.u,
+        v=state.v,
+        pressure=state.pressure,
+        beta=state.beta,
+        fluidized=state.fluidized,
+    )
 
 
 def plot_u_time(y, U, nu_time, p):
@@ -1031,7 +1135,7 @@ def plot_h(s, p):
 
 
 def make_video(p):
-    if is_ffmpeg_installed:
+    if is_ffmpeg_installed():
         fname = p.folderName.split("/")[-2]
         nice_name = "=".join(fname.rsplit("_", 1))
         nice_name = replace_strings(nice_name, replacements)
@@ -1069,7 +1173,7 @@ def make_video(p):
 def stack_videos(paths, name, p):
     videos = p.videos
     heights = p.ny
-    if is_ffmpeg_installed:
+    if is_ffmpeg_installed():
         if isinstance(heights, int):
             heights = [heights] * len(videos)
         max_height = 4 * max(heights)  # Find the maximum height among all videos
